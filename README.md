@@ -57,10 +57,12 @@ flutter test             # from the root — widgets and blocs
 The iOS project exists, its bundle id is `com.kai.whereMoney`, and a
 Firebase iOS app is registered against it. That is as far as it goes. There is no
 Mac in this project's development environment, so nothing under `ios/` has ever
-been compiled, run, or tested, and no claim is made that it works. Two known
-gaps for whoever picks it up: `GoogleService-Info.plist` has to be fetched the
-same way as the Android config (template alongside it), and it still needs adding
-to the Xcode project, which takes Xcode.
+been compiled, run, or tested, and no claim is made that it works. The
+deployment target is 15.0, which is `firebase_core`'s floor. Known gaps for
+whoever picks it up: `GoogleService-Info.plist` has to be fetched the same way as
+the Android config (template alongside it) and then added to the Xcode project,
+which takes Xcode; and there is no `Podfile` yet, since Flutter writes one on the
+first macOS build.
 
 There is no web build, and there won't be — the camera pipeline is the point.
 

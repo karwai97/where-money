@@ -39,7 +39,18 @@ error. `depend_on_referenced_packages` is therefore promoted to an error in
 `packages/core/analysis_options.yaml`, and a test asserts the pubspec declares
 nothing Flutter-shaped, so the boundary fails loudly in the editor and in CI.
 
-iOS: the project exists, bundle id `com.kai.whereMoney`, Firebase iOS app
-registered, plist gitignored with a template. It has never been compiled. Adding
-`GoogleService-Info.plist` to the Xcode project needs a Mac and is left for
-whoever has one; the README says so.
+iOS: the project exists, bundle id `com.kai.whereMoney`, deployment target
+15.0 (`firebase_core`'s floor), Firebase iOS app registered, plist gitignored
+with a template. It has never been compiled. Adding `GoogleService-Info.plist`
+to the Xcode project needs a Mac, as does generating the Podfile, and both are
+left for whoever has one; the README says so.
+
+Verified against a fresh clone of the pushed repo, not just the working tree:
+`flutter pub get`, `dart test` in `packages/core`, `flutter analyze`, and
+`flutter test` all pass, and `flutter run` installed and launched on the device.
+
+One honest gap against the "one command" framing: because `google-services.json`
+is gitignored, a fresh clone's first `flutter run` fails at
+`processDebugGoogleServices` until the config is fetched. The two criteria pull
+against each other and the ticket picked gitignore, so the README leads with the
+fetch. The failure names the missing file, so it is legible rather than cryptic.
