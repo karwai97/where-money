@@ -39,7 +39,7 @@ error. `depend_on_referenced_packages` is therefore promoted to an error in
 `packages/core/analysis_options.yaml`, and a test asserts the pubspec declares
 nothing Flutter-shaped, so the boundary fails loudly in the editor and in CI.
 
-iOS: the project exists, bundle id `tech.myfirst.whereMoney`, Firebase iOS app
+iOS: the project exists, bundle id `com.kai.whereMoney`, Firebase iOS app
 registered, plist gitignored with a template. It has never been compiled. Adding
 `GoogleService-Info.plist` to the Xcode project needs a Mac and is left for
 whoever has one; the README says so.

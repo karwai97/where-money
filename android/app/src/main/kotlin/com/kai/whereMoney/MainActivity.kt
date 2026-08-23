@@ -1,4 +1,4 @@
-package tech.myfirst.where_money
+package com.kai.whereMoney
 
 import io.flutter.embedding.android.FlutterActivity
 

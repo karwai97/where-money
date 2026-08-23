@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "FIREBASE_ANDROID_APP_ID",
         "android_client_info": {
-          "package_name": "tech.myfirst.where_money"
+          "package_name": "com.kai.whereMoney"
         }
       },
       "oauth_client": [],

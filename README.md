@@ -32,7 +32,7 @@ with access to the Firebase project.
 flutter pub get      # resolves the whole workspace
 
 # Firebase config is per-project and gitignored; fetch your own copy.
-firebase apps:sdkconfig ANDROID 1:607107275128:android:217b37b28471416cca908d \
+firebase apps:sdkconfig ANDROID 1:607107275128:android:49602f2c132878e7ca908d \
   --out android/app/google-services.json
 
 flutter run
@@ -54,7 +54,7 @@ flutter test             # from the root — widgets and blocs
 
 ## iOS is unbuilt and unverified
 
-The iOS project exists, its bundle id is `tech.myfirst.whereMoney`, and a
+The iOS project exists, its bundle id is `com.kai.whereMoney`, and a
 Firebase iOS app is registered against it. That is as far as it goes. There is no
 Mac in this project's development environment, so nothing under `ios/` has ever
 been compiled, run, or tested, and no claim is made that it works. Two known

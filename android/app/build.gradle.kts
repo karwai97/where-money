@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "tech.myfirst.where_money"
+    namespace = "com.kai.whereMoney"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -16,7 +16,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "tech.myfirst.where_money"
+        applicationId = "com.kai.whereMoney"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
