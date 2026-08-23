@@ -45,11 +45,43 @@ shape you should get back is in
 There is no generated `firebase_options.dart`: `Firebase.initializeApp()` reads
 the native config file, which keeps project keys out of Dart source entirely.
 
+Google Sign-In will not work until your signing certificate's SHA-1 is
+registered on the Android app in the Firebase console. Print the debug one with:
+
+```sh
+keytool -list -v -alias androiddebugkey -keystore ~/.android/debug.keystore \
+  -storepass android -keypass android
+```
+
+Add it under Project settings, then re-fetch `google-services.json` — the file
+only grows its `oauth_client` entries once a fingerprint is registered, and
+without the web client (`client_type: 3`) sign-in fails with `ApiException: 10`.
+Release builds are signed with the debug key today, so only the debug
+fingerprint is registered and no claim is made about release sign-in.
+
 ## Tests
 
 ```sh
 dart test                # from packages/core — pure Dart, no Flutter harness
 flutter test             # from the root — widgets and blocs
+
+cd tools/firestore-rules && npm install && npm test
+```
+
+The third one runs [firestore.rules](firestore.rules) against the Firestore
+emulator, so what is asserted is what the rules actually do rather than what
+they look like they do. It needs Node and a JDK on the path; nothing is sent to
+the real project, and the emulator runs under a `demo-` project id so it cannot
+be.
+
+## Security rules
+
+The Ledger lives at `users/{uid}/expenses/{id}`, and the rules say only that
+path is readable and writable, and only by the user who owns it. Deploy them
+before signing in on a device, or every read comes back refused:
+
+```sh
+firebase deploy --only firestore:rules
 ```
 
 ## iOS is unbuilt and unverified

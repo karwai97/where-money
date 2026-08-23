@@ -48,3 +48,12 @@ app.*.map.json
 # fetch your own with `firebase apps:sdkconfig` (see README).
 /android/app/google-services.json
 /ios/Runner/GoogleService-Info.plist
+
+# Firestore rules tests (Node, not part of the Dart workspace)
+tools/firestore-rules/node_modules/
+
+# Firebase emulator
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+.firebase/

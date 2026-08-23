@@ -1,5 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+
+import 'app.dart';
+import 'data/firestore_ledger_store.dart';
+import 'session/google_sign_in_gateway.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -7,30 +12,17 @@ Future<void> main() async {
   // GoogleService-Info.plist) is the only place project keys live, and it is
   // gitignored.
   await Firebase.initializeApp();
-  runApp(const WhereMoneyApp());
-}
 
-class WhereMoneyApp extends StatelessWidget {
-  const WhereMoneyApp({super.key});
+  final signIn = GoogleSignInGateway();
+  await signIn.initialize();
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'where_money',
-      theme: ThemeData(useMaterial3: true),
-      home: const HomePlaceholder(),
-    );
-  }
-}
-
-class HomePlaceholder extends StatelessWidget {
-  const HomePlaceholder({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('where_money')),
-      body: const Center(child: Text('Nothing here yet.')),
-    );
-  }
+  runApp(
+    WhereMoneyApp(
+      signIn: signIn,
+      ledgerFor: (uid) => FirestoreLedgerStore(
+        firestore: FirebaseFirestore.instance,
+        uid: uid,
+      ),
+    ),
+  );
 }

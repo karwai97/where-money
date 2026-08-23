@@ -1,4 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Signing in and reading the Ledger both need the network in every build
+         type, not only in the debug manifest the Flutter tool writes. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:label="where_money"
         android:name="${applicationName}"

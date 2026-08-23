@@ -1,0 +1,12 @@
+rules_version = '2';
+
+// One user, one Ledger. Every path under a user's document belongs to that
+// user and to nobody else — there is no sharing to make room for, so the rule
+// is the whole authorisation model rather than a first cut at one.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}
