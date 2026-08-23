@@ -1,0 +1,13 @@
+name: where_money_core
+description: The where_money domain — pure Dart, deliberately without a Flutter dependency.
+version: 0.1.0
+publish_to: 'none'
+resolution: workspace
+
+environment:
+  sdk: ^3.12.2
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.0
+  yaml: ^3.1.2

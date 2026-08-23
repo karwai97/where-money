@@ -1,0 +1,8 @@
+include: package:lints/recommended.yaml
+
+analyzer:
+  errors:
+    # The pub workspace shares one package resolution, so package:flutter is
+    # importable here unless we say otherwise. Core is pure Dart: importing
+    # anything it does not declare is an error, not a hint.
+    depend_on_referenced_packages: error

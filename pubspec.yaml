@@ -1,0 +1,27 @@
+name: where_money
+description: "Photograph a receipt; get a categorised ledger and a monthly recap."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.12.2
+
+# Pub workspace root. One `flutter pub get` here resolves the core package too.
+workspace:
+  - packages/core
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  where_money_core:
+    path: packages/core
+  firebase_core: ^4.13.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
