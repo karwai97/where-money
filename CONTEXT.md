@@ -25,7 +25,8 @@ Findings; costs nothing and calls nothing.
 _Avoid_: Validation, verification
 
 **Finding**:
-One thing a Check noticed, at severity ok, warn, or fail.
+One thing a Check noticed, at severity warn or fail. A clean Extraction
+produces none at all.
 _Avoid_: Error, issue, warning, flag
 
 **Inbox**:
