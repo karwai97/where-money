@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "where-money",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-09-06",
+  "observability": { "enabled": true },
+  "vars": {
+    "FIREBASE_PROJECT_ID": "where-money-72ee2",
+    // The ceiling a client-requested cap is clamped to, not the cap itself.
+    // Remote Config moves the cap below this without a deploy; nothing moves
+    // it above.
+    "DAILY_SCAN_CEILING": "40",
+    "OPENAI_RESPONSES_URL": "https://api.openai.com/v1/responses"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "SCAN_ALLOWANCE",
+      // Replace with the id printed by `wrangler kv namespace create SCAN_ALLOWANCE`.
+      // Local dev and the tests ignore it.
+      "id": "REPLACE_ME"
+    }
+  ]
+}

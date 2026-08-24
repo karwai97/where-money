@@ -19,8 +19,10 @@ A pub workspace of two Dart packages:
   promoted to an error there so the shared workspace resolution cannot smuggle
   `package:flutter` in. Its tests run under `dart test`, with no Flutter harness.
 
-A third deployable, the Cloudflare Worker that holds the OpenAI key, is not a
-Dart package and is not here yet (ADR-0001).
+- **[worker](worker)** — the Cloudflare Worker that holds the OpenAI key
+  (ADR-0001). TypeScript, not a Dart package, deployed separately. It is the
+  only place the key exists, and it owns the prompt, the schema and the daily
+  cap so that a client cannot.
 
 ## Getting it onto a device
 
@@ -65,7 +67,8 @@ fingerprint is registered and no claim is made about release sign-in.
 dart test                # from packages/core — pure Dart, no Flutter harness
 flutter test             # from the root — widgets and blocs
 
-cd tools/firestore-rules && npm install && npm test
+cd tools/firestore-rules && npm install && npm test   # from the root
+cd worker && npm install && npm test                  # from the root
 ```
 
 The third one runs [firestore.rules](firestore.rules) against the Firestore
@@ -73,6 +76,11 @@ emulator, so what is asserted is what the rules actually do rather than what
 they look like they do. It needs Node and a JDK on the path; nothing is sent to
 the real project, and the emulator runs under a `demo-` project id so it cannot
 be.
+
+The fourth runs the [Worker](worker) against the local Workers runtime, with
+Google's signing keys and the model both intercepted. It needs no Cloudflare
+account and no OpenAI key; deploying it needs both, and
+[worker/README.md](worker/README.md) says how.
 
 ## Security rules
 
