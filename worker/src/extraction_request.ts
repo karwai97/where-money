@@ -43,6 +43,10 @@ function templateFor(knobs: Knobs): [string, string] {
     knobs.effort === 'omit' ? '' : `"reasoning":{"effort":"${knobs.effort}"},`;
   const template: [string, string] = [
     `{"model":"${knobs.model}",` +
+      // The receipt is somebody's medical bill or their bar tab. The API keeps
+      // each response for later retrieval unless told not to, and there is
+      // nothing here that ever reads one back.
+      `"store":false,` +
       `"instructions":${instructionsJson},` +
       `"max_output_tokens":${maxOutputTokens},` +
       reasoning +

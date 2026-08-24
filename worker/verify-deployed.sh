@@ -75,8 +75,8 @@ echo "status: $status"
 $py - <<'PY' || cat /tmp/where-money-scan.json
 import json
 body = json.load(open('/tmp/where-money-scan.json'))
-if 'error' in body:
-    print('failed:', body)
+if body.get('error') or body.get('status') is None:
+    print('failed:', json.dumps(body)[:400])
     raise SystemExit
 text = next(
     (c['text'] for item in body.get('output', []) if item.get('type') == 'message'
@@ -110,7 +110,7 @@ fi
 
 step 'a client-supplied model is ignored'
 echo "asking for gpt-5-pro: $(scan "$ID_TOKEN" '?model=gpt-5-pro')"
-grep -o '"model":"[^"]*"' /tmp/where-money-scan.json | head -1
+grep -oE '"model": ?"[^"]*"' /tmp/where-money-scan.json | head -1
 echo 'expect gpt-5-nano, whatever was asked for.'
 
 step 'reasoning effort, if the nano tier takes one'

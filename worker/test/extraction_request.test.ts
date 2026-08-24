@@ -128,6 +128,10 @@ describe('the request the Worker builds', () => {
     expect(bodyFor('').max_output_tokens).toBeGreaterThan(0);
   });
 
+  it('tells the API not to keep the receipt', () => {
+    expect(bodyFor('').store).toBe(false);
+  });
+
   it('nests reasoning effort where the API wants it', () => {
     expect(bodyFor('?effort=medium').reasoning).toEqual({ effort: 'medium' });
   });
