@@ -31,6 +31,10 @@ if [[ -z ${SECOND_ID_TOKEN:-} ]]; then
   read -rsp "A second user's ID token (blank to skip that check): " SECOND_ID_TOKEN && echo
 fi
 
+# Git Bash on Windows has `python` and a python3 shim that only offers to
+# install one, so ask which actually runs.
+py=python3
+$py -c 'pass' 2>/dev/null || py=python
 encoded=$(mktemp)
 trap 'rm -f "$encoded"' EXIT
 base64 -w0 "$image" >"$encoded" 2>/dev/null || base64 -i "$image" | tr -d '\n' >"$encoded"
@@ -68,7 +72,7 @@ echo 'that token: the reason should read "expired" rather than "malformed".'
 step 'a real receipt comes back read'
 status=$(scan "$ID_TOKEN")
 echo "status: $status"
-python3 - <<'PY' || cat /tmp/where-money-scan.json
+$py - <<'PY' || cat /tmp/where-money-scan.json
 import json
 body = json.load(open('/tmp/where-money-scan.json'))
 if 'error' in body:
