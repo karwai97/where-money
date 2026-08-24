@@ -35,12 +35,28 @@ type Lookup =
 export class SigningKeys {
   #keys = new Map<string, CryptoKey>();
   #expiresAt = 0;
+  #refetchedForAMiss = false;
   #inFlight: Promise<boolean> | null = null;
 
   async lookup(kid: string): Promise<Lookup> {
-    if (Date.now() >= this.#expiresAt && !(await this.#refresh())) {
-      return { ok: false, reason: 'keys_unavailable' };
+    if (Date.now() >= this.#expiresAt) {
+      if (!(await this.#refresh())) {
+        return { ok: false, reason: 'keys_unavailable' };
+      }
+      this.#refetchedForAMiss = false;
     }
+
+    // Google rotates keys inside the window they told us to cache them for, and
+    // a token signed by the new one is not the caller's fault. So an unseen kid
+    // buys one re-fetch — once per set of keys, not once per request, or a
+    // stream of invented kids would be a way to make us fetch all day.
+    if (!this.#keys.has(kid) && !this.#refetchedForAMiss) {
+      this.#refetchedForAMiss = true;
+      if (!(await this.#refresh())) {
+        return { ok: false, reason: 'keys_unavailable' };
+      }
+    }
+
     const key = this.#keys.get(kid);
     return key ? { ok: true, key } : { ok: false, reason: 'unknown_key' };
   }
@@ -91,7 +107,8 @@ export class SigningKeys {
     if (imported.size === 0) return false;
 
     this.#keys = imported;
-    this.#expiresAt = Date.now() + maxAgeMillis(response.headers.get('cache-control'));
+    this.#expiresAt =
+      Date.now() + cacheFor(response.headers.get('cache-control'));
     return true;
   }
 }
@@ -174,9 +191,13 @@ function decodeBytes(segment: string): Uint8Array | null {
   }
 }
 
-function maxAgeMillis(cacheControl: string | null): number {
+// Google says how long its keys are good for and the answer is hours. If it
+// ever stops saying, cache them for an hour anyway: treating "no answer" as
+// "expired" would mean a cert fetch on every single Scan, which is the cost
+// this class exists to avoid.
+function cacheFor(cacheControl: string | null): number {
   const match = /max-age=(\d+)/.exec(cacheControl ?? '');
-  return match ? Number(match[1]) * 1000 : 0;
+  return match ? Number(match[1]) * 1000 : 60 * 60 * 1000;
 }
 
 function isNumber(value: unknown): value is number {

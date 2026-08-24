@@ -5,7 +5,7 @@ import { extractionBody, looksLikeBase64 } from '../src/extraction_request';
 import { readKnobs } from '../src/knobs';
 import { receiptSchema } from '../src/schema';
 
-const knobsFor = (query: string, ceiling = 40) =>
+const knobsFor = (query: string, ceiling = '40') =>
   readKnobs(new URL(`https://worker.test/extract${query}`), ceiling);
 
 const bodyFor = (query: string, image = 'aGVsbG8=') =>
@@ -162,13 +162,20 @@ describe('the image the client encoded', () => {
 
 describe('the daily cap', () => {
   it('is the one the client asked for when it is below the ceiling', () => {
-    expect(knobsFor('?cap=5', 40).dailyCap).toBe(5);
+    expect(knobsFor('?cap=5', '40').dailyCap).toBe(5);
   });
 
   it('is the ceiling when the client asks for more, so a modified client gains nothing', () => {
-    expect(knobsFor('?cap=100000', 40).dailyCap).toBe(40);
-    expect(knobsFor('', 40).dailyCap).toBe(40);
-    expect(knobsFor('?cap=nonsense', 40).dailyCap).toBe(40);
-    expect(knobsFor('?cap=-1', 40).dailyCap).toBe(0);
+    expect(knobsFor('?cap=100000', '40').dailyCap).toBe(40);
+    expect(knobsFor('', '40').dailyCap).toBe(40);
+    expect(knobsFor('?cap=nonsense', '40').dailyCap).toBe(40);
+    expect(knobsFor('?cap=-1', '40').dailyCap).toBe(0);
+  });
+
+  it('is a real number even when the ceiling in the deployment is not', () => {
+    for (const ceiling of ['', 'forty', 'null']) {
+      expect(knobsFor('?cap=100000', ceiling).dailyCap).toBeGreaterThan(0);
+      expect(knobsFor('?cap=100000', ceiling).dailyCap).toBeLessThan(1000);
+    }
   });
 });

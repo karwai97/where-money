@@ -1,8 +1,11 @@
 // The per-user daily cap, so one account cannot run up the bill.
 //
-// The reservation is taken before the model is called, not after: the cost is
-// incurred by the call, and a client that could retry a failed call for free
-// would be a cap with a hole in it.
+// Reserved before the model is called rather than counted after: the call is
+// what costs, so a Scan that failed on its way to the model still spends the
+// allowance. Refunding would mean a second write, and the counter is already
+// approximate — KV reads what it last replicated, so two Scans at once, or two
+// Scans in two places, can read the same number and both be allowed. The cap
+// bounds the bill; it is not an exact quota, and nothing here pretends it is.
 
 export interface Allowance {
   allowed: boolean;

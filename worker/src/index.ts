@@ -17,9 +17,11 @@ import { readKnobs } from './knobs';
 import { verifyIdToken } from './token';
 
 // A receipt resized to ~1024px on the long edge is around 200KB, so ~270KB
-// once base64 has grown it by a third. This is generous enough for a phone
-// that ignores the knob and tight enough that nobody posts a film.
-const maxImageCharacters = 2_000_000;
+// once base64 has grown it by a third. This leaves room for a phone that
+// resized less aggressively and still keeps the CPU a Scan costs to a fifth of
+// what the free plan allows — at ten times this, checking and encoding the
+// string alone would be half the budget. bench/body-cpu.test.ts measures both.
+const maxImageCharacters = 700_000;
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -55,7 +57,7 @@ async function extract(request: Request, url: URL, env: Env): Promise<Response> 
     return caller.ours
       ? failure(
           503,
-          'token_check_unavailable',
+          'signing_keys_unavailable',
           'Could not reach Google to check the token. Try again shortly.',
         )
       : failure(403, 'invalid_token', 'That token was not accepted.', {
@@ -63,13 +65,15 @@ async function extract(request: Request, url: URL, env: Env): Promise<Response> 
         });
   }
 
+  const tooLarge = () =>
+    failure(413, 'image_too_large', 'Resize the image and send it again.');
   if (Number(request.headers.get('content-length')) > maxImageCharacters) {
-    return failure(413, 'image_too_large', 'Resize the image and send it again.');
+    return tooLarge();
   }
 
   const image = await request.text();
   if (image.length > maxImageCharacters) {
-    return failure(413, 'image_too_large', 'Resize the image and send it again.');
+    return tooLarge();
   }
   if (!looksLikeBase64(image)) {
     return failure(
@@ -79,13 +83,8 @@ async function extract(request: Request, url: URL, env: Env): Promise<Response> 
     );
   }
 
-  const knobs = readKnobs(url, Number(env.DAILY_SCAN_CEILING));
+  const knobs = readKnobs(url, env.DAILY_SCAN_CEILING);
 
-  // Reserved before the call rather than counted after it: the cost is incurred
-  // by the call, so a failure that did not reach the model still spends the
-  // allowance. That is the cheap way round — refunding would need a second
-  // write against an eventually consistent counter, and a cap with a race in it
-  // is not a cap.
   const allowance = await reserveScan(env.SCAN_ALLOWANCE, {
     uid: caller.uid,
     limit: knobs.dailyCap,

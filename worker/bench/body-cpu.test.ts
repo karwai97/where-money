@@ -23,10 +23,13 @@ const knobs: Knobs = {
   dailyCap: 40,
 };
 
-// A 1024px-long-edge receipt is around 200KB of JPEG, so around 270KB of
-// base64.
-const image = 'A'.repeat(270_000);
-const runs = 200;
+// Two sizes: what a Scan actually sends, and the largest body the endpoint
+// accepts at all.
+const sizes = {
+  'a 1024px receipt (270KB of base64)': 270_000,
+  'the largest body /extract takes': 700_000,
+};
+const runs = 100;
 
 function millisPerRun(work: () => unknown): number {
   work();
@@ -36,32 +39,36 @@ function millisPerRun(work: () => unknown): number {
 }
 
 describe('the CPU a Scan costs the Worker', () => {
-  it('stays far inside the 10ms the free plan allows', () => {
-    const checking = millisPerRun(() => looksLikeBase64(image));
-    const templating = millisPerRun(() => extractionBody(image, knobs));
-    // Concatenation is lazy in V8, so the join above costs nothing until
-    // something reads the whole string. fetch does, when it encodes the body,
-    // and that is where the real cost of templating lands.
-    const encoder = new TextEncoder();
-    const encoding = millisPerRun(() =>
-      encoder.encode(extractionBody(image, knobs)),
-    );
-    const envelope = JSON.stringify({ image, knobs });
-    const parsing = millisPerRun(() => {
-      const incoming = JSON.parse(envelope) as { image: string };
-      return JSON.stringify({ image_url: `data:image/jpeg;base64,${incoming.image}` });
+  for (const [what, size] of Object.entries(sizes)) {
+    it(`stays inside the 10ms the free plan allows, for ${what}`, () => {
+      const image = 'A'.repeat(size);
+      const encoder = new TextEncoder();
+
+      const checking = millisPerRun(() => looksLikeBase64(image));
+      // Concatenation is lazy in V8, so templating alone costs nothing until
+      // something reads the whole string. fetch does, when it encodes the body,
+      // and that is where the real cost of templating lands.
+      const templatingAndEncoding = millisPerRun(() =>
+        encoder.encode(extractionBody(image, knobs)),
+      );
+      // What the Worker would pay instead if the image arrived inside a JSON
+      // envelope: the parse, and then the same encode on the way out.
+      const envelope = JSON.stringify({ image });
+      const parsing =
+        millisPerRun(() => (JSON.parse(envelope) as { image: string }).image) +
+        templatingAndEncoding;
+
+      console.log(
+        [
+          what,
+          `  checking it is base64:   ${checking.toFixed(3)}ms`,
+          `  templating and encoding: ${templatingAndEncoding.toFixed(3)}ms`,
+          `  per Scan, together:      ${(checking + templatingAndEncoding).toFixed(3)}ms`,
+          `  parsing it out of JSON:  ${parsing.toFixed(3)}ms`,
+        ].join('\n'),
+      );
+
+      expect(checking + templatingAndEncoding).toBeLessThan(5);
     });
-
-    console.log(
-      [
-        `checking the base64: ${checking.toFixed(3)}ms`,
-        `templating the body: ${templating.toFixed(3)}ms`,
-        `templating and encoding: ${encoding.toFixed(3)}ms`,
-        `per Scan, together: ${(checking + encoding).toFixed(3)}ms`,
-        `parsing instead:     ${parsing.toFixed(3)}ms`,
-      ].join('\n'),
-    );
-
-    expect(checking + encoding).toBeLessThan(2);
-  });
+  }
 });

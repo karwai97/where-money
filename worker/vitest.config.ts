@@ -3,8 +3,7 @@ import { defineWorkersConfig } from '@cloudflare/vitest-pool-workers/config';
 export default defineWorkersConfig({
   test: {
     setupFiles: ['./test/setup.ts'],
-    // bench/ measures CPU, which only Node can do: inside a Worker the clock
-    // does not advance during synchronous execution. `npm run measure` runs it.
+    // bench/ runs under `npm run measure` instead, in Node.
     exclude: ['bench/**', 'node_modules/**'],
     poolOptions: {
       workers: {

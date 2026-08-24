@@ -56,7 +56,7 @@ describe('a Firebase ID token', () => {
 
   it('is refused when its key id is not one of the published ones', async () => {
     const key = await makeSigningKey('kid-a');
-    publishSigningKeys([key]);
+    publishSigningKeys([key], { times: 2 });
 
     expect(
       await verify(await signIdToken(key, {}, { kid: 'kid-nobody-has' })),
@@ -133,6 +133,46 @@ describe('a Firebase ID token', () => {
       { ok: true, uid: 'uid-alice' },
       { ok: true, uid: 'uid-bob' },
     ]);
+  });
+
+  it('is accepted after a key rotation we had not seen yet', async () => {
+    const known = await makeSigningKey('kid-known');
+    const rotatedIn = await makeSigningKey('kid-rotated-in');
+    publishSigningKeys([known]);
+    publishSigningKeys([known, rotatedIn]);
+
+    expect(await verify(await signIdToken(known))).toEqual({
+      ok: true,
+      uid: 'uid-alice',
+    });
+    expect(await verify(await signIdToken(rotatedIn, { sub: 'uid-bob' }))).toEqual(
+      { ok: true, uid: 'uid-bob' },
+    );
+  });
+
+  it('buys only one re-fetch, however many key ids are invented', async () => {
+    const key = await makeSigningKey('kid-real');
+    publishSigningKeys([key], { times: 2 });
+
+    for (const invented of ['kid-nope-1', 'kid-nope-2', 'kid-nope-3']) {
+      expect(
+        await verify(await signIdToken(key, {}, { kid: invented })),
+      ).toEqual({ ok: false, reason: 'unknown_key' });
+    }
+  });
+
+  it('is checked against keys still cached when Google said nothing about how long they last', async () => {
+    const key = await makeSigningKey('kid-no-cache-header');
+    publishSigningKeys([key], { times: 1, maxAge: null });
+
+    expect(await verify(await signIdToken(key))).toEqual({
+      ok: true,
+      uid: 'uid-alice',
+    });
+    expect(await verify(await signIdToken(key, { sub: 'uid-bob' }))).toEqual({
+      ok: true,
+      uid: 'uid-bob',
+    });
   });
 
   it('is checked against a re-fetch once the published keys have gone stale', async () => {

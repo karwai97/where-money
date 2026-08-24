@@ -67,8 +67,8 @@ fingerprint is registered and no claim is made about release sign-in.
 dart test                # from packages/core — pure Dart, no Flutter harness
 flutter test             # from the root — widgets and blocs
 
-cd tools/firestore-rules && npm install && npm test   # from the root
-cd worker && npm install && npm test                  # from the root
+(cd tools/firestore-rules && npm install && npm test)
+(cd worker && npm install && npm test)
 ```
 
 The third one runs [firestore.rules](firestore.rules) against the Firestore

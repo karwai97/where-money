@@ -40,7 +40,10 @@ export async function makeSigningKey(kid = 'kid-a'): Promise<SigningKey> {
 // keys exactly once however many requests it served.
 export function publishSigningKeys(
   keys: SigningKey[],
-  { times = 1, maxAge = 3600 }: { times?: number; maxAge?: number } = {},
+  {
+    times = 1,
+    maxAge = 3600,
+  }: { times?: number; maxAge?: number | null } = {},
 ): void {
   fetchMock
     .get(JWK_ORIGIN)
@@ -48,7 +51,11 @@ export function publishSigningKeys(
     .reply(200, JSON.stringify({ keys: keys.map((k) => k.jwk) }), {
       headers: {
         'content-type': 'application/json',
-        'cache-control': `public, max-age=${maxAge}`,
+        // null publishes them with no cache-control at all, which is Google
+        // going quiet about how long they are good for.
+        ...(maxAge === null
+          ? {}
+          : { 'cache-control': `public, max-age=${maxAge}` }),
       },
     })
     .times(times);
@@ -103,8 +110,7 @@ export async function signWithWrongKey(
   other: SigningKey,
   claims: Claims = {},
 ): Promise<string> {
-  const token = await signIdToken(other, claims, { kid: advertisedKid });
-  return token;
+  return signIdToken(other, claims, { kid: advertisedKid });
 }
 
 export function b64url(text: string): string {

@@ -38,9 +38,9 @@ to parse in Dart. On failure the body is `{"error": ..., "message": ...}`:
 |---|---|---|
 | 401 | `missing_token` | No `Authorization` header |
 | 403 | `invalid_token` | A token we will not accept; `reason` says which way |
-| 503 | `token_check_unavailable` | Google's signing keys were unreachable — ours, not the caller's |
+| 503 | `signing_keys_unavailable` | Google's signing keys were unreachable — ours, not the caller's |
 | 400 | `bad_image` | The body was not base64 |
-| 413 | `image_too_large` | Over 2,000,000 characters |
+| 413 | `image_too_large` | Over 700,000 characters of base64 |
 | 429 | `cap_reached` | Today's allowance is used up; `resets_at` says when it is not |
 | 502 | `model_unavailable` | The model could not be reached or refused the request |
 

@@ -6,7 +6,7 @@
 // is the one thing here that could spend the whole budget. So the client sends
 // the base64 as the entire request body, the static halves of the outgoing body
 // are built once per knob combination and kept in the isolate, and a request is
-// one concatenation. scripts/measure-body-cpu.ts has the numbers.
+// one concatenation. bench/body-cpu.test.ts has the numbers.
 
 import type { Knobs } from './knobs';
 import { maxOutputTokens } from './knobs';

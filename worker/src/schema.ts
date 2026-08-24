@@ -87,7 +87,8 @@ export const receiptSchema = {
     purchased_at: {
       type: ['string', 'null'],
       format: 'date',
-      description: 'Transaction date as yyyy-MM-dd, or null if not legible.',
+      description:
+        'The date the money was spent, as yyyy-MM-dd, or null if not legible.',
     },
     currency: {
       type: 'string',
@@ -167,8 +168,8 @@ export const extractionInstructions =
   '  including tax. If the receipt shows both a pre-tax and a post-tax total,\n' +
   '  the post-tax one is the total.\n' +
   '- Amounts are plain numbers: no currency symbols, no thousands separators.\n' +
-  '- A date is only purchased_at if it is the transaction date. Ignore print\n' +
-  '  timestamps, best-before dates, and card expiry dates.\n' +
+  '- A date is only purchased_at if it is the date the money was spent. Ignore\n' +
+  '  print timestamps, best-before dates, and card expiry dates.\n' +
   '- Categorise by where the money went, not by the shop name. A supermarket\n' +
   '  receipt that is mostly nappies and shampoo is personal_care, not groceries.\n' +
   '- Set needs_review whenever you are working around damage: glare, a fold\n' +

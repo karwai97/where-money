@@ -152,7 +152,7 @@ describe('a Scan', () => {
 
   it('is refused when the image is larger than a resized receipt could be', async () => {
     const response = await scan(await signIdToken(key), {
-      image: 'A'.repeat(2_000_001),
+      image: 'A'.repeat(700_001),
     });
 
     expect(response.status).toBe(413);
