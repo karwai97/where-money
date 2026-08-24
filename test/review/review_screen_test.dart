@@ -14,8 +14,8 @@ void main() {
   setUp(() => store = InMemoryLedgerStore());
 
   tearDown(() {
-    final view = TestWidgetsFlutterBinding.instance.platformDispatcher.views
-        .first;
+    final view =
+        TestWidgetsFlutterBinding.instance.platformDispatcher.views.first;
     view.resetPhysicalSize();
     view.resetDevicePixelRatio();
   });
@@ -35,6 +35,7 @@ void main() {
       WhereMoneyApp(
         signIn: FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai),
         ledgerFor: (_) => store,
+        photograph: (_) async => null,
       ),
     );
     await tester.pumpAndSettle();

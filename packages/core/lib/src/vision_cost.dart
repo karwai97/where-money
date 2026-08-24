@@ -119,6 +119,23 @@ int patchCount(int width, int height) =>
   return (width: fittedWidth, height: fittedHeight);
 }
 
+/// What the phone shrinks a photograph to before it is sent, preserving aspect
+/// ratio and never enlarging.
+({int width, int height}) fitToLongEdge(
+  int width,
+  int height,
+  int maxLongEdge,
+) {
+  final longEdge = math.max(width, height);
+  if (longEdge <= maxLongEdge) return (width: width, height: height);
+
+  final scale = maxLongEdge / longEdge;
+  return (
+    width: math.max(1, (width * scale).floor()),
+    height: math.max(1, (height * scale).floor()),
+  );
+}
+
 /// [clientMaxLongEdge] is the size the phone resizes to before uploading — the
 /// main cost lever the app controls, and the main accuracy risk on faint
 /// thermal print.
@@ -128,12 +145,9 @@ ImagePlan planImage({
   required int clientMaxLongEdge,
   ModelTier model = ModelTier.nano5,
 }) {
-  final longEdge = math.max(width, height);
-  final ourScale = longEdge > clientMaxLongEdge
-      ? clientMaxLongEdge / longEdge
-      : 1.0;
-  final ourWidth = math.max(32, (width * ourScale).floor());
-  final ourHeight = math.max(32, (height * ourScale).floor());
+  final ours = fitToLongEdge(width, height, clientMaxLongEdge);
+  final ourWidth = math.max(32, ours.width);
+  final ourHeight = math.max(32, ours.height);
 
   final overBudget = patchCount(ourWidth, ourHeight) > model.patchBudget;
   final fitted = fitToBudget(ourWidth, ourHeight, model.patchBudget);
@@ -144,7 +158,7 @@ ImagePlan planImage({
     sentHeight: fitted.height,
     patches: patches,
     imageTokens: model.imageTokens(patches),
-    downscaledByUs: ourScale < 1.0,
+    downscaledByUs: ourWidth < width || ourHeight < height,
     overBudget: overBudget,
     model: model,
   );

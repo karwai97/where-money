@@ -1,9 +1,9 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'data/ledger_store.dart';
 import 'ledger/ledger_screen.dart';
+import 'scan/photographer.dart';
 import 'session/session_bloc.dart';
 import 'session/sign_in_gateway.dart';
 import 'session/sign_in_screen.dart';
@@ -17,10 +17,15 @@ class WhereMoneyApp extends StatelessWidget {
     super.key,
     required this.signIn,
     required this.ledgerFor,
+    this.photograph = photographWithDevice,
   });
 
   final SignInGateway signIn;
   final LedgerFor ledgerFor;
+
+  /// Injected so tests can hand down bytes: the camera is the one thing above
+  /// the tested surface, and this is the line it sits on.
+  final Photographer photograph;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +43,7 @@ class WhereMoneyApp extends StatelessWidget {
               // account's Ledger bloc.
               key: ValueKey(user.uid),
               store: ledgerFor(user.uid),
-              debugWrites: kDebugMode,
+              photograph: photograph,
             ),
           },
         ),

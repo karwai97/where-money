@@ -16,7 +16,11 @@ void main() {
 
   Future<void> open(WidgetTester tester) async {
     await tester.pumpWidget(
-      WhereMoneyApp(signIn: signIn, ledgerFor: (_) => store),
+      WhereMoneyApp(
+        signIn: signIn,
+        ledgerFor: (_) => store,
+        photograph: (_) async => null,
+      ),
     );
     await tester.pumpAndSettle();
   }
@@ -47,22 +51,6 @@ void main() {
 
     expect(find.text('Continue with Google'), findsNothing);
     expect(find.text('Ikea Damansara'), findsWidgets);
-  });
-
-  testWidgets('the debug action writes an Expense into the Ledger', (
-    tester,
-  ) async {
-    await open(tester);
-    await tester.tap(find.text('Continue with Google'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Village Grocer Bangsar'), findsNothing);
-
-    await tester.tap(find.byTooltip('Write a debug Expense'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Village Grocer Bangsar'), findsOneWidget);
-    expect(store.contents, hasLength(1));
   });
 
   testWidgets('signing out clears the Ledger from view', (tester) async {

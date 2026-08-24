@@ -31,11 +31,7 @@ void main() {
   });
 
   test('a 1440px receipt costs the nano tier a known number of tokens', () {
-    final plan = planImage(
-      width: 1536,
-      height: 2048,
-      clientMaxLongEdge: 1440,
-    );
+    final plan = planImage(width: 1536, height: 2048, clientMaxLongEdge: 1440);
 
     expect(plan.sentWidth, 1080);
     expect(plan.sentHeight, 1440);
@@ -80,10 +76,7 @@ void main() {
       ModelTier.mini5.inputPerMTok / ModelTier.nano5.inputPerMTok,
       closeTo(5.0, 0.001),
     );
-    expect(
-      mini.imageCostUsd / nano.imageCostUsd,
-      closeTo(3.29, 0.01),
-    );
+    expect(mini.imageCostUsd / nano.imageCostUsd, closeTo(3.29, 0.01));
   });
 
   test('a scan is priced from both halves of the call', () {
@@ -91,5 +84,38 @@ void main() {
       ModelTier.nano5.cost(inputTokens: 4000, outputTokens: 1200),
       closeTo(0.0002 + 0.00048, 1e-9),
     );
+  });
+
+  group('fitting a photograph to a long edge', () {
+    test('a phone-resolution portrait receipt comes down to the long edge', () {
+      final fitted = fitToLongEdge(3024, 4032, 1024);
+
+      expect(fitted.height, 1024);
+      expect(fitted.width, 768);
+    });
+
+    test('a landscape photograph is measured on its width', () {
+      final fitted = fitToLongEdge(4032, 3024, 1024);
+
+      expect(fitted.width, 1024);
+      expect(fitted.height, 768);
+    });
+
+    test('an image already inside the long edge is left exactly alone', () {
+      final fitted = fitToLongEdge(800, 600, 1024);
+
+      expect(fitted.width, 800);
+      expect(fitted.height, 600);
+    });
+
+    test('1024 on the long edge stays under the patch budget, which is the '
+        'whole reason for the number', () {
+      final fitted = fitToLongEdge(3024, 4032, 1024);
+
+      expect(
+        patchCount(fitted.width, fitted.height),
+        lessThanOrEqualTo(ModelTier.nano5.patchBudget),
+      );
+    });
   });
 }
