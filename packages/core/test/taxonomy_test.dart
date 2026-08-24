@@ -8,6 +8,12 @@ void main() {
     }
   });
 
+  test('every payment method has copy to show the user', () {
+    for (final method in paymentMethods) {
+      expect(paymentMethodLabel(method), isNot(method));
+    }
+  });
+
   test('the fixtures only ever use Categories the taxonomy knows', () {
     for (final extraction in [cleanExtraction, flawedExtraction]) {
       expect(categories, contains(extraction.category));

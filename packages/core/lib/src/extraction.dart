@@ -2,6 +2,8 @@
 /// true — the Check decides how far to believe it and Review has the last word.
 library;
 
+import 'review_field.dart';
+
 class LineItem {
   final String description;
   final double? quantity;
@@ -28,16 +30,29 @@ class LineItem {
   LineItem copyWith({
     String? description,
     double? quantity,
+    bool clearQuantity = false,
     double? unitPrice,
+    bool clearUnitPrice = false,
     double? amount,
     String? category,
   }) => LineItem(
     description: description ?? this.description,
-    quantity: quantity ?? this.quantity,
-    unitPrice: unitPrice ?? this.unitPrice,
+    quantity: clearQuantity ? null : (quantity ?? this.quantity),
+    unitPrice: clearUnitPrice ? null : (unitPrice ?? this.unitPrice),
     amount: amount ?? this.amount,
     category: category ?? this.category,
   );
+
+  /// The field named, for telling a real correction from a keystroke that
+  /// changed nothing. A [LineItem] is a value with no identity, so comparing
+  /// whole rows would say "changed" every time.
+  Object? valueAt(LineItemField field) => switch (field) {
+    LineItemField.description => description,
+    LineItemField.quantity => quantity,
+    LineItemField.unitPrice => unitPrice,
+    LineItemField.amount => amount,
+    LineItemField.category => category,
+  };
 
   Map<String, dynamic> toJson() => {
     'description': description,
@@ -82,6 +97,27 @@ class Extraction {
     required this.needsReview,
     required this.reviewReasons,
   });
+
+  /// Nothing read, because nothing was photographed: the starting point for
+  /// an Expense typed by hand. [isReceipt] is true so the Check measures the
+  /// empty fields rather than dismissing the whole thing as not a receipt —
+  /// there is no image here for that question to be about.
+  factory Extraction.blank() => const Extraction(
+    isReceipt: true,
+    merchant: '',
+    purchasedAt: null,
+    currency: '',
+    subtotal: null,
+    tax: null,
+    tip: null,
+    total: 0,
+    paymentMethod: 'unknown',
+    category: 'other',
+    categoryReason: '',
+    lineItems: [],
+    needsReview: false,
+    reviewReasons: [],
+  );
 
   factory Extraction.fromJson(Map<String, dynamic> json) => Extraction(
     isReceipt: (json['is_receipt'] ?? false) as bool,
@@ -140,6 +176,21 @@ class Extraction {
     needsReview: needsReview ?? this.needsReview,
     reviewReasons: reviewReasons ?? this.reviewReasons,
   );
+
+  /// The field named, for comparing before against after. Review needs this to
+  /// tell a real correction from a keystroke that changed nothing.
+  Object? valueAt(ReviewField field) => switch (field) {
+    ReviewField.merchant => merchant,
+    ReviewField.purchasedAt => purchasedAt,
+    ReviewField.currency => currency,
+    ReviewField.subtotal => subtotal,
+    ReviewField.tax => tax,
+    ReviewField.tip => tip,
+    ReviewField.total => total,
+    ReviewField.paymentMethod => paymentMethod,
+    ReviewField.category => category,
+    ReviewField.lineItems => lineItems,
+  };
 
   Map<String, dynamic> toJson() => {
     'is_receipt': isReceipt,

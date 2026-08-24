@@ -49,16 +49,52 @@ void main() {
     expect(expense.needsReview, isTrue);
   });
 
-  test('a field the user fixed is recorded and settles the review', () {
+  test('a field the user corrected is recorded and settles its own Finding', () {
     final expense = Expense.fromExtraction(
-      flawedExtraction,
+      cleanExtraction.copyWith(total: 99.00),
       id: 'exp-4',
       now: now,
-      correctedFields: const ['purchasedAt'],
+      correctedFields: const ['total'],
     );
 
-    expect(expense.correctedFields, ['purchasedAt']);
+    expect(expense.correctedFields, ['total']);
     expect(expense.wasCorrected, isTrue);
+    expect(expense.needsReview, isFalse);
+  });
+
+  test('correcting one field does not settle a Finding about another', () {
+    final expense = Expense.fromExtraction(
+      cleanExtraction.copyWith(total: 99.00),
+      id: 'exp-7',
+      now: now,
+      correctedFields: const ['merchant'],
+    );
+
+    expect(
+      expense.needsReview,
+      isTrue,
+      reason: 'the total is still wrong, and nobody has looked at it',
+    );
+  });
+
+  test('an Expense typed by hand records that nobody scanned it', () {
+    final expense = Expense.fromExtraction(
+      Extraction.blank().copyWith(
+        merchant: 'Kopitiam SS2',
+        purchasedAt: '2026-08-22',
+        currency: 'MYR',
+        total: 26.00,
+        category: 'dining',
+      ),
+      id: 'exp-8',
+      now: now,
+      source: ExpenseSource.manual,
+      correctedFields: const ['merchant', 'purchasedAt', 'currency', 'total'],
+    );
+
+    expect(expense.source, ExpenseSource.manual);
+    expect(expense.merchant, 'Kopitiam SS2');
+    expect(expense.total, 26.00);
     expect(expense.needsReview, isFalse);
   });
 

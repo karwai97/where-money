@@ -6,6 +6,7 @@
 library;
 
 import 'extraction.dart';
+import 'review_field.dart';
 import 'taxonomy.dart';
 
 enum Severity { warn, fail }
@@ -15,7 +16,12 @@ class Finding {
   final String detail;
   final Severity severity;
 
-  const Finding(this.label, this.detail, this.severity);
+  /// The field a correction would have to reach to answer this. Null when the
+  /// Finding is about the Extraction as a whole and no single correction
+  /// settles it.
+  final ReviewField? field;
+
+  const Finding(this.label, this.detail, this.severity, {this.field});
 }
 
 /// Receipts round in ways that do not always reconcile to the cent, so
@@ -62,6 +68,7 @@ List<Finding> _findings(Extraction extraction, DateTime now) {
         'No total',
         'Total is zero or negative — nothing usable was read.',
         Severity.fail,
+        field: ReviewField.total,
       ),
     );
   }
@@ -72,6 +79,7 @@ List<Finding> _findings(Extraction extraction, DateTime now) {
         'No merchant',
         'Merchant name was not legible. The expense is unattributable.',
         Severity.warn,
+        field: ReviewField.merchant,
       ),
     );
   }
@@ -87,6 +95,7 @@ List<Finding> _findings(Extraction extraction, DateTime now) {
             ? 'No currency identified, so the amount has no unit.'
             : 'Got "$currency", which is not an ISO 4217 code.',
         Severity.warn,
+        field: ReviewField.currency,
       ),
     );
   }
@@ -105,6 +114,7 @@ List<Finding> _findings(Extraction extraction, DateTime now) {
               '${_money(extraction.total)} (off by '
               '${_money((composed - extraction.total).abs())}).',
           Severity.fail,
+          field: ReviewField.total,
         ),
       );
     }
@@ -121,6 +131,7 @@ List<Finding> _findings(Extraction extraction, DateTime now) {
         'Got "${extraction.category}", which is outside the enum the schema '
             'declared.',
         Severity.fail,
+        field: ReviewField.category,
       ),
     );
   }
@@ -131,6 +142,7 @@ List<Finding> _findings(Extraction extraction, DateTime now) {
         'Unknown payment method',
         'Got "${extraction.paymentMethod}".',
         Severity.warn,
+        field: ReviewField.paymentMethod,
       ),
     );
   }
@@ -157,6 +169,7 @@ List<Finding> _dateFindings(String? purchasedAt, DateTime now) {
         'No date',
         'The date on the receipt was not legible — it will default to today.',
         Severity.warn,
+        field: ReviewField.purchasedAt,
       ),
     ];
   }
@@ -168,6 +181,7 @@ List<Finding> _dateFindings(String? purchasedAt, DateTime now) {
         'Unparseable date',
         'Got "$purchasedAt", which is not an ISO date.',
         Severity.warn,
+        field: ReviewField.purchasedAt,
       ),
     ];
   }
@@ -179,6 +193,7 @@ List<Finding> _dateFindings(String? purchasedAt, DateTime now) {
         'Read $purchasedAt, which has not happened yet — probably a card '
             'expiry or a best-before date rather than the purchase.',
         Severity.fail,
+        field: ReviewField.purchasedAt,
       ),
     ];
   }
@@ -203,6 +218,7 @@ List<Finding> _dateFindings(String? purchasedAt, DateTime now) {
           : 'Read $purchasedAt, $age days ago. Fine for an old receipt, but '
                 'worth checking if this was just photographed.',
       Severity.warn,
+      field: ReviewField.purchasedAt,
     ),
   ];
 }
@@ -229,6 +245,7 @@ List<Finding> _lineItemFindings(Extraction extraction) {
             '${_money(target)}'
             '${over ? ' — items exceed the receipt, so something was double-read.' : ' — an item may have been missed, or a discount was not itemised.'}',
         over ? Severity.fail : Severity.warn,
+        field: ReviewField.lineItems,
       ),
     );
   }
@@ -246,6 +263,7 @@ List<Finding> _lineItemFindings(Extraction extraction) {
                 '= ${_money(expected)}, but the line reads '
                 '${_money(item.amount)}.',
             Severity.warn,
+            field: ReviewField.lineItems,
           ),
         );
       }
@@ -258,6 +276,7 @@ List<Finding> _lineItemFindings(Extraction extraction) {
           '"${item.description}" came back as "${item.category}", which is '
               'not in the taxonomy.',
           Severity.fail,
+          field: ReviewField.lineItems,
         ),
       );
     }

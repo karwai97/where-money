@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
 import '../data/ledger_store.dart';
+import '../review/review_bloc.dart';
+import '../review/review_screen.dart';
 import '../session/session_bloc.dart';
 import 'ledger_bloc.dart';
 
@@ -20,8 +22,15 @@ class LedgerScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => LedgerBloc(store)..add(const LedgerOpened()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => LedgerBloc(store)..add(const LedgerOpened()),
+        ),
+        // Held here rather than on the Review route, so leaving Review and
+        // coming back finds the work still there.
+        BlocProvider(create: (_) => ReviewBloc(store)),
+      ],
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Ledger'),
@@ -34,17 +43,31 @@ class LedgerScreen extends StatelessWidget {
             ),
           ],
         ),
-        floatingActionButton: debugWrites
-            ? Builder(
-                builder: (context) => FloatingActionButton(
+        floatingActionButton: Builder(
+          builder: (context) => Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (debugWrites) ...[
+                FloatingActionButton.small(
+                  heroTag: 'debug',
                   tooltip: 'Write a debug Expense',
                   onPressed: () => context.read<LedgerBloc>().add(
                     const DebugExpenseWritten(),
                   ),
                   child: const Icon(Icons.receipt_long),
                 ),
-              )
-            : null,
+                const SizedBox(height: 12),
+              ],
+              FloatingActionButton(
+                heroTag: 'manual',
+                tooltip: 'Add an Expense by hand',
+                onPressed: () => _addByHand(context),
+                child: const Icon(Icons.add),
+              ),
+            ],
+          ),
+        ),
         body: BlocBuilder<LedgerBloc, LedgerState>(
           builder: (context, state) => switch (state) {
             LedgerLoading() => const Center(child: CircularProgressIndicator()),
@@ -52,10 +75,8 @@ class LedgerScreen extends StatelessWidget {
               'Your Ledger could not be read.',
               detail: reason,
             ),
-            LedgerReady(expenses: []) => _Message(
-              debugWrites
-                  ? 'Nothing here yet.\nWrite one with the button below.'
-                  : 'Nothing here yet.\nPhotograph a receipt to start.',
+            LedgerReady(expenses: []) => const _Message(
+              'Nothing here yet.\nAdd one with the button below.',
             ),
             LedgerReady(:final expenses, :final refusal) => _Expenses(
               expenses: expenses,
@@ -63,6 +84,16 @@ class LedgerScreen extends StatelessWidget {
             ),
           },
         ),
+      ),
+    );
+  }
+
+  void _addByHand(BuildContext context) {
+    final review = context.read<ReviewBloc>()..add(const ManualExpenseStarted());
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) =>
+            BlocProvider.value(value: review, child: const ReviewScreen()),
       ),
     );
   }

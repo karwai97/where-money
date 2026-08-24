@@ -223,4 +223,39 @@ void main() {
 
     expect(labelled(check, 'Currency unclear'), isNotNull);
   });
+
+  test('a Finding names the field it is about, so a correction can settle it', () {
+    final check = Check.of(
+      clean(purchasedAt: '2026-08-21', subtotal: 20.00, tax: 1.20, total: 30.00),
+      now: now,
+    );
+
+    expect(labelled(check, 'Total does not add up')!.field, ReviewField.total);
+  });
+
+  test('a line-item Finding is about the line items rather than the total', () {
+    final check = Check.of(
+      clean(
+        purchasedAt: '2026-08-21',
+        lineItems: [
+          const LineItem(
+            description: 'Farm Fresh Milk 1L',
+            amount: 41.60,
+            category: 'groceries',
+          ),
+          const LineItem(
+            description: 'Wholemeal Bread',
+            amount: 4.40,
+            category: 'groceries',
+          ),
+        ],
+      ),
+      now: now,
+    );
+
+    expect(
+      labelled(check, 'Line items do not match subtotal')!.field,
+      ReviewField.lineItems,
+    );
+  });
 }

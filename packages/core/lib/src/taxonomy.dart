@@ -54,3 +54,14 @@ const List<String> paymentMethods = [
   'bank_transfer',
   'unknown',
 ];
+
+const Map<String, String> paymentMethodLabels = {
+  'cash': 'Cash',
+  'card': 'Card',
+  'ewallet': 'E-wallet',
+  'bank_transfer': 'Bank transfer',
+  'unknown': 'Not recorded',
+};
+
+String paymentMethodLabel(String method) =>
+    paymentMethodLabels[method] ?? method;

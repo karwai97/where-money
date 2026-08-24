@@ -11,6 +11,7 @@ export 'src/expense.dart';
 export 'src/extraction.dart';
 export 'src/fixtures.dart';
 export 'src/model_response.dart';
+export 'src/review_field.dart';
 export 'src/rollup.dart';
 export 'src/taxonomy.dart';
 export 'src/vision_cost.dart';

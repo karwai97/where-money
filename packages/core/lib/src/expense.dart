@@ -4,6 +4,7 @@ library;
 
 import 'check.dart';
 import 'extraction.dart';
+import 'review_field.dart';
 import 'taxonomy.dart';
 
 enum ExpenseSource { scanned, manual }
@@ -39,6 +40,7 @@ class Expense {
   factory Expense.fromExtraction(
     Extraction extraction, {
     required String id,
+    ExpenseSource source = ExpenseSource.scanned,
     List<String> correctedFields = const [],
     DateTime? now,
   }) {
@@ -56,12 +58,8 @@ class Expense {
           ? extraction.category
           : 'other',
       lineItems: extraction.lineItems,
-      source: ExpenseSource.scanned,
-      // A field the user has already fixed has just been reviewed by the only
-      // authority that matters, so it no longer counts as needing review.
-      needsReview:
-          !Check.of(extraction, now: now).isConsistent &&
-          correctedFields.isEmpty,
+      source: source,
+      needsReview: _needsReview(extraction, correctedFields, now),
       correctedFields: correctedFields,
     );
   }
@@ -90,3 +88,18 @@ class Expense {
     correctedFields: correctedFields ?? this.correctedFields,
   );
 }
+
+/// A field the user has already corrected has just been reviewed by the only
+/// authority that matters, so its Finding no longer counts. Correcting the
+/// merchant says nothing about the total, which is why this is per field rather
+/// than "any correction at all settles everything".
+bool _needsReview(
+  Extraction extraction,
+  List<String> correctedFields,
+  DateTime? now,
+) => Check.of(extraction, now: now).findings.any(
+  (finding) => switch (finding.field) {
+    null => true,
+    final ReviewField field => !correctedFields.contains(field.name),
+  },
+);
