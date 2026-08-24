@@ -4,6 +4,11 @@
   "main": "src/index.ts",
   "compatibility_date": "2025-09-06",
   "observability": { "enabled": true },
+  "workers_dev": true,
+  // Every preview URL is another public door to the same key and the same
+  // counters. There is one deployment and no staging, so there is nothing for
+  // them to be useful for.
+  "preview_urls": false,
   "vars": {
     "FIREBASE_PROJECT_ID": "where-money-72ee2",
     // The ceiling a client-requested cap is clamped to, not the cap itself.
