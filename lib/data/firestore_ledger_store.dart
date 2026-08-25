@@ -48,6 +48,9 @@ class FirestoreLedgerStore implements LedgerStore {
       scans.capture(image, at: at);
 
   @override
+  Future<void> put(Scan scan) => scans.put(scan);
+
+  @override
   Future<Uint8List?> imageFor(String scanId) => scans.imageFor(scanId);
 
   @override

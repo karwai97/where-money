@@ -33,3 +33,24 @@ Uint8List resizeForStorage(
     quality: 85,
   );
 }
+
+/// What the Worker should be told this image is. It allowlists jpeg, png and
+/// webp, and the data URL it builds has to name the type truthfully: a
+/// photograph already inside [defaultLongEdge] is stored byte for byte, so
+/// what came out of the gallery is not necessarily a JPEG.
+String mediaTypeOf(Uint8List image) {
+  bool magicAt(int offset, List<int> magic) {
+    if (image.length < offset + magic.length) return false;
+    for (var i = 0; i < magic.length; i++) {
+      if (image[offset + i] != magic[i]) return false;
+    }
+    return true;
+  }
+
+  if (magicAt(0, [0x89, 0x50, 0x4E, 0x47])) return 'image/png';
+  if (magicAt(0, [0x52, 0x49, 0x46, 0x46]) &&
+      magicAt(8, [0x57, 0x45, 0x42, 0x50])) {
+    return 'image/webp';
+  }
+  return 'image/jpeg';
+}

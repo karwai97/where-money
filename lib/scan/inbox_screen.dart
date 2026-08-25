@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
 import '../on_screen.dart';
+import '../review/review_bloc.dart';
+import '../review/review_screen.dart';
 import 'inbox_bloc.dart';
 
 /// Every Scan the user has not yet Reviewed, with the state it is sitting in.
@@ -37,25 +39,60 @@ class _ScanTile extends StatelessWidget {
 
   final Scan scan;
 
+  /// A photo the Model says is not a receipt has nothing to Review, so the
+  /// only thing offered for it is getting rid of it.
+  bool get _discarding => scan.state == ScanState.notReceipt;
+
   @override
   Widget build(BuildContext context) => ListTile(
     leading: const Icon(Icons.receipt_long),
     title: Text(_waitingOn(scan.state)),
     subtitle: Text('Photographed ${asMoment(scan.capturedAt)}'),
-    trailing: IconButton(
-      tooltip: 'Abandon this Scan',
-      icon: const Icon(Icons.delete_outline),
-      onPressed: () => _abandon(context),
-    ),
+    onTap: scan.state == ScanState.extracted ? () => _review(context) : null,
+    trailing: switch (scan.state) {
+      ScanState.notReceipt => FilledButton.tonal(
+        onPressed: () => _abandon(context),
+        child: const Text('Discard'),
+      ),
+      ScanState.extracted => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FilledButton(
+            onPressed: () => _review(context),
+            child: const Text('Review'),
+          ),
+          _abandonButton(context),
+        ],
+      ),
+      _ => _abandonButton(context),
+    },
   );
+
+  Widget _abandonButton(BuildContext context) => IconButton(
+    tooltip: 'Abandon this Scan',
+    icon: const Icon(Icons.delete_outline),
+    onPressed: () => _abandon(context),
+  );
+
+  void _review(BuildContext context) {
+    final review = context.read<ReviewBloc>()..add(ScanReviewStarted(scan));
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) =>
+            BlocProvider.value(value: review, child: const ReviewScreen()),
+      ),
+    );
+  }
 
   Future<void> _abandon(BuildContext context) async {
     final inbox = context.read<InboxBloc>();
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        content: const Text(
-          'Abandoning this Scan deletes its photo from the phone.',
+        content: Text(
+          _discarding
+              ? 'Discarding this photo deletes it from the phone.'
+              : 'Abandoning this Scan deletes its photo from the phone.',
         ),
         actions: [
           TextButton(
@@ -64,7 +101,7 @@ class _ScanTile extends StatelessWidget {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Abandon'),
+            child: Text(_discarding ? 'Discard' : 'Abandon'),
           ),
         ],
       ),

@@ -21,6 +21,11 @@ abstract interface class LedgerStore {
   /// any reason the user could have avoided.
   Future<Scan> capture(Uint8List image, {DateTime? at});
 
+  /// Moves a Scan on — into `extracting`, into `extracted` with what the
+  /// Model read, or into `committed` once it is an Expense. A Scan the user
+  /// has abandoned stays gone.
+  Future<void> put(Scan scan);
+
   /// The image as it was stored, or null if the Scan is gone.
   Future<Uint8List?> imageFor(String scanId);
 

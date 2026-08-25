@@ -6,6 +6,7 @@ import 'package:image/image.dart' as img;
 import 'package:where_money/scan/inbox_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import '../fakes/fake_model_gateway.dart';
 import '../fakes/in_memory_ledger_store.dart';
 
 Uint8List photograph({required int width, required int height}) {
@@ -32,17 +33,24 @@ Uint8List photograph({required int width, required int height}) {
 void main() {
   late InMemoryLedgerStore store;
 
-  setUp(() => store = InMemoryLedgerStore());
+  /// Held open throughout: these are about capture, which is done the moment
+  /// the image is on disk and owes the Model nothing.
+  late FakeModelGateway model;
+
+  setUp(() {
+    store = InMemoryLedgerStore();
+    model = FakeModelGateway()..hold();
+  });
 
   blocTest<InboxBloc, InboxState>(
     'the Inbox starts empty and says so rather than spinning forever',
-    build: () => InboxBloc(store),
+    build: () => InboxBloc(store, model),
     act: (bloc) => bloc.add(const InboxOpened()),
     expect: () => [isA<InboxReady>().having((s) => s.scans, 'scans', isEmpty)],
   );
 
   test('a photographed receipt is in the Inbox at captured', () async {
-    final bloc = InboxBloc(store)..add(const InboxOpened());
+    final bloc = InboxBloc(store, model)..add(const InboxOpened());
     bloc.add(ScanCaptured(photograph(width: 600, height: 800)));
     final ready = await bloc.stream.firstWhere(
       (state) => state is InboxReady && state.scans.isNotEmpty,
@@ -55,7 +63,7 @@ void main() {
   test(
     'the Scan and its image are both stored before capture answers',
     () async {
-      final bloc = InboxBloc(store)..add(const InboxOpened());
+      final bloc = InboxBloc(store, model)..add(const InboxOpened());
       bloc.add(ScanCaptured(photograph(width: 600, height: 800)));
       await bloc.stream.firstWhere(
         (state) => state is InboxReady && state.scans.isNotEmpty,
@@ -68,7 +76,7 @@ void main() {
   );
 
   test('several receipts can be photographed one after another', () async {
-    final bloc = InboxBloc(store)..add(const InboxOpened());
+    final bloc = InboxBloc(store, model)..add(const InboxOpened());
     for (var i = 0; i < 5; i++) {
       bloc.add(ScanCaptured(photograph(width: 600, height: 800)));
     }
@@ -82,7 +90,7 @@ void main() {
   });
 
   test('the stored image is about 1024px on its long edge', () async {
-    final bloc = InboxBloc(store)..add(const InboxOpened());
+    final bloc = InboxBloc(store, model)..add(const InboxOpened());
     bloc.add(ScanCaptured(photograph(width: 2268, height: 3024)));
     await bloc.stream.firstWhere(
       (state) => state is InboxReady && state.scans.isNotEmpty,
@@ -97,7 +105,7 @@ void main() {
 
   test('a photograph already small enough is stored as it arrived', () async {
     final original = photograph(width: 600, height: 800);
-    final bloc = InboxBloc(store)..add(const InboxOpened());
+    final bloc = InboxBloc(store, model)..add(const InboxOpened());
     bloc.add(ScanCaptured(original));
     await bloc.stream.firstWhere(
       (state) => state is InboxReady && state.scans.isNotEmpty,
@@ -111,7 +119,7 @@ void main() {
   test(
     'abandoning a Scan takes it out of the Inbox and its image with it',
     () async {
-      final bloc = InboxBloc(store)..add(const InboxOpened());
+      final bloc = InboxBloc(store, model)..add(const InboxOpened());
       bloc.add(ScanCaptured(photograph(width: 600, height: 800)));
       await bloc.stream.firstWhere(
         (state) => state is InboxReady && state.scans.isNotEmpty,

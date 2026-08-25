@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:where_money/app.dart';
 
+import '../fakes/fake_model_gateway.dart';
 import '../fakes/fake_sign_in_gateway.dart';
 import '../fakes/in_memory_ledger_store.dart';
 
@@ -10,6 +11,7 @@ import '../fakes/in_memory_ledger_store.dart';
 /// only as a way of reaching a field to type into it.
 void main() {
   late InMemoryLedgerStore store;
+  final model = FakeModelGateway();
 
   setUp(() => store = InMemoryLedgerStore());
 
@@ -35,6 +37,7 @@ void main() {
       WhereMoneyApp(
         signIn: FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai),
         ledgerFor: (_) => store,
+        model: model,
         photograph: (_) async => null,
       ),
     );

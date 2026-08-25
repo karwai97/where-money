@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
@@ -15,6 +17,28 @@ sealed class ReviewEvent extends Equatable {
 /// survives — an interruption should not cost the user their typing.
 final class ManualExpenseStarted extends ReviewEvent {
   const ManualExpenseStarted();
+}
+
+/// Review what the Model read from a photographed receipt. Unconditional, even
+/// when the Check found nothing: a clean Extraction earns a pre-filled form and
+/// one tap, never a silent commit.
+final class ScanReviewStarted extends ReviewEvent {
+  const ScanReviewStarted(this.scan);
+
+  final Scan scan;
+
+  @override
+  List<Object?> get props => [scan.id];
+}
+
+final class _ReceiptArrived extends ReviewEvent {
+  const _ReceiptArrived(this.scanId, this.receipt);
+
+  final String scanId;
+  final Uint8List? receipt;
+
+  @override
+  List<Object?> get props => [scanId, receipt];
 }
 
 final class FieldCorrected extends ReviewEvent {
@@ -76,9 +100,19 @@ final class ReviewInProgress extends ReviewState {
     required this.extraction,
     required this.check,
     required this.correctedFields,
+    this.scan,
+    this.receipt,
     this.committing = false,
     this.refusal,
   });
+
+  /// The Scan being Reviewed, or null when the user is typing an Expense that
+  /// had no receipt.
+  final Scan? scan;
+
+  /// The receipt as it was photographed, to check the fields against. Null
+  /// until it has been read off the disk, and always null for a manual entry.
+  final Uint8List? receipt;
 
   final Extraction extraction;
 
@@ -93,6 +127,26 @@ final class ReviewInProgress extends ReviewState {
 
   /// Set when the last commit was turned away. The typing is still here.
   final String? refusal;
+
+  /// [committing] and [refusal] are deliberately not carried over: each
+  /// describes one attempt at the Ledger, and the next state is not that
+  /// attempt.
+  ReviewInProgress copyWith({
+    Uint8List? receipt,
+    Extraction? extraction,
+    Check? check,
+    List<String>? correctedFields,
+    bool committing = false,
+    String? refusal,
+  }) => ReviewInProgress(
+    scan: scan,
+    receipt: receipt ?? this.receipt,
+    extraction: extraction ?? this.extraction,
+    check: check ?? this.check,
+    correctedFields: correctedFields ?? this.correctedFields,
+    committing: committing,
+    refusal: refusal,
+  );
 }
 
 class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
@@ -100,6 +154,8 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
     : _now = clock ?? DateTime.now,
       super(const ReviewIdle()) {
     on<ManualExpenseStarted>(_onManualExpenseStarted);
+    on<ScanReviewStarted>(_onScanReviewStarted);
+    on<_ReceiptArrived>(_onReceiptArrived);
     on<FieldCorrected>(_onFieldCorrected);
     on<LineItemAdded>(_onLineItemAdded);
     on<LineItemRemoved>(_onLineItemRemoved);
@@ -111,6 +167,11 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
   final DateTime Function() _now;
   var _committed = 0;
 
+  /// One half-finished Review per Scan, plus one for the manual lane. Leaving
+  /// Review to look at something else and coming back should find the typing
+  /// where it was, whichever lane it was in.
+  final _unfinished = <String, ReviewInProgress>{};
+
   ReviewInProgress? get _current {
     final state = this.state;
     return state is ReviewInProgress ? state : null;
@@ -120,8 +181,51 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
     ManualExpenseStarted event,
     Emitter<ReviewState> emit,
   ) {
-    if (_current != null) return;
-    emit(_reviewing(Extraction.blank(), const []));
+    _show(
+      emit,
+      _unfinished[_manual] ??
+          ReviewInProgress(
+            extraction: Extraction.blank(),
+            check: Check.of(Extraction.blank(), now: _now()),
+            correctedFields: const [],
+          ),
+    );
+  }
+
+  void _onScanReviewStarted(
+    ScanReviewStarted event,
+    Emitter<ReviewState> emit,
+  ) {
+    final extraction = event.scan.extraction;
+    if (extraction == null) return;
+
+    final started = _unfinished[event.scan.id];
+    _show(
+      emit,
+      started ??
+          ReviewInProgress(
+            scan: event.scan,
+            extraction: extraction,
+            check: Check.of(extraction, now: _now()),
+            correctedFields: const [],
+          ),
+    );
+
+    if (started == null) {
+      _store
+          .imageFor(event.scan.id)
+          .then((receipt) => add(_ReceiptArrived(event.scan.id, receipt)));
+    }
+  }
+
+  void _onReceiptArrived(_ReceiptArrived event, Emitter<ReviewState> emit) {
+    final receipt = event.receipt;
+    final started = _unfinished[event.scanId];
+    if (receipt == null || started == null) return;
+
+    final withReceipt = started.copyWith(receipt: receipt);
+    _unfinished[event.scanId] = withReceipt;
+    if (_current?.scan?.id == event.scanId) emit(withReceipt);
   }
 
   void _onFieldCorrected(FieldCorrected event, Emitter<ReviewState> emit) {
@@ -132,8 +236,10 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
     final changed =
         next.valueAt(event.field) != current.extraction.valueAt(event.field);
 
-    emit(
-      _reviewing(
+    _show(
+      emit,
+      _rechecked(
+        current,
         next,
         changed
             ? _recording(current.correctedFields, event.field)
@@ -150,8 +256,10 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
     final current = _current;
     if (current == null) return;
 
-    emit(
-      _reviewing(
+    _show(
+      emit,
+      _rechecked(
+        current,
         current.extraction.copyWith(
           lineItems: [...current.extraction.lineItems, _blankLineItem],
         ),
@@ -173,8 +281,10 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
     // the add put there — says nothing.
     final untouched = identical(removed, _blankLineItem);
 
-    emit(
-      _reviewing(
+    _show(
+      emit,
+      _rechecked(
+        current,
         current.extraction.copyWith(lineItems: items),
         untouched
             ? current.correctedFields
@@ -183,7 +293,10 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
     );
   }
 
-  void _onLineItemCorrected(LineItemCorrected event, Emitter<ReviewState> emit) {
+  void _onLineItemCorrected(
+    LineItemCorrected event,
+    Emitter<ReviewState> emit,
+  ) {
     final current = _current;
     if (current == null) return;
 
@@ -194,8 +307,10 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
     items[event.index] = after;
     final changed = after.valueAt(event.field) != before.valueAt(event.field);
 
-    emit(
-      _reviewing(
+    _show(
+      emit,
+      _rechecked(
+        current,
         current.extraction.copyWith(lineItems: items),
         changed
             ? _recording(current.correctedFields, ReviewField.lineItems)
@@ -211,57 +326,60 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
     final current = _current;
     if (current == null || current.committing) return;
 
-    emit(
-      ReviewInProgress(
-        extraction: current.extraction,
-        check: current.check,
-        correctedFields: current.correctedFields,
-        committing: true,
-      ),
-    );
+    final scan = current.scan;
+    _show(emit, current.copyWith(committing: true));
 
     final at = _now();
     try {
       await _store.add(
         Expense.fromExtraction(
           current.extraction,
-          id: '${at.microsecondsSinceEpoch}-${++_committed}',
-          source: ExpenseSource.manual,
+          // A Scan's own id, so a Scan can only ever be one Expense however
+          // many times Review is reached, and so the Expense can be matched
+          // back to the receipt image still sitting beside it on disk.
+          id: scan?.id ?? '${at.microsecondsSinceEpoch}-${++_committed}',
+          source: scan == null ? ExpenseSource.manual : ExpenseSource.scanned,
           correctedFields: current.correctedFields,
           now: at,
         ),
       );
+      // Only now does the Scan leave the Inbox: the Expense is what it was
+      // waiting to become.
+      if (scan != null) await _store.put(scan.movedTo(ScanState.committed));
+
+      _unfinished.remove(scan?.id ?? _manual);
       emit(const ReviewIdle());
     } catch (error) {
-      emit(
-        ReviewInProgress(
-          extraction: current.extraction,
-          check: current.check,
-          correctedFields: current.correctedFields,
-          refusal: error.toString(),
-        ),
-      );
+      _show(emit, current.copyWith(refusal: error.toString()));
     }
   }
 
-  ReviewInProgress _reviewing(
+  void _show(Emitter<ReviewState> emit, ReviewInProgress state) {
+    _unfinished[state.scan?.id ?? _manual] = state;
+    emit(state);
+  }
+
+  /// The Check runs again on every change, so a Finding stops being shown the
+  /// moment the user answers it.
+  ReviewInProgress _rechecked(
+    ReviewInProgress current,
     Extraction extraction,
     List<String> correctedFields,
-  ) => ReviewInProgress(
+  ) => current.copyWith(
     extraction: extraction,
     check: Check.of(extraction, now: _now()),
     correctedFields: correctedFields,
   );
 
+  /// The manual lane's key. A Scan uses its own id, and no Scan has an empty
+  /// one.
+  static const _manual = '';
+
   static List<String> _recording(List<String> fields, ReviewField field) =>
       fields.contains(field.name) ? fields : [...fields, field.name];
 }
 
-const _blankLineItem = LineItem(
-  description: '',
-  amount: 0,
-  category: 'other',
-);
+const _blankLineItem = LineItem(description: '', amount: 0, category: 'other');
 
 Extraction _applyField(Extraction extraction, ReviewField field, String value) {
   final text = value.trim();
@@ -291,11 +409,7 @@ Extraction _applyField(Extraction extraction, ReviewField field, String value) {
   };
 }
 
-LineItem _applyLineItemField(
-  LineItem item,
-  LineItemField field,
-  String value,
-) {
+LineItem _applyLineItemField(LineItem item, LineItemField field, String value) {
   final text = value.trim();
   return switch (field) {
     LineItemField.description => item.copyWith(description: value),

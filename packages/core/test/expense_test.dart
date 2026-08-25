@@ -49,18 +49,21 @@ void main() {
     expect(expense.needsReview, isTrue);
   });
 
-  test('a field the user corrected is recorded and settles its own Finding', () {
-    final expense = Expense.fromExtraction(
-      cleanExtraction.copyWith(total: 99.00),
-      id: 'exp-4',
-      now: now,
-      correctedFields: const ['total'],
-    );
+  test(
+    'a field the user corrected is recorded and settles its own Finding',
+    () {
+      final expense = Expense.fromExtraction(
+        cleanExtraction.copyWith(total: 99.00),
+        id: 'exp-4',
+        now: now,
+        correctedFields: const ['total'],
+      );
 
-    expect(expense.correctedFields, ['total']);
-    expect(expense.wasCorrected, isTrue);
-    expect(expense.needsReview, isFalse);
-  });
+      expect(expense.correctedFields, ['total']);
+      expect(expense.wasCorrected, isTrue);
+      expect(expense.needsReview, isFalse);
+    },
+  );
 
   test('correcting one field does not settle a Finding about another', () {
     final expense = Expense.fromExtraction(
@@ -74,6 +77,23 @@ void main() {
       expense.needsReview,
       isTrue,
       reason: 'the total is still wrong, and nobody has looked at it',
+    );
+  });
+
+  test('the Model asking for a human to look is answered by Review itself', () {
+    final expense = Expense.fromExtraction(
+      flawedExtraction,
+      id: 'exp-9',
+      now: now,
+      correctedFields: const ['purchasedAt', 'lineItems'],
+    );
+
+    expect(
+      expense.needsReview,
+      isFalse,
+      reason:
+          'every Finding naming a field was corrected, and the Model asking '
+          'for review is what the user has just done',
     );
   });
 

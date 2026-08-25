@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:where_money/app.dart';
 import 'package:where_money/scan/photographer.dart';
 
+import '../fakes/fake_model_gateway.dart';
 import '../fakes/fake_sign_in_gateway.dart';
 import '../fakes/in_memory_ledger_store.dart';
 import 'inbox_bloc_test.dart' show photograph;
@@ -14,8 +15,13 @@ void main() {
   late InMemoryLedgerStore store;
   late PhotoSource? opened;
 
+  /// Held open, so these stay about capture: a Scan reaches the Inbox and the
+  /// Model has not answered yet.
+  late FakeModelGateway model;
+
   setUp(() {
     store = InMemoryLedgerStore();
+    model = FakeModelGateway()..hold();
     opened = null;
   });
 
@@ -24,6 +30,7 @@ void main() {
       WhereMoneyApp(
         signIn: FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai),
         ledgerFor: (_) => store,
+        model: model,
         photograph: (from) async {
           opened = from;
           return shutter;
@@ -93,7 +100,7 @@ void main() {
     await tester.tap(find.byTooltip('Inbox, 1 waiting'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Waiting to be read'), findsOneWidget);
+    expect(find.text('Being read'), findsOneWidget);
   });
 
   testWidgets('the count on the main screen keeps up with the Inbox', (
@@ -139,7 +146,7 @@ void main() {
     await tester.tap(find.text('Keep'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Waiting to be read'), findsOneWidget);
+    expect(find.text('Being read'), findsOneWidget);
     expect(await store.imageFor('scan-1'), isNotNull);
   });
 

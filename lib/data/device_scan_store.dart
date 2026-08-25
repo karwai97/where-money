@@ -42,7 +42,12 @@ class DeviceScanStore {
     return scan;
   }
 
+  /// Written only beside an image. Capture puts the image down first, so the
+  /// one case this turns away is a Scan the user abandoned while the Model was
+  /// still reading it — which must stay abandoned rather than reappear.
   Future<void> put(Scan scan) async {
+    if (!_imageFile(scan.id).existsSync()) return;
+
     await directory.create(recursive: true);
     await _recordFile(
       scan.id,

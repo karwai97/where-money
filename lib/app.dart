@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'data/ledger_store.dart';
 import 'ledger/ledger_screen.dart';
+import 'scan/model_gateway.dart';
 import 'scan/photographer.dart';
 import 'session/session_bloc.dart';
 import 'session/sign_in_gateway.dart';
@@ -17,11 +18,16 @@ class WhereMoneyApp extends StatelessWidget {
     super.key,
     required this.signIn,
     required this.ledgerFor,
+    required this.model,
     this.photograph = photographWithDevice,
   });
 
   final SignInGateway signIn;
   final LedgerFor ledgerFor;
+
+  /// The Worker, or its fake. Not built per uid: the ID token the Worker reads
+  /// is what says who is calling.
+  final ModelGateway model;
 
   /// Injected so tests can hand down bytes: the camera is the one thing above
   /// the tested surface, and this is the line it sits on.
@@ -43,6 +49,7 @@ class WhereMoneyApp extends StatelessWidget {
               // account's Ledger bloc.
               key: ValueKey(user.uid),
               store: ledgerFor(user.uid),
+              model: model,
               photograph: photograph,
             ),
           },

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
@@ -9,7 +10,12 @@ import 'package:path_provider/path_provider.dart';
 import 'app.dart';
 import 'data/device_scan_store.dart';
 import 'data/firestore_ledger_store.dart';
+import 'scan/worker_model_gateway.dart';
 import 'session/google_sign_in_gateway.dart';
+
+/// The deployed Worker. Not a secret — the key is a Worker secret and is never
+/// in this repo, in Remote Config, or in a build-time define.
+final worker = Uri.parse('https://where-money.karwai-ngim.workers.dev');
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +32,11 @@ Future<void> main() async {
   runApp(
     WhereMoneyApp(
       signIn: signIn,
+      model: WorkerModelGateway(
+        endpoint: worker,
+        idToken: () =>
+            FirebaseAuth.instance.currentUser?.getIdToken() ?? Future.value(),
+      ),
       ledgerFor: (uid) => FirestoreLedgerStore(
         firestore: FirebaseFirestore.instance,
         uid: uid,

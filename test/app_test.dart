@@ -2,12 +2,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:where_money/app.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import 'fakes/fake_model_gateway.dart';
 import 'fakes/fake_sign_in_gateway.dart';
 import 'fakes/in_memory_ledger_store.dart';
 
 void main() {
   late FakeSignInGateway signIn;
   late InMemoryLedgerStore store;
+  final model = FakeModelGateway();
 
   setUp(() {
     signIn = FakeSignInGateway();
@@ -19,6 +21,7 @@ void main() {
       WhereMoneyApp(
         signIn: signIn,
         ledgerFor: (_) => store,
+        model: model,
         photograph: (_) async => null,
       ),
     );

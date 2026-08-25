@@ -93,13 +93,19 @@ class Expense {
 /// authority that matters, so its Finding no longer counts. Correcting the
 /// merchant says nothing about the total, which is why this is per field rather
 /// than "any correction at all settles everything".
+///
+/// A Finding that names no field is not about anything the user could correct.
+/// The only one that reaches a committed Expense is the Model asking for a
+/// human to look, and a human just has — Review is unconditional, so nothing
+/// gets here without one. Counting it would mark every Extraction the Model was
+/// unsure about as unreviewed forever.
 bool _needsReview(
   Extraction extraction,
   List<String> correctedFields,
   DateTime? now,
 ) => Check.of(extraction, now: now).findings.any(
   (finding) => switch (finding.field) {
-    null => true,
+    null => false,
     final ReviewField field => !correctedFields.contains(field.name),
   },
 );

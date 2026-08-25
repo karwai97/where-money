@@ -8,6 +8,7 @@ import '../review/review_bloc.dart';
 import '../review/review_screen.dart';
 import '../scan/inbox_bloc.dart';
 import '../scan/inbox_screen.dart';
+import '../scan/model_gateway.dart';
 import '../scan/photographer.dart';
 import '../session/session_bloc.dart';
 import 'ledger_bloc.dart';
@@ -16,10 +17,12 @@ class LedgerScreen extends StatelessWidget {
   const LedgerScreen({
     super.key,
     required this.store,
+    required this.model,
     required this.photograph,
   });
 
   final LedgerStore store;
+  final ModelGateway model;
   final Photographer photograph;
 
   @override
@@ -32,7 +35,9 @@ class LedgerScreen extends StatelessWidget {
         // Held here rather than on the Review route, so leaving Review and
         // coming back finds the work still there.
         BlocProvider(create: (_) => ReviewBloc(store)),
-        BlocProvider(create: (_) => InboxBloc(store)..add(const InboxOpened())),
+        BlocProvider(
+          create: (_) => InboxBloc(store, model)..add(const InboxOpened()),
+        ),
       ],
       child: Scaffold(
         appBar: AppBar(
@@ -111,8 +116,13 @@ class LedgerScreen extends StatelessWidget {
       ),
       onPressed: () => Navigator.of(context).push(
         MaterialPageRoute<void>(
-          builder: (_) => BlocProvider.value(
-            value: context.read<InboxBloc>(),
+          builder: (_) => MultiBlocProvider(
+            // Both, because Review is reached from the Inbox and the route is
+            // outside the providers the Ledger holds.
+            providers: [
+              BlocProvider.value(value: context.read<InboxBloc>()),
+              BlocProvider.value(value: context.read<ReviewBloc>()),
+            ],
             child: const InboxScreen(),
           ),
         ),

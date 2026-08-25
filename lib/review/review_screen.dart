@@ -1,11 +1,14 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
 import 'review_bloc.dart';
 
-/// Review, with nothing extracted to review yet: the same screen a Scan will
-/// arrive at, built first against an Expense the user types themselves.
+/// Review: what the Model read, beside the receipt it read it from, with
+/// anything the Check noticed pinned above. The same screen serves an Expense
+/// the user types themselves, which simply arrives with nothing pre-filled.
 class ReviewScreen extends StatelessWidget {
   const ReviewScreen({super.key});
 
@@ -19,17 +22,21 @@ class ReviewScreen extends StatelessWidget {
           previous is ReviewInProgress && current is ReviewIdle,
       listener: (context, state) => Navigator.of(context).pop(),
       builder: (context, state) => switch (state) {
-        ReviewIdle() => Scaffold(appBar: AppBar(title: const Text(_title))),
-        final ReviewInProgress reviewing => _Form(reviewing),
+        ReviewIdle() => Scaffold(appBar: AppBar(title: const Text(_typed))),
+        final ReviewInProgress reviewing => _Form(
+          reviewing,
+          key: ValueKey(reviewing.scan?.id ?? _typed),
+        ),
       },
     );
   }
 }
 
-const _title = 'Add an Expense';
+const _typed = 'Add an Expense';
+const _photographed = 'Review this receipt';
 
 class _Form extends StatefulWidget {
-  const _Form(this.state);
+  const _Form(this.state, {super.key});
 
   final ReviewInProgress state;
 
@@ -111,79 +118,94 @@ class _FormState extends State<_Form> {
     _matchRowsTo(items);
 
     return Scaffold(
-      appBar: AppBar(title: const Text(_title)),
+      appBar: AppBar(title: Text(state.scan == null ? _typed : _photographed)),
       body: Column(
         children: [
           if (state.refusal != null) _Refused(state.refusal!),
           // Above the fields and out of the scroll view, so what the Check
           // noticed does not scroll away while the user corrects it.
-          _Findings(state.check.findings),
+          if (state.check.findings.isEmpty)
+            _Clean(photographed: state.scan != null)
+          else
+            _Findings(state.check.findings),
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-              children: [
-                _text(ReviewField.merchant, 'Merchant'),
-                Row(
-                  children: [
-                    Expanded(child: _text(ReviewField.purchasedAt, 'Date')),
-                    IconButton(
-                      tooltip: 'Pick a date',
-                      icon: const Icon(Icons.calendar_today),
-                      onPressed: _pickDate,
+            child: _BesideTheReceipt(
+              receipt: state.receipt,
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                children: [
+                  _text(ReviewField.merchant, 'Merchant'),
+                  Row(
+                    children: [
+                      Expanded(child: _text(ReviewField.purchasedAt, 'Date')),
+                      IconButton(
+                        tooltip: 'Pick a date',
+                        icon: const Icon(Icons.calendar_today),
+                        onPressed: _pickDate,
+                      ),
+                    ],
+                  ),
+                  _text(ReviewField.currency, 'Currency'),
+                  _Closed(
+                    label: 'Category',
+                    value: state.extraction.category,
+                    options: categories,
+                    copy: categoryLabel,
+                    onChosen: (value) =>
+                        _bloc.add(FieldCorrected(ReviewField.category, value)),
+                  ),
+                  if (state.extraction.categoryReason.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 12, bottom: 6),
+                      child: Text(
+                        'The Model chose that because: '
+                        '${state.extraction.categoryReason}',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
                     ),
-                  ],
-                ),
-                _text(ReviewField.currency, 'Currency'),
-                _Closed(
-                  label: 'Category',
-                  value: state.extraction.category,
-                  options: categories,
-                  copy: categoryLabel,
-                  onChosen: (value) =>
-                      _bloc.add(FieldCorrected(ReviewField.category, value)),
-                ),
-                _Closed(
-                  label: 'Paid with',
-                  value: state.extraction.paymentMethod,
-                  options: paymentMethods,
-                  copy: paymentMethodLabel,
-                  onChosen: (value) => _bloc.add(
-                    FieldCorrected(ReviewField.paymentMethod, value),
+                  _Closed(
+                    label: 'Paid with',
+                    value: state.extraction.paymentMethod,
+                    options: paymentMethods,
+                    copy: paymentMethodLabel,
+                    onChosen: (value) => _bloc.add(
+                      FieldCorrected(ReviewField.paymentMethod, value),
+                    ),
                   ),
-                ),
-                _text(ReviewField.subtotal, 'Subtotal', number: true),
-                _text(ReviewField.tax, 'Tax', number: true),
-                _text(ReviewField.tip, 'Tip', number: true),
-                _text(ReviewField.total, 'Total', number: true),
-                const SizedBox(height: 24),
-                Text(
-                  'Line Items',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                for (var index = 0; index < items.length; index++)
-                  _Row(
-                    controllers: _rows[index],
-                    category: items[index].category,
-                    onCorrected: (field, value) =>
-                        _bloc.add(LineItemCorrected(index, field, value)),
-                    onRemoved: () => _removeRow(index),
+                  _text(ReviewField.subtotal, 'Subtotal', number: true),
+                  _text(ReviewField.tax, 'Tax', number: true),
+                  _text(ReviewField.tip, 'Tip', number: true),
+                  _text(ReviewField.total, 'Total', number: true),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Line Items',
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    onPressed: () => _bloc.add(const LineItemAdded()),
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add a Line Item'),
+                  for (var index = 0; index < items.length; index++)
+                    _Row(
+                      controllers: _rows[index],
+                      category: items[index].category,
+                      onCorrected: (field, value) =>
+                          _bloc.add(LineItemCorrected(index, field, value)),
+                      onRemoved: () => _removeRow(index),
+                    ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: () => _bloc.add(const LineItemAdded()),
+                      icon: const Icon(Icons.add),
+                      label: const Text('Add a Line Item'),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 24),
-                FilledButton(
-                  onPressed: state.committing
-                      ? null
-                      : () => _bloc.add(const ReviewCommitted()),
-                  child: const Text('Add to Ledger'),
-                ),
-              ],
+                  const SizedBox(height: 24),
+                  FilledButton(
+                    onPressed: state.committing
+                        ? null
+                        : () => _bloc.add(const ReviewCommitted()),
+                    child: const Text('Add to Ledger'),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -215,6 +237,110 @@ class _FormState extends State<_Form> {
           onChanged: (value) => _bloc.add(FieldCorrected(field, value)),
         ),
       );
+}
+
+/// The receipt, next to the fields it was read into. Beside them where there
+/// is width for it and above them where there is not — either way both are on
+/// screen at once, which is the whole point of Review.
+class _BesideTheReceipt extends StatelessWidget {
+  const _BesideTheReceipt({required this.receipt, required this.child});
+
+  final Uint8List? receipt;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final receipt = this.receipt;
+    if (receipt == null) return child;
+
+    return LayoutBuilder(
+      builder: (context, space) => space.maxWidth >= 700
+          ? Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: _Receipt(receipt)),
+                const VerticalDivider(width: 1),
+                Expanded(child: child),
+              ],
+            )
+          : Column(
+              children: [
+                SizedBox(height: 200, child: _Receipt(receipt)),
+                const Divider(height: 1),
+                Expanded(child: child),
+              ],
+            ),
+    );
+  }
+}
+
+class _Receipt extends StatelessWidget {
+  const _Receipt(this.bytes);
+
+  final Uint8List bytes;
+
+  @override
+  Widget build(BuildContext context) => Tooltip(
+    message: 'Zoom into the receipt',
+    child: InkWell(
+      onTap: () => Navigator.of(
+        context,
+      ).push(MaterialPageRoute<void>(builder: (_) => _ReceiptUpClose(bytes))),
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Image.memory(bytes, fit: BoxFit.contain),
+      ),
+    ),
+  );
+}
+
+/// Thermal print goes faint and small, so the receipt gets the whole screen and
+/// as much magnification as the user's fingers ask for.
+class _ReceiptUpClose extends StatelessWidget {
+  const _ReceiptUpClose(this.bytes);
+
+  final Uint8List bytes;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(
+      title: const Text('The receipt'),
+      leading: IconButton(
+        tooltip: 'Back to the fields',
+        icon: const Icon(Icons.arrow_back),
+        onPressed: Navigator.of(context).pop,
+      ),
+    ),
+    backgroundColor: Colors.black,
+    body: InteractiveViewer(
+      maxScale: 8,
+      child: Center(child: Image.memory(bytes, fit: BoxFit.contain)),
+    ),
+  );
+}
+
+/// The clean lane's framing. The Check found nothing, which is not permission
+/// to commit silently — it is permission to ask for one tap.
+class _Clean extends StatelessWidget {
+  const _Clean({required this.photographed});
+
+  /// Nothing to say to someone typing an Expense in themselves: they know what
+  /// they wrote.
+  final bool photographed;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!photographed) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: Text(
+        'Everything on this receipt adds up. Check it against the photo, then '
+        'add it.',
+        style: Theme.of(context).textTheme.bodySmall,
+      ),
+    );
+  }
 }
 
 /// What the Check noticed, in the words it wrote them in. A Finding is already

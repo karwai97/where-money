@@ -32,7 +32,11 @@ class InMemoryLedgerStore implements LedgerStore {
   @override
   Future<void> add(Expense expense) async {
     if (refuseWrites case final failure?) throw failure;
-    _expenses.add(expense);
+    // Keyed by id, as Firestore is: one document per Expense, written over
+    // rather than added beside.
+    _expenses
+      ..removeWhere((held) => held.id == expense.id)
+      ..add(expense);
     _changes.add(_newestFirst);
   }
 
@@ -54,6 +58,15 @@ class InMemoryLedgerStore implements LedgerStore {
     return scan;
   }
 
+  /// Mirrors the device store: a Scan is only written beside an image, so one
+  /// abandoned mid-extraction stays abandoned.
+  @override
+  Future<void> put(Scan scan) async {
+    if (!_images.containsKey(scan.id)) return;
+    _scans[scan.id] = scan;
+    _inbox.add(_waiting);
+  }
+
   @override
   Future<Uint8List?> imageFor(String scanId) async => _images[scanId];
 
@@ -65,6 +78,8 @@ class InMemoryLedgerStore implements LedgerStore {
   }
 
   List<Expense> get contents => _newestFirst;
+
+  List<Scan> get waiting => _waiting;
 
   List<Expense> get _newestFirst =>
       [..._expenses]..sort((a, b) => b.date.compareTo(a.date));
