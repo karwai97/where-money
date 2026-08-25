@@ -145,9 +145,22 @@ deployed Worker.
 - **The edit survived the round trip**: the source stayed manual and the screen
   re-read from the Ledger when Review popped.
 
-Still not watched, because there was no receipt to photograph: **an Expense with
-Line Items, an Expense with a receipt image, the missing-image line, deleting,
-and a foreign-currency Expense.** The tick on those five criteria is still a
-test's word. A real receipt would settle all of them at once, and would also be
-the first data point for the Corrected Fields tally.
+A real receipt followed, and settled most of the rest.
 
+- **Opening a scanned Expense shows the receipt**, resolved through the
+  `receiptPath` this ticket added, on a real device store rather than a fake.
+  Tapping it opens full screen and the thermal print is legible.
+- **The scanned mark and the hand-typed mark are visibly different** — a receipt
+  against a pencil — seen on real rows.
+- **Deleting works, with the confirmation naming the Expense and its amount.**
+  The Ledger fell back to "Nothing in August 2026" rather than "Nothing here
+  yet", because the Ledger was not empty, only that month.
+
+Two things are still only a test's word: **an Expense with Line Items** (a card
+terminal slip has none) and **a foreign-currency Expense**. And the
+missing-image line has still only been proved against a store answering null,
+not against a phone the Ledger was restored to.
+
+**One copy bug came out of it.** The delete confirmation promised "The receipt
+photo stays on this phone" for an Expense typed by hand, which never had one.
+It is now conditional, with a test either way.

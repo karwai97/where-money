@@ -239,6 +239,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Keep it'), findsOneWidget);
+    expect(
+      find.textContaining('receipt photo stays'),
+      findsNothing,
+      reason: 'an Expense typed by hand has no photo to promise to keep',
+    );
 
     await tester.tap(find.text('Keep it'));
     await tester.pumpAndSettle();
@@ -260,5 +265,15 @@ void main() {
       isNot(contains('Kopitiam SS2')),
     );
     expect(find.text('Kopitiam SS2'), findsNothing);
+  });
+
+  testWidgets('deleting a scanned Expense says what happens to its photo', (
+    tester,
+  ) async {
+    await open(tester, 'Village Grocer Bangsar');
+    await tester.tap(find.byTooltip('Delete this Expense'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('receipt photo stays'), findsOneWidget);
   });
 }

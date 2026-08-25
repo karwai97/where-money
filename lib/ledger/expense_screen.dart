@@ -101,8 +101,11 @@ class ExpenseScreen extends StatelessWidget {
         title: const Text('Delete this Expense?'),
         content: Text(
           '${expense.merchant}, ${asMoney(expense.currency, expense.total)}, '
-          'will go from your Ledger and out of your totals. The receipt photo '
-          'stays on this phone.',
+          'will go from your Ledger and out of your totals.'
+          // Only worth saying where there is a photo to keep. An Expense typed
+          // by hand never had one, and promising to keep it is a promise about
+          // nothing.
+          '${expense.receiptPath == null ? '' : ' The receipt photo stays on this phone.'}',
         ),
         actions: [
           TextButton(

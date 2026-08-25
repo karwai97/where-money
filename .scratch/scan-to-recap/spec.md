@@ -468,3 +468,40 @@ Three decisions look wrong at first glance and are deliberate. Each has an ADR.
 - **The proxy is on Cloudflare while everything else is Firebase.** Two platforms
   looks like an accident. Cloud Functions cannot make outbound calls without a
   billing account; the Worker can, for free, with no cold start.
+
+## First real measurement, 2026-08-25
+
+One receipt is not a measurement, and the tally still needs twenty or so. But
+the instrument has now produced its first reading, on a physical device against
+the live Worker and the nano tier, and it is worth writing down because the
+failure it found is not the one this spec predicted.
+
+The receipt was a **card terminal slip** — a bank's payment confirmation for a
+clinic visit, RM 143.00.
+
+| Field | What the Model read | Correct? |
+|---|---|---|
+| Total | 143.00 | yes |
+| Currency | MYR, from "RM" | yes |
+| Date | 2025-07-09, from "09JUL2025" | yes |
+| Payment method | card | yes |
+| Line items | none | yes — a card slip has none |
+| **Merchant** | **PUBLIC BANK** | **no — the clinic is named directly beneath the bank's logo** |
+| **Category** | **fees_charges**, "Card transaction payment." | **no — follows from the merchant** |
+
+Two corrections, and **the total was right**, which is the disqualifying case
+this spec named and it did not happen.
+
+But the merchant error is not the "dates and merchant capitalisation" this spec
+guessed nano would get wrong. It is **systematic**: on any card terminal slip,
+the largest and most prominent name is the acquiring bank, and the merchant is
+smaller text underneath. A tier change might not fix that; a prompt that says
+where to look on a card slip probably would. **Neither has been tried.**
+
+The Check also produced a **false positive**: the year-misread heuristic fired
+on a receipt genuinely a year old. That is the heuristic working as designed —
+the spec argues for it explicitly — and the copy hedges correctly ("usually
+means", "likely value") rather than asserting. It was ignored during Review,
+which is the right answer and is why Review has the last word. Worth knowing
+that the first real receipt tripped it.
+
