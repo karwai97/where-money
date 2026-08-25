@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:path/path.dart' as p;
 import 'package:where_money_core/where_money_core.dart';
 
+import 'ledger_store.dart';
 import 'scan_record.dart';
 
 /// Scans and their images, in a directory on the phone. Nothing here touches
@@ -60,6 +61,16 @@ class DeviceScanStore {
     return file.existsSync() ? file.readAsBytes() : null;
   }
 
+  /// A receipt by the path an Expense recorded. Anything that is not a plain
+  /// name in this directory is treated as missing rather than followed — a
+  /// path out of a document is not a path to trust.
+  Future<Uint8List?> receiptAt(String path) async {
+    if (p.basename(path) != path) return null;
+
+    final file = File(p.join(directory.path, path));
+    return file.existsSync() ? file.readAsBytes() : null;
+  }
+
   Future<void> abandon(String scanId) async {
     for (final file in [_recordFile(scanId), _imageFile(scanId)]) {
       if (file.existsSync()) await file.delete();
@@ -90,7 +101,8 @@ class DeviceScanStore {
   File _recordFile(String scanId) =>
       File(p.join(directory.path, '$scanId.json'));
 
-  File _imageFile(String scanId) => File(p.join(directory.path, '$scanId.jpg'));
+  File _imageFile(String scanId) =>
+      File(p.join(directory.path, receiptPathFor(scanId)));
 
   static String? _idOfRecord(String path) {
     final name = p.basename(path);

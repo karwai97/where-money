@@ -41,6 +41,12 @@ class FirestoreLedgerStore implements LedgerStore {
   Future<void> add(Expense expense) => _expenses.doc(expense.id).set(expense);
 
   @override
+  Future<void> remove(String expenseId) => _expenses.doc(expenseId).delete();
+
+  @override
+  Future<Uint8List?> receiptAt(String path) => scans.receiptAt(path);
+
+  @override
   Stream<List<Scan>> inbox() => scans.inbox();
 
   @override

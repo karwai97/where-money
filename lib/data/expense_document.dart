@@ -7,6 +7,8 @@ library;
 
 import 'package:where_money_core/where_money_core.dart';
 
+import 'ledger_store.dart';
+
 Map<String, Object?> expenseToDocument(Expense expense) => {
   'merchant': expense.merchant,
   // ISO-8601 rather than a Timestamp, so ordering and month ranges are plain
@@ -27,6 +29,13 @@ Map<String, Object?> expenseToDocument(Expense expense) => {
   ],
   'source': expense.source.name,
   'needsReview': expense.needsReview,
+  'subtotal': expense.subtotal,
+  'tax': expense.tax,
+  'tip': expense.tip,
+  'paymentMethod': expense.paymentMethod,
+  // A name within this device's Scan directory rather than an absolute path:
+  // the directory moves between app versions and the file does not.
+  'receiptPath': expense.receiptPath,
   'correctedFields': expense.correctedFields,
 };
 
@@ -34,36 +43,50 @@ Map<String, Object?> expenseToDocument(Expense expense) => {
 /// Everything else falls back, but a total is the one thing this app must
 /// never be confidently wrong about, so a corrupt one surfaces rather than
 /// becoming a plausible-looking 0.00.
-Expense expenseFromDocument(String id, Map<String, Object?> document) => Expense(
-  id: id,
-  merchant: _string(document['merchant']) ?? 'Unknown merchant',
-  date:
-      DateTime.tryParse(_string(document['date']) ?? '') ??
-      (throw FormatException('Expense $id has no legible date.')),
-  currency: _string(document['currency']) ?? '???',
-  total:
-      _double(document['total']) ??
-      (throw FormatException('Expense $id has no legible total.')),
-  category: _string(document['category']) ?? 'other',
-  lineItems: [
-    for (final item in _maps(document['lineItems']))
-      LineItem(
-        description: _string(item['description']) ?? '',
-        quantity: _double(item['quantity']),
-        unitPrice: _double(item['unitPrice']),
-        amount: _double(item['amount']) ?? 0,
-        category: _string(item['category']) ?? 'other',
-      ),
-  ],
-  source: ExpenseSource.values.firstWhere(
+Expense expenseFromDocument(String id, Map<String, Object?> document) {
+  final source = ExpenseSource.values.firstWhere(
     (source) => source.name == _string(document['source']),
     orElse: () => ExpenseSource.scanned,
-  ),
-  needsReview: document['needsReview'] == true,
-  correctedFields: [
-    for (final field in _list(document['correctedFields'])) ?_string(field),
-  ],
-);
+  );
+
+  return Expense(
+    id: id,
+    merchant: _string(document['merchant']) ?? 'Unknown merchant',
+    date:
+        DateTime.tryParse(_string(document['date']) ?? '') ??
+        (throw FormatException('Expense $id has no legible date.')),
+    currency: _string(document['currency']) ?? '???',
+    total:
+        _double(document['total']) ??
+        (throw FormatException('Expense $id has no legible total.')),
+    category: _string(document['category']) ?? 'other',
+    lineItems: [
+      for (final item in _maps(document['lineItems']))
+        LineItem(
+          description: _string(item['description']) ?? '',
+          quantity: _double(item['quantity']),
+          unitPrice: _double(item['unitPrice']),
+          amount: _double(item['amount']) ?? 0,
+          category: _string(item['category']) ?? 'other',
+        ),
+    ],
+    source: source,
+    needsReview: document['needsReview'] == true,
+    subtotal: _double(document['subtotal']),
+    tax: _double(document['tax']),
+    tip: _double(document['tip']),
+    paymentMethod: _string(document['paymentMethod']) ?? 'unknown',
+    receiptPath:
+        _string(document['receiptPath']) ??
+        // Expenses committed before the path was written down have none. A
+        // scanned Expense carries its Scan's id and the photo is named after
+        // the Scan, so the receipt is recoverable rather than lost.
+        (source == ExpenseSource.scanned ? receiptPathFor(id) : null),
+    correctedFields: [
+      for (final field in _list(document['correctedFields'])) ?_string(field),
+    ],
+  );
+}
 
 String? _string(Object? value) => value is String ? value : null;
 

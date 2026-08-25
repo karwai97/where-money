@@ -103,6 +103,24 @@ void main() {
     await bloc.close();
   });
 
+  test('deleting an Expense makes the next open ask again', () async {
+    final ledger = seedLedger(around: august);
+    final store = InMemoryLedgerStore(ledger);
+    final model = FakeModelGateway();
+    final bloc = LedgerBloc(store, model, now: august)
+      ..add(const LedgerOpened());
+    await settled(bloc);
+    expect(model.rollupsAsked, hasLength(1));
+
+    final duplicate = ledger.firstWhere((e) => e.merchant == 'Ikea Damansara');
+    bloc.add(ExpenseDeleted(duplicate.id));
+    await settled(bloc);
+
+    expect(store.contents.map((e) => e.id), isNot(contains(duplicate.id)));
+    expect(model.rollupsAsked, hasLength(2));
+    await bloc.close();
+  });
+
   test('correcting an Expense makes the next open ask again', () async {
     final ledger = seedLedger(around: august);
     final store = InMemoryLedgerStore(ledger);

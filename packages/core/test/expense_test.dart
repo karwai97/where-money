@@ -127,4 +127,75 @@ void main() {
 
     expect(expense.category, 'other');
   });
+
+  test('a committed Expense keeps the arithmetic the Check re-does', () {
+    final expense = Expense.fromExtraction(
+      cleanExtraction,
+      id: 'exp-10',
+      now: now,
+    );
+
+    expect(expense.subtotal, cleanExtraction.subtotal);
+    expect(expense.tax, cleanExtraction.tax);
+    expect(expense.tip, cleanExtraction.tip);
+    expect(expense.paymentMethod, 'card');
+  });
+
+  test('reopening a clean Expense finds the same Check that let it in', () {
+    final expense = Expense.fromExtraction(
+      cleanExtraction,
+      id: 'exp-11',
+      now: now,
+    );
+
+    final again = Check.of(expense.asExtraction(), now: now);
+
+    expect(
+      again.findings,
+      isEmpty,
+      reason:
+          'the subtotal and tax are on the Expense, so the line items still '
+          'reconcile the way they did during Review',
+    );
+  });
+
+  test('reopening an Expense does not ask again for the review it has already '
+      'had', () {
+    final expense = Expense.fromExtraction(
+      flawedExtraction,
+      id: 'exp-12',
+      now: now,
+      correctedFields: const ['purchasedAt', 'lineItems'],
+    );
+
+    final labels = Check.of(
+      expense.asExtraction(),
+      now: now,
+    ).findings.map((finding) => finding.label);
+
+    expect(labels, isNot(contains('Model asked for review')));
+  });
+
+  test('an Expense typed by hand has no receipt to point at', () {
+    final expense = Expense.fromExtraction(
+      Extraction.blank(),
+      id: 'exp-13',
+      now: now,
+      source: ExpenseSource.manual,
+    );
+
+    expect(expense.receiptPath, isNull);
+  });
+
+  test('an Expense read from a receipt remembers where the photo is', () {
+    final expense = Expense.fromExtraction(
+      cleanExtraction,
+      id: 'exp-14',
+      now: now,
+      receiptPath: 'scan-1.jpg',
+    );
+
+    expect(expense.receiptPath, 'scan-1.jpg');
+    expect(expense.asExtraction().merchant, cleanExtraction.merchant);
+  });
 }

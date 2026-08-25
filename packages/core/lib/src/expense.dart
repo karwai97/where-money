@@ -20,6 +20,21 @@ class Expense {
   final ExpenseSource source;
   final bool needsReview;
 
+  /// The arithmetic printed on the receipt, kept because it is what the Check
+  /// re-does. Without it, reopening a committed Expense would compare its line
+  /// items against a total that includes tax and contradict the Review that
+  /// let it in.
+  final double? subtotal;
+  final double? tax;
+  final double? tip;
+  final String paymentMethod;
+
+  /// Where the receipt photo is, as a name within this device's Scan
+  /// directory. Null for an Expense typed by hand, and dangling on a phone the
+  /// Ledger was restored to — images never leave the device they were taken on
+  /// (ADR-0003), so a Ledger can outlive its photos.
+  final String? receiptPath;
+
   /// Which fields the user changed during Review. The tally of these across
   /// the Ledger is the project's only real measure of extraction accuracy.
   final List<String> correctedFields;
@@ -34,6 +49,11 @@ class Expense {
     required this.lineItems,
     required this.source,
     required this.needsReview,
+    this.subtotal,
+    this.tax,
+    this.tip,
+    this.paymentMethod = 'unknown',
+    this.receiptPath,
     this.correctedFields = const [],
   });
 
@@ -42,6 +62,7 @@ class Expense {
     required String id,
     ExpenseSource source = ExpenseSource.scanned,
     List<String> correctedFields = const [],
+    String? receiptPath,
     DateTime? now,
   }) {
     final fallbackDate = now ?? DateTime.now();
@@ -60,9 +81,40 @@ class Expense {
       lineItems: extraction.lineItems,
       source: source,
       needsReview: _needsReview(extraction, correctedFields, now),
+      subtotal: extraction.subtotal,
+      tax: extraction.tax,
+      tip: extraction.tip,
+      paymentMethod: paymentMethods.contains(extraction.paymentMethod)
+          ? extraction.paymentMethod
+          : 'unknown',
+      receiptPath: receiptPath,
       correctedFields: correctedFields,
     );
   }
+
+  /// The Expense as something Review can edit again. The Model's own words are
+  /// deliberately dropped: [Extraction.categoryReason] described a photo this
+  /// Expense no longer is, and its request for a human to look has already
+  /// been answered by the Review that committed it. Asking again on every edit
+  /// would make a Finding that can never be settled. The Check's staleness
+  /// heuristics are the other half of the same problem, and they answer to
+  /// `Check.of(..., alreadyReviewed: true)`.
+  Extraction asExtraction() => Extraction(
+    isReceipt: true,
+    merchant: merchant,
+    purchasedAt: date.toIso8601String().split('T').first,
+    currency: currency,
+    subtotal: subtotal,
+    tax: tax,
+    tip: tip,
+    total: total,
+    paymentMethod: paymentMethod,
+    category: category,
+    categoryReason: '',
+    lineItems: lineItems,
+    needsReview: false,
+    reviewReasons: const [],
+  );
 
   bool get wasCorrected => correctedFields.isNotEmpty;
 
@@ -74,6 +126,11 @@ class Expense {
     String? category,
     List<LineItem>? lineItems,
     bool? needsReview,
+    double? subtotal,
+    double? tax,
+    double? tip,
+    String? paymentMethod,
+    String? receiptPath,
     List<String>? correctedFields,
   }) => Expense(
     id: id,
@@ -85,6 +142,11 @@ class Expense {
     lineItems: lineItems ?? this.lineItems,
     source: source,
     needsReview: needsReview ?? this.needsReview,
+    subtotal: subtotal ?? this.subtotal,
+    tax: tax ?? this.tax,
+    tip: tip ?? this.tip,
+    paymentMethod: paymentMethod ?? this.paymentMethod,
+    receiptPath: receiptPath ?? this.receiptPath,
     correctedFields: correctedFields ?? this.correctedFields,
   );
 }

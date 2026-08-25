@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:where_money/data/device_scan_store.dart';
+import 'package:where_money/data/ledger_store.dart';
 import 'package:path/path.dart' as p;
 import 'package:where_money_core/where_money_core.dart';
 
@@ -105,5 +106,25 @@ void main() {
     final restarted = await DeviceScanStore(directory).inbox().first;
 
     expect(restarted.single.allowanceResetsAt, resetsAt);
+  });
+
+  test('an Expense can find its receipt by the path recorded on it', () async {
+    final store = DeviceScanStore(directory);
+    final scan = await store.capture(image);
+
+    expect(await store.receiptAt(receiptPathFor(scan.id)), image);
+  });
+
+  test('a receipt that never came to this device reads as missing rather than '
+      'throwing', () async {
+    final store = DeviceScanStore(directory);
+
+    expect(await store.receiptAt('a-phone-ago.jpg'), isNull);
+  });
+
+  test('a receipt path cannot reach outside the Scan directory', () async {
+    final store = DeviceScanStore(directory);
+
+    expect(await store.receiptAt('../../secrets.jpg'), isNull);
   });
 }

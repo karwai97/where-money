@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import '../scan/receipt_on_screen.dart';
 import 'review_bloc.dart';
 
 /// Review: what the Model read, beside the receipt it read it from, with
@@ -25,7 +26,7 @@ class ReviewScreen extends StatelessWidget {
         ReviewIdle() => Scaffold(appBar: AppBar(title: const Text(_typed))),
         final ReviewInProgress reviewing => _Form(
           reviewing,
-          key: ValueKey(reviewing.scan?.id ?? _typed),
+          key: ValueKey(reviewing.editing?.id ?? reviewing.scan?.id ?? _typed),
         ),
       },
     );
@@ -34,6 +35,15 @@ class ReviewScreen extends StatelessWidget {
 
 const _typed = 'Add an Expense';
 const _photographed = 'Review this receipt';
+const _correcting = 'Correct this Expense';
+
+/// Which of the three things this screen is doing. All three edit an
+/// Extraction against a Check; only the words differ.
+String _titleOf(ReviewInProgress state) => switch (state) {
+  ReviewInProgress(editing: final Expense _) => _correcting,
+  ReviewInProgress(scan: final Scan _) => _photographed,
+  _ => _typed,
+};
 
 class _Form extends StatefulWidget {
   const _Form(this.state, {super.key});
@@ -118,14 +128,14 @@ class _FormState extends State<_Form> {
     _matchRowsTo(items);
 
     return Scaffold(
-      appBar: AppBar(title: Text(state.scan == null ? _typed : _photographed)),
+      appBar: AppBar(title: Text(_titleOf(state))),
       body: Column(
         children: [
           if (state.refusal != null) _Refused(state.refusal!),
           // Above the fields and out of the scroll view, so what the Check
           // noticed does not scroll away while the user corrects it.
           if (state.check.findings.isEmpty)
-            _Clean(photographed: state.scan != null)
+            _Clean(photographed: state.scan != null && state.editing == null)
           else
             _Findings(state.check.findings),
           Expanded(
@@ -202,7 +212,9 @@ class _FormState extends State<_Form> {
                     onPressed: state.committing
                         ? null
                         : () => _bloc.add(const ReviewCommitted()),
-                    child: const Text('Add to Ledger'),
+                    child: Text(
+                      state.editing == null ? 'Add to Ledger' : 'Save',
+                    ),
                   ),
                 ],
               ),
@@ -258,65 +270,20 @@ class _BesideTheReceipt extends StatelessWidget {
           ? Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(child: _Receipt(receipt)),
+                Expanded(child: ReceiptOnScreen(receipt)),
                 const VerticalDivider(width: 1),
                 Expanded(child: child),
               ],
             )
           : Column(
               children: [
-                SizedBox(height: 200, child: _Receipt(receipt)),
+                SizedBox(height: 200, child: ReceiptOnScreen(receipt)),
                 const Divider(height: 1),
                 Expanded(child: child),
               ],
             ),
     );
   }
-}
-
-class _Receipt extends StatelessWidget {
-  const _Receipt(this.bytes);
-
-  final Uint8List bytes;
-
-  @override
-  Widget build(BuildContext context) => Tooltip(
-    message: 'Zoom into the receipt',
-    child: InkWell(
-      onTap: () => Navigator.of(
-        context,
-      ).push(MaterialPageRoute<void>(builder: (_) => _ReceiptUpClose(bytes))),
-      child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Image.memory(bytes, fit: BoxFit.contain),
-      ),
-    ),
-  );
-}
-
-/// Thermal print goes faint and small, so the receipt gets the whole screen and
-/// as much magnification as the user's fingers ask for.
-class _ReceiptUpClose extends StatelessWidget {
-  const _ReceiptUpClose(this.bytes);
-
-  final Uint8List bytes;
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('The receipt'),
-      leading: IconButton(
-        tooltip: 'Back to the fields',
-        icon: const Icon(Icons.arrow_back),
-        onPressed: Navigator.of(context).pop,
-      ),
-    ),
-    backgroundColor: Colors.black,
-    body: InteractiveViewer(
-      maxScale: 8,
-      child: Center(child: Image.memory(bytes, fit: BoxFit.contain)),
-    ),
-  );
 }
 
 /// The clean lane's framing. The Check found nothing, which is not permission

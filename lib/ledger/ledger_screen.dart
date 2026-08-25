@@ -11,6 +11,8 @@ import '../scan/inbox_screen.dart';
 import '../scan/model_gateway.dart';
 import '../scan/photographer.dart';
 import '../session/session_bloc.dart';
+import 'expense_screen.dart';
+import 'how_it_got_here.dart';
 import 'ledger_bloc.dart';
 import 'rollup_screen.dart';
 
@@ -30,6 +32,10 @@ class LedgerScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        // The receipt is a file on this phone rather than anything the
+        // Ledger's states carry, so the store itself has to be reachable from
+        // the Expense a user opens.
+        RepositoryProvider<LedgerStore>.value(value: store),
         BlocProvider(
           create: (_) => LedgerBloc(store, model)..add(const LedgerOpened()),
         ),
@@ -250,14 +256,38 @@ class _ExpenseTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      // How much of this Ledger the app produced, readable down the column
+      // rather than one Expense at a time.
+      leading: HowItGotHere(expense.source),
       title: Text(expense.merchant),
-      subtitle: Text('${asDay(expense.date)} · ${expense.category}'),
+      subtitle: Text(
+        '${asDay(expense.date)} · ${categoryLabel(expense.category)}',
+      ),
       trailing: Text(
         asMoney(expense.currency, expense.total),
         style: Theme.of(context).textTheme.titleMedium,
       ),
+      onTap: () => _open(context),
     );
   }
+
+  void _open(BuildContext context) => Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (_) => MultiBlocProvider(
+        // The Ledger for the Expense itself and for deleting it, Review for
+        // correcting it. Both because the route is outside the providers the
+        // Ledger screen holds.
+        providers: [
+          BlocProvider.value(value: context.read<LedgerBloc>()),
+          BlocProvider.value(value: context.read<ReviewBloc>()),
+        ],
+        child: ExpenseScreen(
+          expenseId: expense.id,
+          store: context.read<LedgerStore>(),
+        ),
+      ),
+    ),
+  );
 }
 
 class _Message extends StatelessWidget {

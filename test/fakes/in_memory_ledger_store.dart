@@ -13,7 +13,10 @@ class InMemoryLedgerStore implements LedgerStore {
   final _changes = StreamController<List<Expense>>.broadcast();
 
   final _scans = <String, Scan>{};
-  final _images = <String, Uint8List>{};
+
+  /// Keyed by path, the way the device store's files are named, so a receipt
+  /// seeded here is reachable by exactly what an Expense records.
+  final _receipts = <String, Uint8List>{};
   final _inbox = StreamController<List<Scan>>.broadcast();
   var _captured = 0;
 
@@ -41,6 +44,20 @@ class InMemoryLedgerStore implements LedgerStore {
   }
 
   @override
+  Future<void> remove(String expenseId) async {
+    if (refuseWrites case final failure?) throw failure;
+    _expenses.removeWhere((held) => held.id == expenseId);
+    _changes.add(_newestFirst);
+  }
+
+  @override
+  Future<Uint8List?> receiptAt(String path) async => _receipts[path];
+
+  /// A receipt already on this phone, for a Ledger seeded without anyone
+  /// having photographed anything.
+  void keepReceipt(String path, Uint8List bytes) => _receipts[path] = bytes;
+
+  @override
   Stream<List<Scan>> inbox() async* {
     yield _waiting;
     yield* _inbox.stream;
@@ -53,7 +70,7 @@ class InMemoryLedgerStore implements LedgerStore {
       at: at ?? DateTime.now(),
     );
     _scans[scan.id] = scan;
-    _images[scan.id] = image;
+    _receipts[receiptPathFor(scan.id)] = image;
     _inbox.add(_waiting);
     return scan;
   }
@@ -62,18 +79,19 @@ class InMemoryLedgerStore implements LedgerStore {
   /// abandoned mid-extraction stays abandoned.
   @override
   Future<void> put(Scan scan) async {
-    if (!_images.containsKey(scan.id)) return;
+    if (!_receipts.containsKey(receiptPathFor(scan.id))) return;
     _scans[scan.id] = scan;
     _inbox.add(_waiting);
   }
 
   @override
-  Future<Uint8List?> imageFor(String scanId) async => _images[scanId];
+  Future<Uint8List?> imageFor(String scanId) async =>
+      _receipts[receiptPathFor(scanId)];
 
   @override
   Future<void> abandon(String scanId) async {
     _scans.remove(scanId);
-    _images.remove(scanId);
+    _receipts.remove(receiptPathFor(scanId));
     _inbox.add(_waiting);
   }
 

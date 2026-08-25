@@ -258,4 +258,47 @@ void main() {
       ReviewField.lineItems,
     );
   });
+
+  group('an Extraction that has been through Review before', () {
+    Extraction dated(String day) => cleanExtraction.copyWith(purchasedAt: day);
+
+    test('is not asked about a date it was already confirmed on', () {
+      final labels = Check.of(
+        dated('2026-03-02'),
+        now: fixtureNow,
+        alreadyReviewed: true,
+      ).findings.map((finding) => finding.label);
+
+      expect(labels, isEmpty);
+    });
+
+    test('is asked about it on the way in, where the heuristic belongs', () {
+      final labels = Check.of(
+        dated('2026-03-02'),
+        now: fixtureNow,
+      ).findings.map((finding) => finding.label);
+
+      expect(labels, contains('Date is unusually old'));
+    });
+
+    test('is still asked about a date that has not happened yet', () {
+      final labels = Check.of(
+        dated('2027-01-04'),
+        now: fixtureNow,
+        alreadyReviewed: true,
+      ).findings.map((finding) => finding.label);
+
+      expect(labels, contains('Date in the future'));
+    });
+
+    test('is still asked about arithmetic that stopped adding up', () {
+      final labels = Check.of(
+        dated('2026-03-02').copyWith(total: 99.00),
+        now: fixtureNow,
+        alreadyReviewed: true,
+      ).findings.map((finding) => finding.label);
+
+      expect(labels, contains('Total does not add up'));
+    });
+  });
 }

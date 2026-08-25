@@ -45,6 +45,16 @@ final class _RecapWanted extends LedgerEvent {
   List<Object?> get props => [hash];
 }
 
+/// Confirmed on screen before it gets here.
+final class ExpenseDeleted extends LedgerEvent {
+  const ExpenseDeleted(this.expenseId);
+
+  final String expenseId;
+
+  @override
+  List<Object?> get props => [expenseId];
+}
+
 final class _LedgerChanged extends LedgerEvent {
   const _LedgerChanged(this.expenses);
 
@@ -173,6 +183,7 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
     on<LedgerOpened>(_onOpened);
     on<MonthStepped>(_onStepped);
     on<RecapAskedAgain>(_onAskedAgain);
+    on<ExpenseDeleted>(_onDeleted);
     on<_RecapWanted>(_onRecapWanted);
     on<_LedgerChanged>((event, emit) {
       _expenses = event.expenses;
@@ -257,6 +268,20 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
     // Recap that arrives after that has nowhere to go.
     if (emit.isDone || state is! LedgerReady) return;
     emit(_ready());
+  }
+
+  /// A refused delete needs no words of its own: the list is a live stream, so
+  /// an Expense that did not go is still sitting in it, which is both true and
+  /// the whole of what the user needs to know.
+  Future<void> _onDeleted(
+    ExpenseDeleted event,
+    Emitter<LedgerState> emit,
+  ) async {
+    try {
+      await _store.remove(event.expenseId);
+    } on Object catch (_) {
+      return;
+    }
   }
 
   void _onAskedAgain(RecapAskedAgain event, Emitter<LedgerState> emit) {

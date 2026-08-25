@@ -31,14 +31,28 @@ final class ScanReviewStarted extends ReviewEvent {
   List<Object?> get props => [scan.id];
 }
 
-final class _ReceiptArrived extends ReviewEvent {
-  const _ReceiptArrived(this.scanId, this.receipt);
+/// Correcting something that is already an Expense. The same screen and the
+/// same Check as Review, over what the Ledger holds rather than over what the
+/// Model read — a mistake noticed a week later is fixable.
+final class ExpenseEditStarted extends ReviewEvent {
+  const ExpenseEditStarted(this.expense);
 
-  final String scanId;
+  final Expense expense;
+
+  @override
+  List<Object?> get props => [expense.id];
+}
+
+final class _ReceiptArrived extends ReviewEvent {
+  const _ReceiptArrived(this.lane, this.receipt);
+
+  /// The lane the bytes were read for, so a receipt arriving after the user
+  /// has moved on does not land in whatever is on screen now.
+  final String lane;
   final Uint8List? receipt;
 
   @override
-  List<Object?> get props => [scanId, receipt];
+  List<Object?> get props => [lane, receipt];
 }
 
 final class FieldCorrected extends ReviewEvent {
@@ -101,6 +115,7 @@ final class ReviewInProgress extends ReviewState {
     required this.check,
     required this.correctedFields,
     this.scan,
+    this.editing,
     this.receipt,
     this.committing = false,
     this.refusal,
@@ -109,6 +124,11 @@ final class ReviewInProgress extends ReviewState {
   /// The Scan being Reviewed, or null when the user is typing an Expense that
   /// had no receipt.
   final Scan? scan;
+
+  /// The Expense being corrected, when this is an edit rather than a first
+  /// Review. It carries the id, the source and the receipt the saved Expense
+  /// has to keep.
+  final Expense? editing;
 
   /// The receipt as it was photographed, to check the fields against. Null
   /// until it has been read off the disk, and always null for a manual entry.
@@ -128,6 +148,16 @@ final class ReviewInProgress extends ReviewState {
   /// Set when the last commit was turned away. The typing is still here.
   final String? refusal;
 
+  /// Which half-finished Review this is. An edit is its own lane even when the
+  /// Expense shares an id with the Scan it came from, so typing left in one
+  /// cannot turn up in the other. The manual lane's key is empty, and no Scan
+  /// has an empty id.
+  String get lane => switch ((editing, scan)) {
+    (final Expense expense, _) => 'expense:${expense.id}',
+    (_, final Scan scan) => scan.id,
+    _ => '',
+  };
+
   /// [committing] and [refusal] are deliberately not carried over: each
   /// describes one attempt at the Ledger, and the next state is not that
   /// attempt.
@@ -140,6 +170,7 @@ final class ReviewInProgress extends ReviewState {
     String? refusal,
   }) => ReviewInProgress(
     scan: scan,
+    editing: editing,
     receipt: receipt ?? this.receipt,
     extraction: extraction ?? this.extraction,
     check: check ?? this.check,
@@ -155,6 +186,7 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
       super(const ReviewIdle()) {
     on<ManualExpenseStarted>(_onManualExpenseStarted);
     on<ScanReviewStarted>(_onScanReviewStarted);
+    on<ExpenseEditStarted>(_onExpenseEditStarted);
     on<_ReceiptArrived>(_onReceiptArrived);
     on<FieldCorrected>(_onFieldCorrected);
     on<LineItemAdded>(_onLineItemAdded);
@@ -181,15 +213,12 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
     ManualExpenseStarted event,
     Emitter<ReviewState> emit,
   ) {
-    _show(
-      emit,
-      _unfinished[_manual] ??
-          ReviewInProgress(
-            extraction: Extraction.blank(),
-            check: Check.of(Extraction.blank(), now: _now()),
-            correctedFields: const [],
-          ),
+    final fresh = ReviewInProgress(
+      extraction: Extraction.blank(),
+      check: Check.of(Extraction.blank(), now: _now()),
+      correctedFields: const [],
     );
+    _show(emit, _unfinished[fresh.lane] ?? fresh);
   }
 
   void _onScanReviewStarted(
@@ -218,14 +247,38 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
     }
   }
 
+  void _onExpenseEditStarted(
+    ExpenseEditStarted event,
+    Emitter<ReviewState> emit,
+  ) {
+    final extraction = event.expense.asExtraction();
+    final fresh = ReviewInProgress(
+      editing: event.expense,
+      extraction: extraction,
+      check: Check.of(extraction, now: _now(), alreadyReviewed: true),
+      // What the user corrected before is carried in, so this edit adds to the
+      // tally rather than starting it over.
+      correctedFields: event.expense.correctedFields,
+    );
+    final started = _unfinished[fresh.lane];
+    _show(emit, started ?? fresh);
+
+    final path = event.expense.receiptPath;
+    if (started == null && path != null) {
+      _store
+          .receiptAt(path)
+          .then((receipt) => add(_ReceiptArrived(fresh.lane, receipt)));
+    }
+  }
+
   void _onReceiptArrived(_ReceiptArrived event, Emitter<ReviewState> emit) {
     final receipt = event.receipt;
-    final started = _unfinished[event.scanId];
+    final started = _unfinished[event.lane];
     if (receipt == null || started == null) return;
 
     final withReceipt = started.copyWith(receipt: receipt);
-    _unfinished[event.scanId] = withReceipt;
-    if (_current?.scan?.id == event.scanId) emit(withReceipt);
+    _unfinished[event.lane] = withReceipt;
+    if (_current?.lane == event.lane) emit(withReceipt);
   }
 
   void _onFieldCorrected(FieldCorrected event, Emitter<ReviewState> emit) {
@@ -327,6 +380,7 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
     if (current == null || current.committing) return;
 
     final scan = current.scan;
+    final editing = current.editing;
     _show(emit, current.copyWith(committing: true));
 
     final at = _now();
@@ -334,12 +388,21 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
       await _store.add(
         Expense.fromExtraction(
           current.extraction,
-          // A Scan's own id, so a Scan can only ever be one Expense however
-          // many times Review is reached, and so the Expense can be matched
-          // back to the receipt image still sitting beside it on disk.
-          id: scan?.id ?? '${at.microsecondsSinceEpoch}-${++_committed}',
-          source: scan == null ? ExpenseSource.manual : ExpenseSource.scanned,
+          // An edit keeps the id it already has, so a correction writes over
+          // the Expense rather than beside it. A Scan uses its own id, so a
+          // Scan can only ever be one Expense however many times Review is
+          // reached.
+          id:
+              editing?.id ??
+              scan?.id ??
+              '${at.microsecondsSinceEpoch}-${++_committed}',
+          source:
+              editing?.source ??
+              (scan == null ? ExpenseSource.manual : ExpenseSource.scanned),
           correctedFields: current.correctedFields,
+          receiptPath:
+              editing?.receiptPath ??
+              (scan == null ? null : receiptPathFor(scan.id)),
           now: at,
         ),
       );
@@ -347,7 +410,7 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
       // waiting to become.
       if (scan != null) await _store.put(scan.movedTo(ScanState.committed));
 
-      _unfinished.remove(scan?.id ?? _manual);
+      _unfinished.remove(current.lane);
       emit(const ReviewIdle());
     } catch (error) {
       _show(emit, current.copyWith(refusal: error.toString()));
@@ -355,7 +418,7 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
   }
 
   void _show(Emitter<ReviewState> emit, ReviewInProgress state) {
-    _unfinished[state.scan?.id ?? _manual] = state;
+    _unfinished[state.lane] = state;
     emit(state);
   }
 
@@ -367,13 +430,13 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
     List<String> correctedFields,
   ) => current.copyWith(
     extraction: extraction,
-    check: Check.of(extraction, now: _now()),
+    check: Check.of(
+      extraction,
+      now: _now(),
+      alreadyReviewed: current.editing != null,
+    ),
     correctedFields: correctedFields,
   );
-
-  /// The manual lane's key. A Scan uses its own id, and no Scan has an empty
-  /// one.
-  static const _manual = '';
 
   static List<String> _recording(List<String> fields, ReviewField field) =>
       fields.contains(field.name) ? fields : [...fields, field.name];

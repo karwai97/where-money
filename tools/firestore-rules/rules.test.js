@@ -8,6 +8,7 @@ import {
 import { readFileSync } from 'node:fs';
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -67,6 +68,11 @@ describe('a signed-in user and their own Ledger', () => {
     const db = testEnv.authenticatedContext(kai).firestore();
     await assertSucceeds(setDoc(doc(db, `users/${kai}/expenses/two`), anExpense));
   });
+
+  it('deletes an Expense they own', async () => {
+    const db = testEnv.authenticatedContext(kai).firestore();
+    await assertSucceeds(deleteDoc(doc(db, `users/${kai}/expenses/one`)));
+  });
 });
 
 describe("a signed-in user and somebody else's Ledger", () => {
@@ -92,6 +98,11 @@ describe("a signed-in user and somebody else's Ledger", () => {
     await assertFails(
       setDoc(doc(db, `users/${stranger}/expenses/one`), { total: 0 }),
     );
+  });
+
+  it("cannot delete another user's Expense", async () => {
+    const db = testEnv.authenticatedContext(kai).firestore();
+    await assertFails(deleteDoc(doc(db, `users/${stranger}/expenses/one`)));
   });
 });
 

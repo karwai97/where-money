@@ -22,6 +22,10 @@ void main() {
     ],
     source: ExpenseSource.scanned,
     needsReview: true,
+    subtotal: 180.00,
+    tax: 4.20,
+    paymentMethod: 'card',
+    receiptPath: 'jaya-grocer-2.jpg',
     correctedFields: ['total', 'date'],
   );
 
@@ -132,5 +136,63 @@ void main() {
     });
 
     expect(read.total, 185.0);
+  });
+
+  test('the receipt the Expense was read from is written down with it', () {
+    final read = expenseFromDocument(
+      groceries.id,
+      expenseToDocument(groceries),
+    );
+
+    expect(read.receiptPath, 'jaya-grocer-2.jpg');
+  });
+
+  test('the arithmetic the Check re-does survives the round trip', () {
+    final read = expenseFromDocument(
+      groceries.id,
+      expenseToDocument(groceries),
+    );
+
+    expect(read.subtotal, 180.00);
+    expect(read.tax, 4.20);
+    expect(read.tip, isNull);
+    expect(read.paymentMethod, 'card');
+  });
+
+  test('an Expense written before the path was recorded still finds its '
+      'receipt', () {
+    final document = expenseToDocument(groceries)..remove('receiptPath');
+
+    final read = expenseFromDocument(groceries.id, document);
+
+    expect(
+      read.receiptPath,
+      'jaya-grocer-2.jpg',
+      reason: 'a scanned Expense carries the id of the Scan the photo is '
+          'named after',
+    );
+  });
+
+  test('an Expense typed by hand before the path was recorded has no receipt '
+      'invented for it', () {
+    final document = expenseToDocument(groceries)
+      ..remove('receiptPath')
+      ..['source'] = 'manual';
+
+    expect(expenseFromDocument(groceries.id, document).receiptPath, isNull);
+  });
+
+  test('an Expense written before there was any of this reads back with the '
+      'rest of it intact', () {
+    final document = expenseToDocument(groceries)
+      ..remove('subtotal')
+      ..remove('tax')
+      ..remove('paymentMethod');
+
+    final read = expenseFromDocument(groceries.id, document);
+
+    expect(read.subtotal, isNull);
+    expect(read.paymentMethod, 'unknown');
+    expect(read.total, 184.20);
   });
 }

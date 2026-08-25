@@ -38,8 +38,17 @@ class Check {
 
   const Check(this.findings);
 
-  factory Check.of(Extraction extraction, {DateTime? now}) =>
-      Check(_findings(extraction, now ?? DateTime.now()));
+  /// [alreadyReviewed] is what an Extraction being corrected months later
+  /// carries. The staleness heuristics below are behavioural claims about a
+  /// receipt that has just been entered — nobody photographs a year-old bill —
+  /// and they are wrong about one the user confirmed the date on long ago.
+  /// Everything else still runs, a date in the future included: an edit is
+  /// exactly where a new typo comes from.
+  factory Check.of(
+    Extraction extraction, {
+    DateTime? now,
+    bool alreadyReviewed = false,
+  }) => Check(_findings(extraction, now ?? DateTime.now(), alreadyReviewed));
 
   bool get hasFailure => findings.any((f) => f.severity == Severity.fail);
   bool get hasWarning => findings.any((f) => f.severity == Severity.warn);
@@ -49,7 +58,11 @@ class Check {
   bool get isConsistent => findings.isEmpty;
 }
 
-List<Finding> _findings(Extraction extraction, DateTime now) {
+List<Finding> _findings(
+  Extraction extraction,
+  DateTime now,
+  bool alreadyReviewed,
+) {
   if (!extraction.isReceipt) {
     return const [
       Finding(
@@ -84,7 +97,7 @@ List<Finding> _findings(Extraction extraction, DateTime now) {
     );
   }
 
-  findings.addAll(_dateFindings(extraction.purchasedAt, now));
+  findings.addAll(_dateFindings(extraction.purchasedAt, now, alreadyReviewed));
 
   final currency = extraction.currency.trim();
   if (currency.length != 3) {
@@ -162,7 +175,11 @@ List<Finding> _findings(Extraction extraction, DateTime now) {
   return findings;
 }
 
-List<Finding> _dateFindings(String? purchasedAt, DateTime now) {
+List<Finding> _dateFindings(
+  String? purchasedAt,
+  DateTime now,
+  bool alreadyReviewed,
+) {
   if (purchasedAt == null) {
     return const [
       Finding(
@@ -199,7 +216,7 @@ List<Finding> _dateFindings(String? purchasedAt, DateTime now) {
   }
 
   final age = now.difference(date).inDays;
-  if (age <= _staleDays) return const [];
+  if (age <= _staleDays || alreadyReviewed) return const [];
 
   // A misread year slips past every other check here: 2025-08-14 is a
   // perfectly valid ISO date in the past. What gives it away is behavioural —

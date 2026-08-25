@@ -39,14 +39,19 @@ void main() {
   );
 
   test('the only thing that deletes a Scan is the user abandoning it', () {
+    // A Scan is a record and an image beside it on disk, so only something
+    // holding `dart:io` can lose one. The Ledger deletes as well, since an
+    // Expense can be thrown away, but what it reaches for is a Firestore
+    // document and it has no way to name a file.
     final deleting = Directory('lib')
         .listSync(recursive: true)
         .whereType<File>()
         .where((file) => file.path.endsWith('.dart'))
-        .where(
-          (file) =>
-              RegExp(r'\.delete(Sync)?\(').hasMatch(file.readAsStringSync()),
-        )
+        .where((file) {
+          final source = file.readAsStringSync();
+          return source.contains('dart:io') &&
+              RegExp(r'\.delete(Sync)?\(').hasMatch(source);
+        })
         .map((file) => file.path.replaceAll(r'\', '/'))
         .toList();
 

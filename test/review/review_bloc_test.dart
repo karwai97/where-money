@@ -277,4 +277,174 @@ void main() {
 
     expect((await reviewing(bloc)).extraction.total, 0);
   });
+
+  group('editing something already in the Ledger', () {
+    Expense committed({
+      List<String> correctedFields = const [],
+      ExpenseSource source = ExpenseSource.scanned,
+      String? receiptPath = 'scan-1.jpg',
+    }) => Expense.fromExtraction(
+      cleanExtraction,
+      id: 'exp-1',
+      now: now,
+      source: source,
+      correctedFields: correctedFields,
+      receiptPath: receiptPath,
+    );
+
+    test(
+      'editing opens on what is in the Ledger, not on a blank form',
+      () async {
+        final expense = committed();
+        final bloc = against(InMemoryLedgerStore([expense]))
+          ..add(ExpenseEditStarted(expense));
+
+        final state = await reviewing(bloc);
+        expect(state.extraction.merchant, 'Village Grocer Bangsar');
+        expect(state.extraction.total, 44.10);
+        expect(state.extraction.lineItems, hasLength(4));
+      },
+    );
+
+    test(
+      'the Check re-runs while editing, the same as it does during Review',
+      () async {
+        final expense = committed();
+        final bloc = against(InMemoryLedgerStore([expense]))
+          ..add(ExpenseEditStarted(expense));
+
+        expect(await labels(bloc), isEmpty);
+
+        bloc.add(const FieldCorrected(ReviewField.total, '99.00'));
+        expect(await labels(bloc), contains('Total does not add up'));
+
+        bloc.add(const FieldCorrected(ReviewField.total, '44.10'));
+        expect(await labels(bloc), isEmpty);
+      },
+    );
+
+    test(
+      "correcting last quarter's Expense is not nagged about how old it is",
+      () async {
+        final old = committed().copyWith(date: DateTime(2026, 3, 2));
+        final bloc = against(InMemoryLedgerStore([old]))
+          ..add(ExpenseEditStarted(old));
+
+        expect(
+          await labels(bloc),
+          isEmpty,
+          reason:
+              'the date was confirmed when it was committed, and no edit can '
+              'settle a Finding about the calendar',
+        );
+      },
+    );
+
+    test(
+      'but a date typed in while editing that has not happened yet still is',
+      () async {
+        final expense = committed();
+        final bloc = against(InMemoryLedgerStore([expense]))
+          ..add(ExpenseEditStarted(expense))
+          ..add(const FieldCorrected(ReviewField.purchasedAt, '2027-01-04'));
+
+        expect(await labels(bloc), contains('Date in the future'));
+      },
+    );
+
+    test(
+      'a saved edit writes over the same Expense rather than adding a second '
+      'one',
+      () async {
+        final expense = committed();
+        final store = InMemoryLedgerStore([expense]);
+        against(store)
+          ..add(ExpenseEditStarted(expense))
+          ..add(const FieldCorrected(ReviewField.merchant, 'Village Grocer KL'))
+          ..add(const ReviewCommitted());
+        await pumpEventQueue();
+
+        expect(store.contents, hasLength(1));
+        expect(store.contents.single.id, 'exp-1');
+        expect(store.contents.single.merchant, 'Village Grocer KL');
+      },
+    );
+
+    test('editing adds to the fields already recorded as corrected rather than '
+        'replacing them', () async {
+      final expense = committed(correctedFields: const ['merchant']);
+      final store = InMemoryLedgerStore([expense]);
+      against(store)
+        ..add(ExpenseEditStarted(expense))
+        ..add(const FieldCorrected(ReviewField.total, '45.10'))
+        ..add(const ReviewCommitted());
+      await pumpEventQueue();
+
+      expect(store.contents.single.correctedFields, ['merchant', 'total']);
+    });
+
+    test('correcting the same field twice is still one correction', () async {
+      final expense = committed(correctedFields: const ['merchant']);
+      final store = InMemoryLedgerStore([expense]);
+      against(store)
+        ..add(ExpenseEditStarted(expense))
+        ..add(const FieldCorrected(ReviewField.merchant, 'Village Grocer KL'))
+        ..add(const ReviewCommitted());
+      await pumpEventQueue();
+
+      expect(store.contents.single.correctedFields, ['merchant']);
+    });
+
+    test(
+      'an edited Expense keeps its receipt and how it got into the Ledger',
+      () async {
+        final expense = committed();
+        final store = InMemoryLedgerStore([expense]);
+        against(store)
+          ..add(ExpenseEditStarted(expense))
+          ..add(const FieldCorrected(ReviewField.total, '45.10'))
+          ..add(const ReviewCommitted());
+        await pumpEventQueue();
+
+        expect(store.contents.single.receiptPath, 'scan-1.jpg');
+        expect(store.contents.single.source, ExpenseSource.scanned);
+      },
+    );
+
+    test(
+      'an Expense typed by hand is still typed by hand after an edit',
+      () async {
+        final expense = committed(
+          source: ExpenseSource.manual,
+          receiptPath: null,
+        );
+        final store = InMemoryLedgerStore([expense]);
+        against(store)
+          ..add(ExpenseEditStarted(expense))
+          ..add(const FieldCorrected(ReviewField.total, '45.10'))
+          ..add(const ReviewCommitted());
+        await pumpEventQueue();
+
+        expect(store.contents.single.source, ExpenseSource.manual);
+        expect(store.contents.single.receiptPath, isNull);
+      },
+    );
+
+    test(
+      'a refused save keeps the typing rather than losing the edit',
+      () async {
+        final expense = committed();
+        final store = InMemoryLedgerStore([expense])
+          ..refuseWrites = StateError('denied');
+        final bloc = against(store)
+          ..add(ExpenseEditStarted(expense))
+          ..add(const FieldCorrected(ReviewField.merchant, 'Village Grocer KL'))
+          ..add(const ReviewCommitted());
+
+        final state = await reviewing(bloc);
+        expect(state.refusal, isNotNull);
+        expect(state.extraction.merchant, 'Village Grocer KL');
+      },
+    );
+  });
 }
