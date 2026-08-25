@@ -168,4 +168,26 @@ void main() {
     expect(find.text('MYR 423.10'), findsOneWidget);
     expect(find.text(thisMonth), findsOneWidget);
   });
+
+  // Geometry rather than text, unlike everything else here, because the defect
+  // this pins is geometric: the fill drew at zero height and every value on the
+  // screen still read correctly. Found by looking at a phone, not a test.
+  testWidgets('a category bar is drawn, not just the track it sits in', (
+    tester,
+  ) async {
+    await openCharts(tester);
+
+    final fill = find.byKey(const ValueKey('category bar: Groceries'));
+    expect(fill, findsOneWidget);
+    expect(
+      tester.getSize(fill).height,
+      greaterThan(0),
+      reason: 'a bar nobody can see is not a chart',
+    );
+    expect(
+      tester.getSize(fill).width,
+      greaterThan(0),
+      reason: 'the largest category fills its track',
+    );
+  });
 }

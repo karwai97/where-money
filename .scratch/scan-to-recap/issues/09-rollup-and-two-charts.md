@@ -24,7 +24,7 @@ One truth, and it stays deterministic and testable.
 - [x] Expenses outside the Home Currency are excluded from both charts, and the excluded count is on screen
 - [x] A month with no Expenses renders as empty rather than as an error or a zeroed chart
 - [x] Nothing derived from the Rollup is persisted
-- [ ] Charts are legible in both light and dark themes
+- [x] Charts are legible in both light and dark themes
 
 ## Comments
 
@@ -120,3 +120,25 @@ Two things are weaker than they look:
   charts follow it; the screen's title names the month so nothing is ambiguous.
 - **`packages/core/lib/src/rollup.dart` carries two hunks of pure formatter
   churn** from this machine's `dart format`, as the handoff warned.
+
+### Measured on a device, 2026-08-25, and it found a bug
+
+This criterion was deliberately left unticked because contrast had been reasoned
+about rather than looked at. Looking at it on the OPPO CPH2499 found that
+**the category bars were not being drawn at all** — every row showed its empty
+track, in both themes, while the Category name and the amount beside it read
+perfectly.
+
+The cause was geometry, not colour. `_Track` aligns the fill inside a
+fixed-height container, which leaves the fill loosely constrained, and a
+`DecoratedBox` with no child of its own answers a loose height constraint by
+taking no height. `heightFactor: 1` fixes it. `month_on_screen_test.dart` now
+pins it, and unusually for this repo the assertion is geometric — the defect was
+geometric, and every assertion on visible text passed throughout.
+
+With that fixed, both charts read clearly in both themes: the accent bars carry
+against either surface and every label and figure is high contrast.
+
+**What was not measured**: one Category. Relative bar lengths across a full
+month, and the 2% floor a nearly-free Category is clamped to, have still only
+been reasoned about.

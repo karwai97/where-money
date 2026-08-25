@@ -126,3 +126,28 @@ though the field is still stored.
   did have to look at it.
 - **`needsReview` is recomputed on save and shown nowhere.** Editing an Expense
   can flip it, and no screen would say so.
+
+### Watched on a device, 2026-08-25
+
+A device appeared the day this ticket was committed. Everything below was
+exercised on the OPPO CPH2499 on Android 16, against live Firebase and the
+deployed Worker.
+
+- **Opening an Expense works**, with the headline, the date and Category, the
+  source line, and the no-Line-Items case reading as intended.
+- **Editing works, and the Check runs while it does.** Typing a subtotal of
+  20.00 against a total of 26.00 raised "Total does not add up — off by 6.00";
+  typing 6.00 into Tax cleared it. The button says **Save**, not "Add to
+  Ledger", and saving wrote over the same Expense.
+- **The Category label reaches the list.** "Dining out", not "dining" — the
+  loose end three handoffs had carried.
+- **The typed-by-hand mark is on the row** and on the Expense itself.
+- **The edit survived the round trip**: the source stayed manual and the screen
+  re-read from the Ledger when Review popped.
+
+Still not watched, because there was no receipt to photograph: **an Expense with
+Line Items, an Expense with a receipt image, the missing-image line, deleting,
+and a foreign-currency Expense.** The tick on those five criteria is still a
+test's word. A real receipt would settle all of them at once, and would also be
+the first data point for the Corrected Fields tally.
+

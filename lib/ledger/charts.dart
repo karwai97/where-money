@@ -52,6 +52,7 @@ class CategoryBreakdown extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   _Track(
+                    label: category.label,
                     fraction: category.amount / largest,
                     fill: colours.primary,
                     track: colours.surfaceContainerHighest,
@@ -67,11 +68,13 @@ class CategoryBreakdown extends StatelessWidget {
 
 class _Track extends StatelessWidget {
   const _Track({
+    required this.label,
     required this.fraction,
     required this.fill,
     required this.track,
   });
 
+  final String label;
   final double fraction;
   final Color fill;
   final Color track;
@@ -87,7 +90,13 @@ class _Track extends StatelessWidget {
         // A category that cost almost nothing still gets a mark, so a row with
         // a number beside it is never a row with nothing beside it.
         widthFactor: fraction.clamp(0.02, 1.0),
+        // The height has to be asked for. Aligning inside the track leaves the
+        // fill loosely constrained, and a DecoratedBox with no child of its own
+        // answers that by taking no height at all — which drew every bar
+        // invisible while every number beside it stayed right.
+        heightFactor: 1,
         child: DecoratedBox(
+          key: ValueKey('category bar: $label'),
           decoration: BoxDecoration(
             color: fill,
             borderRadius: const BorderRadius.horizontal(

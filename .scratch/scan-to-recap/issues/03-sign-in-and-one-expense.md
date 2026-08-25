@@ -14,10 +14,10 @@ wrong-user read is refused by the rules rather than by app code.
 
 **Status:** ready-for-agent
 
-- [ ] Signing in with Google succeeds on a physical device, with SHA-1 registered
-- [ ] The session survives killing and relaunching the app
+- [x] Signing in with Google succeeds on a physical device, with SHA-1 registered
+- [x] The session survives killing and relaunching the app
 - [x] A debug action writes an Expense, and it appears in the Ledger list
-- [ ] The Expense survives a relaunch, and survives a reinstall
+- [x] The Expense survives a relaunch, and survives a reinstall
 - [x] No type above the repository mentions a Firestore document, snapshot or map
 - [x] Security rules deny reads and writes to another user's path, verified by test rather than by inspection
 - [x] Signing out clears the Ledger from view
@@ -103,3 +103,24 @@ because nothing has asked for one; the Ledger has no month filter, which is
 ticket 09's; and `expenseToDocument` writes the date as an ISO-8601 string rather
 than a Timestamp, so month ranges stay string comparisons and the mapping stays
 testable with no Firestore in the room.
+
+### Watched on a device, 2026-08-25
+
+The three criteria this ticket left open have been exercised on the OPPO
+CPH2499 running Android 16 — the same device ticket 01 used — against live
+Firebase, six tickets after they were written.
+
+- **Google Sign-In succeeded.** The account picker offered two accounts, one was
+  chosen, and the app landed on the Ledger. The debug SHA-1 is the one
+  registered, so this says nothing about release builds, which are still signed
+  with the debug key.
+- **The session survived more than the criterion asks.** The app was rebuilt and
+  **reinstalled** over itself, then cold-started: it went straight to the
+  Ledger with no sign-in screen.
+- **The Expense survived that same reinstall.** An Expense typed in by hand
+  before the reinstall was read back from Firestore afterwards, with its
+  merchant, date, Category and total intact.
+
+Play Services logs `Phenotype.API is not available` and a `DEVELOPER_ERROR`
+`ConnectionResult` during sign-in. Both are internal to Google Play Services,
+neither is user-facing, and sign-in works regardless.
