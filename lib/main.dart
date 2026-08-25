@@ -8,8 +8,10 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import 'app.dart';
+import 'data/device_preferences.dart';
 import 'data/device_scan_store.dart';
 import 'data/firestore_ledger_store.dart';
+import 'lock/local_auth_lock.dart';
 import 'scan/worker_model_gateway.dart';
 import 'session/google_sign_in_gateway.dart';
 
@@ -32,6 +34,8 @@ Future<void> main() async {
   runApp(
     WhereMoneyApp(
       signIn: signIn,
+      lock: LocalAuthLock(),
+      preferences: StoredDevicePreferences(),
       model: WorkerModelGateway(
         endpoint: worker,
         idToken: () =>

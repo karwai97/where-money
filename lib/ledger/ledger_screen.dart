@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import '../data/device_preferences.dart';
 import '../data/ledger_store.dart';
 import '../on_screen.dart';
 import '../review/review_bloc.dart';
@@ -10,19 +11,25 @@ import '../scan/inbox_bloc.dart';
 import '../scan/inbox_screen.dart';
 import '../scan/model_gateway.dart';
 import '../scan/photographer.dart';
-import '../session/session_bloc.dart';
+import '../settings/settings_screen.dart';
 import 'expense_screen.dart';
 import 'how_it_got_here.dart';
 import 'ledger_bloc.dart';
+import 'photos_stayed_behind.dart';
 import 'rollup_screen.dart';
 
 class LedgerScreen extends StatelessWidget {
   const LedgerScreen({
     super.key,
+    required this.uid,
     required this.store,
     required this.model,
     required this.photograph,
   });
+
+  /// Whose Ledger this is. Only the once-per-account notice needs it; the
+  /// store already knows.
+  final String uid;
 
   final LedgerStore store;
   final ModelGateway model;
@@ -45,70 +52,81 @@ class LedgerScreen extends StatelessWidget {
         BlocProvider(
           create: (_) => InboxBloc(store, model)..add(const InboxOpened()),
         ),
-      ],
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Ledger'),
-          actions: [
-            Builder(builder: _chartsAction),
-            Builder(builder: _inboxAction),
-            IconButton(
-              tooltip: 'Sign out',
-              icon: const Icon(Icons.logout),
-              onPressed: () =>
-                  context.read<SessionBloc>().add(const SignOutRequested()),
-            ),
-          ],
+        BlocProvider(
+          create: (context) =>
+              PhotosStayedBehind(store, context.read<DevicePreferences>(), uid),
         ),
-        floatingActionButton: Builder(
-          builder: (context) => Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              FloatingActionButton.small(
-                heroTag: 'manual',
-                tooltip: 'Add an Expense by hand',
-                onPressed: () => _addByHand(context),
-                child: const Icon(Icons.add),
-              ),
-              const SizedBox(height: 12),
-              FloatingActionButton(
-                heroTag: 'photograph',
-                tooltip: 'Photograph a receipt',
-                onPressed: () => _photographAReceipt(context),
-                child: const Icon(Icons.photo_camera),
-              ),
+      ],
+      child: _SaysThePhotosStayedBehind(
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('Ledger'),
+            actions: [
+              Builder(builder: _chartsAction),
+              Builder(builder: _inboxAction),
+              Builder(builder: _settingsAction),
             ],
           ),
-        ),
-        body: BlocBuilder<LedgerBloc, LedgerState>(
-          builder: (context, state) => switch (state) {
-            LedgerLoading() => const Center(child: CircularProgressIndicator()),
-            LedgerUnavailable(:final reason) => _Message(
-              'Your Ledger could not be read.',
-              detail: reason,
-            ),
-            LedgerReady() => Column(
+          floatingActionButton: Builder(
+            builder: (context) => Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                _MonthBar(state),
-                Expanded(
-                  child: switch (state) {
-                    LedgerReady(expenses: []) => const _Message(
-                      'Nothing here yet.\nAdd one with the button below.',
-                    ),
-                    LedgerReady(inMonth: []) => _Message(
-                      'Nothing in ${state.rollup.monthLabel}.',
-                    ),
-                    LedgerReady(:final inMonth) => _Expenses(inMonth),
-                  },
+                FloatingActionButton.small(
+                  heroTag: 'manual',
+                  tooltip: 'Add an Expense by hand',
+                  onPressed: () => _addByHand(context),
+                  child: const Icon(Icons.add),
+                ),
+                const SizedBox(height: 12),
+                FloatingActionButton(
+                  heroTag: 'photograph',
+                  tooltip: 'Photograph a receipt',
+                  onPressed: () => _photographAReceipt(context),
+                  child: const Icon(Icons.photo_camera),
                 ),
               ],
             ),
-          },
+          ),
+          body: BlocBuilder<LedgerBloc, LedgerState>(
+            builder: (context, state) => switch (state) {
+              LedgerLoading() => const Center(
+                child: CircularProgressIndicator(),
+              ),
+              LedgerUnavailable(:final reason) => _Message(
+                'Your Ledger could not be read.',
+                detail: reason,
+              ),
+              LedgerReady() => Column(
+                children: [
+                  _MonthBar(state),
+                  Expanded(
+                    child: switch (state) {
+                      LedgerReady(expenses: []) => const _Message(
+                        'Nothing here yet.\nAdd one with the button below.',
+                      ),
+                      LedgerReady(inMonth: []) => _Message(
+                        'Nothing in ${state.rollup.monthLabel}.',
+                      ),
+                      LedgerReady(:final inMonth) => _Expenses(inMonth),
+                    },
+                  ),
+                ],
+              ),
+            },
+          ),
         ),
       ),
     );
   }
+
+  Widget _settingsAction(BuildContext context) => IconButton(
+    tooltip: 'Settings',
+    icon: const Icon(Icons.settings),
+    onPressed: () => Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const SettingsScreen())),
+  );
 
   void _addByHand(BuildContext context) {
     final review = context.read<ReviewBloc>()
@@ -319,4 +337,53 @@ class _Message extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Watches the Ledger arrive and, on a phone it was restored onto rather than
+/// photographed on, says once that the photos did not come with it.
+class _SaysThePhotosStayedBehind extends StatelessWidget {
+  const _SaysThePhotosStayedBehind({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => MultiBlocListener(
+    listeners: [
+      BlocListener<LedgerBloc, LedgerState>(
+        listener: (context, state) {
+          if (state case LedgerReady(:final expenses)) {
+            context.read<PhotosStayedBehind>().considered(expenses);
+          }
+        },
+      ),
+      BlocListener<PhotosStayedBehind, bool>(
+        listener: (context, saying) {
+          if (saying) _say(context);
+        },
+      ),
+    ],
+    child: child,
+  );
+
+  Future<void> _say(BuildContext context) async {
+    final notice = context.read<PhotosStayedBehind>();
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('The photos stayed behind'),
+        content: const Text(
+          'Every Expense in your Ledger came back from your account. Receipt '
+          'photos never leave the phone they were taken on, so this one has '
+          'none of them. Nothing else is missing.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Got it'),
+          ),
+        ],
+      ),
+    );
+    await notice.acknowledged();
+  }
 }

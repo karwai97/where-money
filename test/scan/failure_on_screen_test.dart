@@ -4,6 +4,8 @@ import 'package:where_money/app.dart';
 import 'package:where_money/scan/model_gateway.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import '../fakes/fake_device_lock.dart';
+import '../fakes/in_memory_device_preferences.dart';
 import '../fakes/fake_model_gateway.dart';
 import '../fakes/fake_sign_in_gateway.dart';
 import '../fakes/in_memory_ledger_store.dart';
@@ -23,6 +25,9 @@ void main() {
   Future<void> open(WidgetTester tester) async {
     await tester.pumpWidget(
       WhereMoneyApp(
+        // The lock is not what these are about, so it is off.
+        lock: FakeDeviceLock(),
+        preferences: InMemoryDevicePreferences(locksOnOpen: false),
         signIn: FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai),
         ledgerFor: (_) => store,
         model: model,

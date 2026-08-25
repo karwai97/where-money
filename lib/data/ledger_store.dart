@@ -25,6 +25,11 @@ abstract interface class LedgerStore {
   /// them and that is not a failure.
   Future<Uint8List?> receiptAt(String path);
 
+  /// Whether that receipt is on this device, without reading it. A Ledger
+  /// restored onto a new phone has none of them, and finding that out should
+  /// not cost a pass over every image on disk.
+  Future<bool> hasReceiptAt(String path);
+
   /// Every Scan the user has not yet Reviewed, newest first.
   Stream<List<Scan>> inbox();
 

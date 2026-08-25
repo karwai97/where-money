@@ -61,15 +61,19 @@ class DeviceScanStore {
     return file.existsSync() ? file.readAsBytes() : null;
   }
 
-  /// A receipt by the path an Expense recorded. Anything that is not a plain
-  /// name in this directory is treated as missing rather than followed — a
-  /// path out of a document is not a path to trust.
   Future<Uint8List?> receiptAt(String path) async {
-    if (p.basename(path) != path) return null;
-
-    final file = File(p.join(directory.path, path));
-    return file.existsSync() ? file.readAsBytes() : null;
+    final file = _receiptFile(path);
+    return file != null && file.existsSync() ? file.readAsBytes() : null;
   }
+
+  Future<bool> hasReceiptAt(String path) async =>
+      _receiptFile(path)?.existsSync() ?? false;
+
+  /// A receipt by the path an Expense recorded. Anything that is not a plain
+  /// name in this directory is null rather than followed — a path out of a
+  /// document is not a path to trust.
+  File? _receiptFile(String path) =>
+      p.basename(path) == path ? File(p.join(directory.path, path)) : null;
 
   Future<void> abandon(String scanId) async {
     for (final file in [_recordFile(scanId), _imageFile(scanId)]) {

@@ -47,6 +47,9 @@ class FirestoreLedgerStore implements LedgerStore {
   Future<Uint8List?> receiptAt(String path) => scans.receiptAt(path);
 
   @override
+  Future<bool> hasReceiptAt(String path) => scans.hasReceiptAt(path);
+
+  @override
   Stream<List<Scan>> inbox() => scans.inbox();
 
   @override

@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:where_money/app.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import 'fakes/fake_device_lock.dart';
+import 'fakes/in_memory_device_preferences.dart';
 import 'fakes/fake_model_gateway.dart';
 import 'fakes/fake_sign_in_gateway.dart';
 import 'fakes/in_memory_ledger_store.dart';
@@ -19,6 +21,9 @@ void main() {
   Future<void> open(WidgetTester tester) async {
     await tester.pumpWidget(
       WhereMoneyApp(
+        // The lock is not what these are about, so it is off.
+        lock: FakeDeviceLock(),
+        preferences: InMemoryDevicePreferences(locksOnOpen: false),
         signIn: signIn,
         ledgerFor: (_) => store,
         model: model,
@@ -63,7 +68,9 @@ void main() {
     await open(tester);
     expect(find.text('Ikea Damansara'), findsWidgets);
 
-    await tester.tap(find.byTooltip('Sign out'));
+    await tester.tap(find.byTooltip('Settings'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sign out'));
     await tester.pumpAndSettle();
 
     expect(find.text('Ikea Damansara'), findsNothing);

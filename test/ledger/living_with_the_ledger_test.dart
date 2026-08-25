@@ -6,6 +6,8 @@ import 'package:where_money/app.dart';
 import 'package:where_money/data/ledger_store.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import '../fakes/fake_device_lock.dart';
+import '../fakes/in_memory_device_preferences.dart';
 import '../fakes/fake_model_gateway.dart';
 import '../fakes/fake_sign_in_gateway.dart';
 import '../fakes/in_memory_ledger_store.dart';
@@ -74,6 +76,7 @@ void main() {
   );
 
   late InMemoryLedgerStore store;
+  late InMemoryDevicePreferences preferences;
   late Uint8List receipt;
 
   setUpAll(() => receipt = photograph(width: 400, height: 600));
@@ -81,6 +84,7 @@ void main() {
   setUp(() {
     store = InMemoryLedgerStore([supermarket, byHand, abroad])
       ..keepReceipt(receiptPathFor('scan-7'), receipt);
+    preferences = InMemoryDevicePreferences(locksOnOpen: false);
   });
 
   tearDown(() {
@@ -96,6 +100,9 @@ void main() {
       ..devicePixelRatio = 1;
     await tester.pumpWidget(
       WhereMoneyApp(
+        // The lock is not what these are about, so it is off.
+        lock: FakeDeviceLock(),
+        preferences: preferences,
         signIn: FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai),
         ledgerFor: (_) => store,
         model: FakeModelGateway(),
@@ -152,6 +159,13 @@ void main() {
   testWidgets('an Expense whose photo did not come to this device says so '
       'rather than breaking', (tester) async {
     store = InMemoryLedgerStore([supermarket]);
+    // A Ledger of one photoless Expense is also a Ledger restored onto a new
+    // phone. That has already been said to this user; this is about what the
+    // Expense screen does afterwards.
+    await preferences.rememberExplainingMissingPhotos(
+      FakeSignInGateway.kai.uid,
+    );
+
     await open(tester, 'Village Grocer Bangsar');
     await tester.pumpAndSettle();
 

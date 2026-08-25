@@ -94,6 +94,16 @@ from the Ledger. "Where your money went" is user-facing copy for a Recap, never
 an identifier.
 _Avoid_: Narrative, summary, story, insight
 
+### The phone
+
+**Lock**:
+The fingerprint or device PIN this app asks for before showing a Ledger.
+Guards the data already on this device and nothing else. Signing in is the
+other thing entirely — it says who the user is to the Worker so their Scan
+allowance can be counted, and neither stands in for the other. A phone with no
+screen lock has no Lock, and is shown the Ledger rather than shut out of it.
+_Avoid_: Passcode, auth, security, biometrics as a noun for the feature
+
 ## Vocabulary this project does not use
 
 **"AI"** as a noun in code. The thing being called is a Model; what comes back is

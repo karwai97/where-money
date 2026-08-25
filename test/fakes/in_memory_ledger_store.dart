@@ -53,6 +53,9 @@ class InMemoryLedgerStore implements LedgerStore {
   @override
   Future<Uint8List?> receiptAt(String path) async => _receipts[path];
 
+  @override
+  Future<bool> hasReceiptAt(String path) async => _receipts.containsKey(path);
+
   /// A receipt already on this phone, for a Ledger seeded without anyone
   /// having photographed anything.
   void keepReceipt(String path, Uint8List bytes) => _receipts[path] = bytes;
