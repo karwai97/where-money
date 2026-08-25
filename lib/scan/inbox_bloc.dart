@@ -40,6 +40,21 @@ final class ScanAbandoned extends InboxEvent {
   List<Object?> get props => [scanId];
 }
 
+/// The user asking for a Scan to be read again, rather than waiting on the
+/// background schedule. Refused for a Scan the Model has already read.
+final class ScanReadAgain extends InboxEvent {
+  const ScanReadAgain(this.scanId);
+
+  final String scanId;
+
+  @override
+  List<Object?> get props => [scanId];
+}
+
+final class _ReadAgainDue extends InboxEvent {
+  const _ReadAgainDue();
+}
+
 final class _InboxChanged extends InboxEvent {
   const _InboxChanged(this.scans);
 
@@ -73,19 +88,36 @@ final class InboxReady extends InboxState {
 }
 
 class InboxBloc extends Bloc<InboxEvent, InboxState> {
-  InboxBloc(this._store, this._model) : super(const InboxLoading()) {
+  InboxBloc(this._store, this._model, {Duration readAgainAfter = _defaultWait})
+    : _firstWait = readAgainAfter,
+      _wait = readAgainAfter,
+      super(const InboxLoading()) {
     on<InboxOpened>(_onOpened);
     on<ScanCaptured>(_onCaptured);
     on<ScanAbandoned>((event, emit) => _store.abandon(event.scanId));
+    on<ScanReadAgain>(_onReadAgain);
+    on<_ReadAgainDue>(_onReadAgainDue);
     on<_InboxChanged>((event, emit) {
       emit(InboxReady(event.scans));
       event.scans.where(_waitingToBeRead).forEach(_read);
+      _scheduleReadAgain(event.scans);
     });
   }
 
+  /// How long a Scan with no signal waits before it goes round again. The
+  /// wait doubles while the signal stays gone, up to [_longestWaitMultiple]
+  /// times this, so a phone in a basement settles down to one attempt every
+  /// couple of minutes instead of hammering. An attempt that reaches nothing
+  /// costs nothing, which is what makes the short first wait affordable.
+  static const _defaultWait = Duration(seconds: 15);
+  static const _longestWaitMultiple = 8;
+
   final LedgerStore _store;
   final ModelGateway _model;
+  final Duration _firstWait;
   StreamSubscription<List<Scan>>? _watching;
+  Timer? _nextSweep;
+  Duration _wait;
 
   /// Scans this bloc has taken responsibility for, so a Scan is not sent twice
   /// when the Inbox re-reads while it is still in flight.
@@ -116,8 +148,47 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
           scan.state == ScanState.extracting) &&
       !_claimed.contains(scan.id);
 
+  /// A Scan the user asked for again, or one waiting on a signal. Both go
+  /// through [_read], so a Scan already in flight is not sent twice however
+  /// many times the button is tapped.
+  void _onReadAgain(ScanReadAgain event, Emitter<InboxState> emit) {
+    if (state case InboxReady(:final scans)) {
+      final scan = scans.where((held) => held.id == event.scanId).firstOrNull;
+      if (scan != null && scan.canBeReadAgain) _read(scan);
+    }
+  }
+
+  /// One Scan per sweep. A wallet's worth of receipts stuck behind the same
+  /// dead network would otherwise spend an attempt each every time this fires;
+  /// the oldest goes first, and the rest follow at the short wait once one of
+  /// them gets through.
+  void _onReadAgainDue(_ReadAgainDue event, Emitter<InboxState> emit) {
+    final longest = _firstWait * _longestWaitMultiple;
+    _wait = _wait * 2 < longest ? _wait * 2 : longest;
+
+    if (state case InboxReady(:final scans)) {
+      final next = scans.where(_waitingForSignal).lastOrNull;
+      if (next != null) _read(next);
+      _scheduleReadAgain(scans);
+    }
+  }
+
+  bool _waitingForSignal(Scan scan) =>
+      scan.state == ScanState.failed &&
+      (scan.failure?.triesAgainByItself ?? false);
+
+  void _scheduleReadAgain(List<Scan> scans) {
+    if (!scans.any(_waitingForSignal)) {
+      _nextSweep?.cancel();
+      _nextSweep = null;
+      return;
+    }
+    if (_nextSweep?.isActive ?? false) return;
+    _nextSweep = Timer(_wait, () => add(const _ReadAgainDue()));
+  }
+
   void _read(Scan scan) {
-    _claimed.add(scan.id);
+    if (!_claimed.add(scan.id)) return;
     _reading = _reading.then((_) => _extract(scan));
   }
 
@@ -130,32 +201,62 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
     if (receipt == null) return;
 
     final answer = await _model.extract(receipt);
+    // Something answered, so there is no longer anything to back off from.
+    // The pending sweep goes with it, or the backlog behind this Scan would
+    // keep waiting the long wait that has just been proved unnecessary.
+    if (answer is! ModelOutOfReach) {
+      _wait = _firstWait;
+      _nextSweep?.cancel();
+    }
+
     // Abandoning is the user's, and they may have done it while the Model was
     // reading. `put` is what keeps that decision.
     await _store.put(_after(scan, answer));
+    // Held only for the flight. A Scan that has landed is protected by the
+    // state it landed in, and letting go is what lets it be read again.
+    _claimed.remove(scan.id);
   }
 
   @override
   Future<void> close() {
+    _nextSweep?.cancel();
     _watching?.cancel();
     return super.close();
   }
 }
 
-/// Where an answer leaves the Scan. Ticket 08 owns telling the failures apart
-/// on screen; what matters here is that the allowance is not a failure and a
-/// photo of a cat is not something to Review.
+/// Where an answer leaves the Scan. The allowance is not a failure and a photo
+/// of a cat is not something to Review; everything else that went wrong is a
+/// failure the Scan carries, because the Inbox has different words for each.
 Scan _after(Scan scan, ModelAnswer answer) => switch (answer) {
   ModelAnswered(outcome: ExtractionRead(:final extraction)) =>
     extraction.isReceipt
         ? scan.movedTo(ScanState.extracted, extraction: extraction)
         : scan.movedTo(ScanState.notReceipt, extraction: extraction),
-  AllowanceSpent() => scan.movedTo(ScanState.capped),
-  ModelAnswered() ||
-  TokenRefused() ||
-  ModelOutOfReach() ||
-  ImageNotAccepted() => scan.movedTo(ScanState.failed),
+  AllowanceSpent(:final resetsAt) => scan.movedTo(
+    ScanState.capped,
+    allowanceResetsAt: resetsAt,
+  ),
+  ModelAnswered(outcome: ExtractionRefused()) => _failed(
+    scan,
+    ScanFailure.refused,
+  ),
+  ModelAnswered(outcome: ExtractionNoOutput()) => _failed(
+    scan,
+    ScanFailure.saidNothing,
+  ),
+  ModelAnswered(outcome: ExtractionMalformed()) => _failed(
+    scan,
+    ScanFailure.notLegible,
+  ),
+  ModelOutOfReach() => _failed(scan, ScanFailure.outOfReach),
+  ModelUnavailable() => _failed(scan, ScanFailure.modelUnavailable),
+  TokenRefused() => _failed(scan, ScanFailure.tokenRefused),
+  ImageNotAccepted() => _failed(scan, ScanFailure.imageNotAccepted),
 };
+
+Scan _failed(Scan scan, ScanFailure failure) =>
+    scan.movedTo(ScanState.failed, failure: failure);
 
 /// Off the main isolate: a 4200x2500 photograph takes 824ms to decode and
 /// re-encode, and the user is meant to be photographing the next receipt

@@ -80,4 +80,30 @@ void main() {
     expect(reopened.single.state, ScanState.extracted);
     expect(reopened.single.extraction?.total, cleanExtraction.total);
   });
+
+  test('a failed Scan still says why after the app is started again', () async {
+    final store = DeviceScanStore(directory);
+    final scan = await store.capture(image);
+    await store.put(
+      scan.movedTo(ScanState.failed, failure: ScanFailure.tokenRefused),
+    );
+
+    final restarted = await DeviceScanStore(directory).inbox().first;
+
+    expect(restarted.single.failure, ScanFailure.tokenRefused);
+  });
+
+  test('a capped Scan still says when it resets after the app is started '
+      'again', () async {
+    final resetsAt = DateTime.utc(2026, 8, 26, 16);
+    final store = DeviceScanStore(directory);
+    final scan = await store.capture(image);
+    await store.put(
+      scan.movedTo(ScanState.capped, allowanceResetsAt: resetsAt),
+    );
+
+    final restarted = await DeviceScanStore(directory).inbox().first;
+
+    expect(restarted.single.allowanceResetsAt, resetsAt);
+  });
 }

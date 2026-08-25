@@ -39,11 +39,21 @@ final class TokenRefused extends ModelAnswer {
   final String reason;
 }
 
-/// Nothing got through — no signal, or the Worker or the Model was
-/// unreachable. The Scan is untouched, and what answers this is trying again
-/// later.
+/// Nothing got through from this phone — no signal, or the Worker never
+/// answered. The Scan is untouched, and what answers this is waiting.
 final class ModelOutOfReach extends ModelAnswer {
   const ModelOutOfReach(this.detail);
+
+  final String detail;
+}
+
+/// The Worker answered, and the answer was that it could not do it: the Model
+/// was down, Google's signing keys were unreachable, or something nobody has
+/// seen before. Separate from [ModelOutOfReach] because the user has a
+/// connection and telling them otherwise is a lie, and because the call
+/// reached the Worker and so has already spent an attempt.
+final class ModelUnavailable extends ModelAnswer {
+  const ModelUnavailable(this.detail);
 
   final String detail;
 }

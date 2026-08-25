@@ -79,7 +79,7 @@ ModelAnswer _readAnswer(http.Response answer) {
   try {
     body = jsonDecode(answer.body) as Map<String, dynamic>;
   } catch (_) {
-    return ModelOutOfReach(
+    return ModelUnavailable(
       'the Worker answered ${answer.statusCode} with something that was not '
       'JSON',
     );
@@ -98,7 +98,10 @@ ModelAnswer _readAnswer(http.Response answer) {
     'bad_image' || 'image_too_large' => ImageNotAccepted(
       '${body['message'] ?? body['error']}',
     ),
-    final Object? error => ModelOutOfReach(
+    // Everything left is the far end's problem, not the caller's:
+    // `model_unavailable`, `signing_keys_unavailable`, and whatever a later
+    // version of the Worker invents.
+    final Object? error => ModelUnavailable(
       '${error ?? answer.statusCode}: ${body['message'] ?? answer.body}',
     ),
   };

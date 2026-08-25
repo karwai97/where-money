@@ -131,7 +131,18 @@ void main() {
         }),
       ).extract(receipt);
 
-      expect(answer, isA<ModelOutOfReach>());
+      expect(answer, isA<ModelUnavailable>());
     },
   );
+
+  test('the Model being down is not the caller having no signal', () async {
+    final answer = await gateway(
+      (_) async => refusing(502, {
+        'error': 'model_unavailable',
+        'message': 'upstream refused',
+      }),
+    ).extract(receipt);
+
+    expect(answer, isA<ModelUnavailable>());
+  });
 }

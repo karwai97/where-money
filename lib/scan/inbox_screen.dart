@@ -44,29 +44,50 @@ class _ScanTile extends StatelessWidget {
   bool get _discarding => scan.state == ScanState.notReceipt;
 
   @override
-  Widget build(BuildContext context) => ListTile(
-    leading: const Icon(Icons.receipt_long),
-    title: Text(_waitingOn(scan.state)),
-    subtitle: Text('Photographed ${asMoment(scan.capturedAt)}'),
-    onTap: scan.state == ScanState.extracted ? () => _review(context) : null,
-    trailing: switch (scan.state) {
-      ScanState.notReceipt => FilledButton.tonal(
-        onPressed: () => _abandon(context),
-        child: const Text('Discard'),
-      ),
-      ScanState.extracted => Row(
-        mainAxisSize: MainAxisSize.min,
+  Widget build(BuildContext context) {
+    final (saying, next) = _saying(scan);
+    return ListTile(
+      isThreeLine: next != null,
+      leading: const Icon(Icons.receipt_long),
+      title: Text(saying),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          FilledButton(
-            onPressed: () => _review(context),
-            child: const Text('Review'),
-          ),
-          _abandonButton(context),
+          Text('Photographed ${asMoment(scan.capturedAt)}'),
+          if (next != null) Text(next),
         ],
       ),
-      _ => _abandonButton(context),
-    },
-  );
+      onTap: scan.state == ScanState.extracted ? () => _review(context) : null,
+      trailing: switch (scan.state) {
+        ScanState.notReceipt => FilledButton.tonal(
+          onPressed: () => _abandon(context),
+          child: const Text('Discard'),
+        ),
+        ScanState.extracted => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FilledButton(
+              onPressed: () => _review(context),
+              child: const Text('Review'),
+            ),
+            _abandonButton(context),
+          ],
+        ),
+        _ when scan.canBeReadAgain => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FilledButton.tonal(
+              onPressed: () =>
+                  context.read<InboxBloc>().add(ScanReadAgain(scan.id)),
+              child: const Text('Read again'),
+            ),
+            _abandonButton(context),
+          ],
+        ),
+        _ => _abandonButton(context),
+      },
+    );
+  }
 
   Widget _abandonButton(BuildContext context) => IconButton(
     tooltip: 'Abandon this Scan',
@@ -111,13 +132,54 @@ class _ScanTile extends StatelessWidget {
   }
 }
 
-/// One line a user can act on, per state.
-String _waitingOn(ScanState state) => switch (state) {
-  ScanState.captured => 'Waiting to be read',
-  ScanState.extracting => 'Being read',
-  ScanState.extracted => 'Ready to Review',
-  ScanState.failed => 'Could not be read',
-  ScanState.capped => 'Today\'s Scans are used up',
-  ScanState.notReceipt => 'This does not look like a receipt',
-  ScanState.committed => 'In your Ledger',
+/// What the Inbox says about a Scan: what happened, and what happens next
+/// where the user would otherwise have to guess. The two travel together —
+/// every way a Scan can fail means something different to the user and wants
+/// something different done about it — so they are read off one switch rather
+/// than two that could drift apart.
+(String, String?) _saying(Scan scan) => switch (scan.state) {
+  ScanState.captured => ('Waiting to be read', null),
+  ScanState.extracting => ('Being read', null),
+  ScanState.extracted => ('Ready to Review', null),
+  ScanState.notReceipt => ('This does not look like a receipt', null),
+  ScanState.committed => ('In your Ledger', null),
+  ScanState.capped => (
+    "Today's Scans are used up",
+    switch (scan.allowanceResetsAt) {
+      final resetsAt? => 'More Scans at ${asMoment(resetsAt)}.',
+      null => 'More Scans tomorrow.',
+    },
+  ),
+  ScanState.failed => switch (scan.failure) {
+    ScanFailure.refused => (
+      'The Model would not read this photo',
+      'A clearer photograph is the likeliest fix.',
+    ),
+    ScanFailure.saidNothing => (
+      'The Model answered with nothing at all',
+      'Reading it again usually works.',
+    ),
+    ScanFailure.notLegible => (
+      "The Model's answer was not readable",
+      'Reading it again usually works.',
+    ),
+    ScanFailure.outOfReach => (
+      'No connection when this was read',
+      'It will keep trying on its own.',
+    ),
+    ScanFailure.modelUnavailable => (
+      'The Model was not available',
+      'This usually passes. Read it again in a minute.',
+    ),
+    ScanFailure.tokenRefused => (
+      'Your sign-in was not accepted',
+      'Sign in again, then read it again.',
+    ),
+    ScanFailure.imageNotAccepted => (
+      'This photo could not be sent',
+      'Photograph the receipt again.',
+    ),
+    // A record written by a version of the app that could not yet say why.
+    null => ('This could not be read', null),
+  },
 };

@@ -10,6 +10,8 @@ Map<String, Object?> scanToRecord(Scan scan) => {
   'capturedAt': scan.capturedAt.toIso8601String(),
   'state': scan.state.name,
   'extraction': scan.extraction?.toJson(),
+  'failure': scan.failure?.name,
+  'allowanceResetsAt': scan.allowanceResetsAt?.toIso8601String(),
 };
 
 /// Throws [FormatException] if the record has no legible capture time. A Scan
@@ -32,5 +34,11 @@ Scan scanFromRecord(String id, Map<String, Object?> record) {
     extraction: extraction is Map<String, dynamic>
         ? Extraction.fromJson(extraction)
         : null,
+    failure: ScanFailure.values
+        .where((failure) => failure.name == record['failure'])
+        .firstOrNull,
+    allowanceResetsAt: DateTime.tryParse(
+      record['allowanceResetsAt'] as String? ?? '',
+    ),
   );
 }

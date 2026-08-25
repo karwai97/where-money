@@ -19,6 +19,16 @@ What the vision model claims it read from a receipt. Guaranteed to be
 well-shaped; not guaranteed to be true. Never enters the Ledger directly.
 _Avoid_: Parse, result, response, prediction
 
+**Failure**:
+Why a Scan has no Extraction. A closed set: the Model refused, it said nothing
+at all, its answer was not legible, nothing got through from the phone, the
+Model was unavailable at the far end, the token was refused, the photo was not
+accepted. A failed Scan carries exactly one, and each earns its own words in
+the Inbox and its own next step — never a dialog. Neither the daily cap nor a
+photo that is not a receipt is one: those are their own states, and neither is
+something going wrong.
+_Avoid_: Error, exception, crash, retryable
+
 **Check**:
 The on-device arithmetic and plausibility pass over an Extraction. Produces
 Findings; costs nothing and calls nothing.
