@@ -174,3 +174,36 @@ budget, and that is now measured rather than asserted.
   and is nobody's ticket.
 - **The Corrected Fields tally still needs the `source == scanned` filter.**
   Flagged in five handoffs now; nothing built yet gets it wrong.
+
+### Deployed, 2026-08-25
+
+`npx wrangler deploy` has run. Version `bf7f7681-5d61-4912-9ccb-d1bd7ac5f599`.
+The section above titled "Nothing here is deployed" is now history rather than
+status — criterion 1 is no longer a claim about a local runtime.
+
+What was checked immediately afterwards:
+
+```
+/extract   401     (unchanged)
+/recap     401     ← was 404 before the deploy
+/nonsense  404     unknown routes still refused
+
+/recap with a malformed token → 403
+{"error":"invalid_token","message":"That token was not accepted.","reason":"malformed"}
+```
+
+`npx wrangler types` turned out to be unnecessary — `worker-configuration.d.ts`
+already declared `MODEL_ALLOWANCE` and `DAILY_MODEL_CEILING`, and `tsc --noEmit`
+was clean before the deploy. The handoff's instruction to run it was stale.
+
+**The `/extract` this replaced was live and working**, so it was regression
+checked on the phone straight after: a photograph went through the new Worker,
+the Firebase token was accepted, and the Model answered `not a receipt`. The KV
+binding rename did not disturb the allowance — the namespace id never changed,
+only the name the code binds it under.
+
+**Still unmeasured: whether the nano tier writes true sentences.** No Recap has
+been read yet, because a Recap needs five Expenses in one month and the account
+used for testing has one. That remains the only check that exists on the prose,
+and it has still never run.
+
