@@ -38,6 +38,10 @@ class WhereMoneyApp extends StatelessWidget {
     return MaterialApp(
       title: 'where_money',
       theme: ThemeData(useMaterial3: true),
+      // The charts take their one hue from the scheme, so a phone in dark mode
+      // needs a scheme built for a dark surface. Without this there is no dark
+      // theme to be legible in.
+      darkTheme: ThemeData(useMaterial3: true, brightness: Brightness.dark),
       home: BlocProvider(
         create: (_) => SessionBloc(signIn)..add(const SessionOpened()),
         child: BlocBuilder<SessionBloc, SessionState>(

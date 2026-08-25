@@ -52,10 +52,11 @@ void main() {
       spent(45.00, day: 3, category: 'fuel'),
     ]);
 
-    expect(
-      rollup.byCategory.map((c) => c.category),
-      ['groceries', 'fuel', 'dining'],
-    );
+    expect(rollup.byCategory.map((c) => c.category), [
+      'groceries',
+      'fuel',
+      'dining',
+    ]);
   });
 
   test('the month is compared against the one before it', () {
@@ -185,5 +186,87 @@ void main() {
     expect(rollup.excludedCurrencies, {'USD'});
     expect(rollup.previousTotal, closeTo(1265.80, 0.005));
     expect(rollup.needsReviewCount, 2);
+  });
+
+  test('a trend runs oldest to newest and ends at the month asked for', () {
+    final trend = Rollup.trailing(
+      [spent(10.00, day: 1, month: 6), spent(20.00, day: 1, month: 8)],
+      year: 2026,
+      month: 8,
+      months: 4,
+      homeCurrency: 'MYR',
+    );
+
+    expect(trend.map((r) => r.monthLabel), [
+      'May 2026',
+      'June 2026',
+      'July 2026',
+      'August 2026',
+    ]);
+    expect(trend.map((r) => r.total), [0, 10.00, 0, 20.00]);
+  });
+
+  test('a trend crosses the turn of the year', () {
+    final trend = Rollup.trailing(
+      [spent(60.00, day: 4, month: 12, year: 2025)],
+      year: 2026,
+      month: 2,
+      months: 3,
+      homeCurrency: 'MYR',
+    );
+
+    expect(trend.map((r) => r.monthLabel), [
+      'December 2025',
+      'January 2026',
+      'February 2026',
+    ]);
+    expect(trend.first.total, 60.00);
+  });
+
+  test('a month in the trend still leaves out other currencies', () {
+    final trend = Rollup.trailing(
+      [
+        spent(100.00, day: 2, month: 7),
+        spent(60.00, day: 5, month: 7, currency: 'SGD'),
+      ],
+      year: 2026,
+      month: 8,
+      months: 2,
+      homeCurrency: 'MYR',
+    );
+
+    expect(trend.first.total, 100.00);
+    expect(trend.first.excludedCount, 1);
+  });
+
+  test('a month nobody spent anything in has no spending to show', () {
+    expect(august(const []).hasSpending, isFalse);
+    expect(august([spent(10.00, day: 1)]).hasSpending, isTrue);
+  });
+
+  test('a month of nothing but foreign spending has none to chart and still '
+      'says what it left out', () {
+    final rollup = august([spent(60.00, day: 5, currency: 'SGD')]);
+
+    expect(rollup.hasSpending, isFalse);
+    expect(rollup.excludedCount, 1);
+  });
+
+  test('a month has a short label for a chart axis', () {
+    expect(august(const []).monthLabel, 'August 2026');
+    expect(august(const []).shortMonthLabel, 'Aug');
+  });
+
+  test('a month names the one it is being compared against', () {
+    expect(august(const []).previousMonthLabel, 'July 2026');
+    expect(
+      Rollup.forMonth(
+        const [],
+        year: 2026,
+        month: 1,
+        homeCurrency: 'MYR',
+      ).previousMonthLabel,
+      'December 2025',
+    );
   });
 }

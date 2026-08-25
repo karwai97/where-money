@@ -77,9 +77,7 @@ class Rollup {
     required int month,
     required String homeCurrency,
   }) {
-    final inMonth = ledger
-        .where((e) => e.date.year == year && e.date.month == month)
-        .toList();
+    final inMonth = expensesIn(ledger, year: year, month: month);
     final home = inMonth.where((e) => e.currency == homeCurrency).toList()
       ..sort((a, b) => b.total.compareTo(a.total));
     final foreign = inMonth.where((e) => e.currency != homeCurrency);
@@ -121,9 +119,7 @@ class Rollup {
       total: home.fold<double>(0, (sum, e) => sum + e.total),
       previousTotal: previous.fold<double>(0, (sum, e) => sum + e.total),
       expenseCount: home.length,
-      scannedCount: home
-          .where((e) => e.source == ExpenseSource.scanned)
-          .length,
+      scannedCount: home.where((e) => e.source == ExpenseSource.scanned).length,
       needsReviewCount: home.where((e) => e.needsReview).length,
       byCategory: byCategory,
       byDay: byDay,
@@ -133,7 +129,41 @@ class Rollup {
     );
   }
 
-  String get monthLabel => '${_monthNames[month - 1]} $year';
+  /// The last [months] months ending at [year]/[month], oldest first. The
+  /// trend is a list of Rollups rather than a computation of its own, so the
+  /// bar a month shows here and the breakdown that month opens into are the
+  /// same arithmetic. A month nobody spent anything in comes back empty rather
+  /// than missing, so a gap in the Ledger reads as a gap.
+  static List<Rollup> trailing(
+    List<Expense> ledger, {
+    required int year,
+    required int month,
+    required int months,
+    required String homeCurrency,
+  }) => List.generate(months, (index) {
+    final at = DateTime(year, month - (months - 1 - index));
+    return Rollup.forMonth(
+      ledger,
+      year: at.year,
+      month: at.month,
+      homeCurrency: homeCurrency,
+    );
+  });
+
+  String get monthLabel => _label(year, month);
+
+  /// Whether there is anything to chart. False for a month with no Expenses,
+  /// and for one whose Expenses were all in another currency — in both cases
+  /// the honest picture is nothing rather than bars of zero.
+  bool get hasSpending => expenseCount > 0;
+
+  String get previousMonthLabel {
+    final previous = DateTime(year, month - 1);
+    return _label(previous.year, previous.month);
+  }
+
+  /// Short enough for an axis on a phone.
+  String get shortMonthLabel => _monthNames[month - 1].substring(0, 3);
 
   double get delta => total - previousTotal;
 
@@ -149,12 +179,24 @@ class Rollup {
 
   DayTotal? get heaviestDay {
     if (byDay.isEmpty) return null;
-    final heaviest = byDay.entries.reduce(
-      (a, b) => b.value > a.value ? b : a,
-    );
+    final heaviest = byDay.entries.reduce((a, b) => b.value > a.value ? b : a);
     return DayTotal(heaviest.key, heaviest.value);
   }
 }
+
+/// The Expenses a month holds, in every currency — the Ledger's own view of a
+/// month, before aggregation leaves the foreign ones out. One filter, so the
+/// list on screen and the totals beside it cannot disagree about which month an
+/// Expense is in.
+List<Expense> expensesIn(
+  List<Expense> ledger, {
+  required int year,
+  required int month,
+}) => ledger
+    .where((e) => e.date.year == year && e.date.month == month)
+    .toList();
+
+String _label(int year, int month) => '${_monthNames[month - 1]} $year';
 
 const int _topPurchases = 5;
 

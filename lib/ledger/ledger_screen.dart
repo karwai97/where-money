@@ -12,6 +12,7 @@ import '../scan/model_gateway.dart';
 import '../scan/photographer.dart';
 import '../session/session_bloc.dart';
 import 'ledger_bloc.dart';
+import 'rollup_screen.dart';
 
 class LedgerScreen extends StatelessWidget {
   const LedgerScreen({
@@ -43,6 +44,7 @@ class LedgerScreen extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Ledger'),
           actions: [
+            Builder(builder: _chartsAction),
             Builder(builder: _inboxAction),
             IconButton(
               tooltip: 'Sign out',
@@ -80,10 +82,22 @@ class LedgerScreen extends StatelessWidget {
               'Your Ledger could not be read.',
               detail: reason,
             ),
-            LedgerReady(expenses: []) => const _Message(
-              'Nothing here yet.\nAdd one with the button below.',
+            LedgerReady() => Column(
+              children: [
+                _MonthBar(state),
+                Expanded(
+                  child: switch (state) {
+                    LedgerReady(expenses: []) => const _Message(
+                      'Nothing here yet.\nAdd one with the button below.',
+                    ),
+                    LedgerReady(inMonth: []) => _Message(
+                      'Nothing in ${state.rollup.monthLabel}.',
+                    ),
+                    LedgerReady(:final inMonth) => _Expenses(inMonth),
+                  },
+                ),
+              ],
             ),
-            LedgerReady(:final expenses) => _Expenses(expenses),
           },
         ),
       ),
@@ -97,6 +111,21 @@ class LedgerScreen extends StatelessWidget {
       MaterialPageRoute<void>(
         builder: (_) =>
             BlocProvider.value(value: review, child: const ReviewScreen()),
+      ),
+    );
+  }
+
+  Widget _chartsAction(BuildContext context) {
+    final ledger = context.read<LedgerBloc>();
+
+    return IconButton(
+      tooltip: 'Charts',
+      icon: const Icon(Icons.bar_chart),
+      onPressed: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) =>
+              BlocProvider.value(value: ledger, child: const RollupScreen()),
+        ),
       ),
     );
   }
@@ -159,6 +188,47 @@ class LedgerScreen extends StatelessWidget {
   }
 }
 
+/// The month the Ledger is filtered to, and the way through the months. There
+/// is nothing to see past the month the app was opened in, so that way is shut
+/// rather than leading to a run of empty months.
+class _MonthBar extends StatelessWidget {
+  const _MonthBar(this.state);
+
+  final LedgerReady state;
+
+  @override
+  Widget build(BuildContext context) {
+    final ledger = context.read<LedgerBloc>();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Row(
+        children: [
+          IconButton(
+            tooltip: 'Previous month',
+            icon: const Icon(Icons.chevron_left),
+            onPressed: () => ledger.add(const MonthStepped(-1)),
+          ),
+          Expanded(
+            child: Text(
+              state.rollup.monthLabel,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ),
+          IconButton(
+            tooltip: 'Next month',
+            icon: const Icon(Icons.chevron_right),
+            onPressed: state.hasLaterMonth
+                ? () => ledger.add(const MonthStepped(1))
+                : null,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _Expenses extends StatelessWidget {
   const _Expenses(this.expenses);
 
@@ -183,7 +253,7 @@ class _ExpenseTile extends StatelessWidget {
       title: Text(expense.merchant),
       subtitle: Text('${asDay(expense.date)} · ${expense.category}'),
       trailing: Text(
-        '${expense.currency} ${expense.total.toStringAsFixed(2)}',
+        asMoney(expense.currency, expense.total),
         style: Theme.of(context).textTheme.titleMedium,
       ),
     );
