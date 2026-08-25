@@ -9,7 +9,7 @@ export default defineWorkersConfig({
       workers: {
         wrangler: { configPath: './wrangler.jsonc' },
         miniflare: {
-          kvNamespaces: ['SCAN_ALLOWANCE'],
+          kvNamespaces: ['MODEL_ALLOWANCE'],
           bindings: {
             OPENAI_API_KEY: 'test-key-not-a-real-one',
             OPENAI_RESPONSES_URL: 'https://api.openai.test/v1/responses',

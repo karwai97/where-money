@@ -17,7 +17,9 @@ const defaultMediaType = 'image/jpeg';
 
 // Used when the deployment's ceiling is missing or unreadable. A typo in
 // wrangler.jsonc has to land on a number that caps something, because the one
-// unacceptable reading of a broken ceiling is "no cap at all".
+// unacceptable reading of a broken ceiling is "no cap at all". It is the
+// ceiling for Scans and for Recaps alike; the two are counted apart, under the
+// same number.
 const defaultCeiling = 40;
 
 // Enough for a long receipt's worth of JSON plus its reasoning, and low enough

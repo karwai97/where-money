@@ -9,14 +9,21 @@ import 'package:where_money_core/where_money_core.dart';
 /// member of the failure taxonomy, so each one can be watched arriving in the
 /// Inbox without a network.
 class FakeModelGateway implements ModelGateway {
-  FakeModelGateway({ModelAnswer? answer})
-    : answer = answer ?? reading(cleanExtraction);
+  FakeModelGateway({ScanAnswer? answer, RecapAnswer? recapAnswer})
+    : answer = answer ?? reading(cleanExtraction),
+      recapAnswer = recapAnswer ?? wrote('August was quiet.');
 
-  ModelAnswer answer;
+  ScanAnswer answer;
+  RecapAnswer recapAnswer;
 
   /// The bytes of the last receipt handed over, for asserting that what was
   /// sent is what was stored.
   Uint8List? sent;
+
+  /// Every Rollup this gateway has been asked to write up, in order. A Recap
+  /// that costs nothing is a request that was never made, so this is the only
+  /// place in the suite where what is asserted on is the asking itself.
+  final List<String> rollupsAsked = [];
 
   Completer<void>? _held;
 
@@ -30,13 +37,46 @@ class FakeModelGateway implements ModelGateway {
   }
 
   @override
-  Future<ModelAnswer> extract(Uint8List receipt) async {
+  Future<ScanAnswer> extract(Uint8List receipt) async {
     sent = receipt;
     await _held?.future;
     return answer;
   }
 
-  static ModelAnswer reading(Extraction extraction) => ModelAnswered(
+  @override
+  Future<RecapAnswer> recap(String rollupJson) async {
+    rollupsAsked.add(rollupJson);
+    await _held?.future;
+    return recapAnswer;
+  }
+
+  static RecapAnswer wrote(String text) => RecapAnswered(
+    RecapWritten(
+      text: text,
+      usage: const Usage(inputTokens: 412, outputTokens: 128),
+      servedByModel: 'gpt-5-nano-2025-08-07',
+    ),
+  );
+
+  static const recapRefused = RecapAnswered(
+    RecapRefused(
+      message: 'I cannot help with that.',
+      usage: Usage(),
+      servedByModel: 'gpt-5-nano-2025-08-07',
+    ),
+  );
+
+  /// Reasoning ate the whole output budget, so there is nothing to print.
+  static const recapSilence = RecapAnswered(
+    RecapNoOutput(
+      status: 'incomplete',
+      reason: 'max_output_tokens',
+      usage: Usage(),
+      servedByModel: 'gpt-5-nano-2025-08-07',
+    ),
+  );
+
+  static ScanAnswer reading(Extraction extraction) => ModelAnswered(
     ExtractionRead(
       extraction: extraction,
       usage: const Usage(inputTokens: 2717, outputTokens: 500),

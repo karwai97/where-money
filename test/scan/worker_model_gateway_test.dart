@@ -145,4 +145,49 @@ void main() {
 
     expect(answer, isA<ModelUnavailable>());
   });
+
+  test('a Rollup the Worker writes up comes back as prose', () async {
+    final recorded = File(
+      'worker/test/fixtures/recap-response.json',
+    ).readAsStringSync();
+
+    final answer = await gateway(
+      (_) async => http.Response(recorded, 200),
+    ).recap('{"month":"August 2026"}');
+
+    final written = ((answer as RecapAnswered).outcome as RecapWritten);
+    expect(written.text, startsWith('August came to MYR 1806.75'));
+  });
+
+  test('the Rollup goes up as JSON, and no receipt goes with it', () async {
+    late http.Request sent;
+    await gateway((request) async {
+      sent = request;
+      return http.Response('{}', 200);
+    }).recap('{"month":"August 2026"}');
+
+    expect(sent.body, '{"month":"August 2026"}');
+    expect(sent.headers['authorization'], 'Bearer an-id-token');
+    expect(sent.url.path, '/recap');
+    expect(sent.url.queryParameters, isNot(contains('media')));
+  });
+
+  test("a Recap past the day's allowance says when it comes back", () async {
+    final answer = await gateway(
+      (_) async => refusing(429, {
+        'error': 'cap_reached',
+        'resets_at': '2026-08-26T00:00:00.000Z',
+      }),
+    ).recap('{}');
+
+    expect((answer as AllowanceSpent).resetsAt, DateTime.utc(2026, 8, 26));
+  });
+
+  test('a dead network is not a refusal for a Recap either', () async {
+    final answer = await gateway(
+      (_) async => throw const SocketException('Network is unreachable'),
+    ).recap('{}');
+
+    expect(answer, isA<ModelOutOfReach>());
+  });
 }

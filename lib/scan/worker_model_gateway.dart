@@ -13,9 +13,10 @@ import 'receipt_image.dart';
 /// end of the contract is thin on purpose: the prompt, the schema and the
 /// output budget are the Worker's, and the client cannot name its own model.
 ///
-/// The body is the base64 and nothing else. The Worker templates it into the
-/// outgoing request rather than parsing it, which is what keeps a Scan inside
-/// the free plan's 10ms of CPU — see `worker/README.md`.
+/// A receipt goes up as base64 and nothing else. The Worker templates it into
+/// the outgoing request rather than parsing it, which is what keeps a Scan
+/// inside the free plan's 10ms of CPU — see `worker/README.md`. A Rollup is
+/// small enough that it goes up as ordinary JSON.
 class WorkerModelGateway implements ModelGateway {
   WorkerModelGateway({
     required this.endpoint,
@@ -38,71 +39,113 @@ class WorkerModelGateway implements ModelGateway {
   final int dailyCap;
 
   @override
-  Future<ModelAnswer> extract(Uint8List receipt) async {
+  Future<ScanAnswer> extract(Uint8List receipt) async {
+    final (answer, failure) = await _post(
+      'extract',
+      query: {'media': mediaTypeOf(receipt)},
+      contentType: 'text/plain',
+      body: base64Encode(receipt),
+    );
+    if (failure != null) return failure;
+
+    final body = _bodyOf(answer!);
+    if (body == null) return _notJson(answer);
+    if (answer.statusCode == 200) return ModelAnswered(parseExtraction(body));
+
+    return switch (body['error']) {
+      'bad_image' || 'image_too_large' => ImageNotAccepted(
+        '${body['message'] ?? body['error']}',
+      ),
+      _ => _refusal(answer, body),
+    };
+  }
+
+  @override
+  Future<RecapAnswer> recap(String rollupJson) async {
+    final (answer, failure) = await _post(
+      'recap',
+      contentType: 'application/json',
+      body: rollupJson,
+    );
+    if (failure != null) return failure;
+
+    final body = _bodyOf(answer!);
+    if (body == null) return _notJson(answer);
+    if (answer.statusCode == 200) return RecapAnswered(parseRecap(body));
+
+    // `bad_rollup` and `rollup_too_large` have no case of their own: a Rollup
+    // the Worker will not take is this app disagreeing with itself rather than
+    // anything the user did, and it reads as the far end's problem below.
+    return _refusal(answer, body);
+  }
+
+  /// One call to the Worker: the token, the knobs, and every way the wire can
+  /// fail. What a 200 means is the caller's to say, which is the only thing
+  /// the two endpoints do not share.
+  Future<(http.Response?, ModelFailure?)> _post(
+    String path, {
+    Map<String, String> query = const {},
+    required String contentType,
+    required String body,
+  }) async {
     final token = await idToken();
     if (token == null) {
-      return const TokenRefused('nobody is signed in on this device');
+      return (null, const TokenRefused('nobody is signed in on this device'));
     }
 
-    final http.Response answer;
     try {
-      answer = await _client.post(
+      final answer = await _client.post(
         endpoint.replace(
-          path: '${endpoint.path}/extract',
+          path: '${endpoint.path}/$path',
           queryParameters: {
             'model': model,
             'effort': effort,
-            'media': mediaTypeOf(receipt),
             'cap': '$dailyCap',
+            ...query,
           },
         ),
         headers: {
           'authorization': 'Bearer $token',
-          'content-type': 'text/plain',
+          'content-type': contentType,
         },
-        body: base64Encode(receipt),
+        body: body,
       );
+      return (answer, null);
     } on SocketException catch (error) {
-      return ModelOutOfReach(error.message);
+      return (null, ModelOutOfReach(error.message));
     } on http.ClientException catch (error) {
-      return ModelOutOfReach(error.message);
+      return (null, ModelOutOfReach(error.message));
     } on TimeoutException {
-      return const ModelOutOfReach('the Worker did not answer in time');
+      return (null, const ModelOutOfReach('the Worker did not answer in time'));
     }
-
-    return _readAnswer(answer);
   }
 }
 
-ModelAnswer _readAnswer(http.Response answer) {
-  final Map<String, dynamic> body;
+Map<String, dynamic>? _bodyOf(http.Response answer) {
   try {
-    body = jsonDecode(answer.body) as Map<String, dynamic>;
+    return jsonDecode(answer.body) as Map<String, dynamic>;
   } catch (_) {
-    return ModelUnavailable(
-      'the Worker answered ${answer.statusCode} with something that was not '
-      'JSON',
-    );
+    return null;
   }
-
-  if (answer.statusCode == 200) return ModelAnswered(parseExtraction(body));
-
-  // The statuses are `worker/README.md`'s, and each maps onto exactly one
-  // member of the failure taxonomy.
-  return switch (body['error']) {
-    'cap_reached' => AllowanceSpent(
-      resetsAt: DateTime.tryParse('${body['resets_at']}'),
-    ),
-    'missing_token' ||
-    'invalid_token' => TokenRefused('${body['reason'] ?? body['error']}'),
-    'bad_image' || 'image_too_large' => ImageNotAccepted(
-      '${body['message'] ?? body['error']}',
-    ),
-    // Everything left is the far end's problem, not the caller's:
-    // `model_unavailable`, `signing_keys_unavailable`, and whatever a later
-    // version of the Worker invents.
-    final Object? error => ModelUnavailable(
-      '${error ?? answer.statusCode}: ${body['message'] ?? answer.body}',
-    ),
-  };
 }
+
+ModelFailure _notJson(http.Response answer) => ModelUnavailable(
+  'the Worker answered ${answer.statusCode} with something that was not JSON',
+);
+
+/// The statuses are `worker/README.md`'s, and each maps onto exactly one
+/// member of the failure taxonomy.
+ModelFailure _refusal(http.Response answer, Map<String, dynamic> body) =>
+    switch (body['error']) {
+      'cap_reached' => AllowanceSpent(
+        resetsAt: DateTime.tryParse('${body['resets_at']}'),
+      ),
+      'missing_token' ||
+      'invalid_token' => TokenRefused('${body['reason'] ?? body['error']}'),
+      // Everything left is the far end's problem, not the caller's:
+      // `model_unavailable`, `signing_keys_unavailable`, and whatever a later
+      // version of the Worker invents.
+      final Object? error => ModelUnavailable(
+        '${error ?? answer.statusCode}: ${body['message'] ?? answer.body}',
+      ),
+    };

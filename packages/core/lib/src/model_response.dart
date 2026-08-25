@@ -42,6 +42,54 @@ class Usage {
   }
 }
 
+/// What one response said, before anything decides what to do about it. Every
+/// trap the Responses API sets is sprung here: reasoning items ahead of the
+/// message, a refusal arriving at 200, and an incomplete status with nothing
+/// in it at all.
+class ModelMessage {
+  final List<String> texts;
+  final String? refusal;
+  final String status;
+  final String? incompleteReason;
+  final Usage usage;
+  final String servedByModel;
+
+  const ModelMessage({
+    required this.texts,
+    required this.refusal,
+    required this.status,
+    required this.incompleteReason,
+    required this.usage,
+    required this.servedByModel,
+  });
+}
+
+ModelMessage readMessage(Map<String, dynamic> body) {
+  final texts = <String>[];
+  String? refusal;
+
+  for (final item in (body['output'] ?? const []) as List) {
+    if (item is! Map || item['type'] != 'message') continue;
+    for (final block in (item['content'] ?? const []) as List) {
+      if (block is! Map) continue;
+      if (block['type'] == 'refusal') {
+        refusal = (block['refusal'] ?? '') as String;
+      } else if (block['type'] == 'output_text') {
+        texts.add((block['text'] ?? '') as String);
+      }
+    }
+  }
+
+  return ModelMessage(
+    texts: texts,
+    refusal: refusal,
+    status: (body['status'] ?? '') as String,
+    incompleteReason: _map(body['incomplete_details'])['reason'] as String?,
+    usage: Usage.fromJson(_map(body['usage'])),
+    servedByModel: (body['model'] ?? '') as String,
+  );
+}
+
 sealed class ExtractionOutcome {
   final Usage usage;
   final String servedByModel;
@@ -104,50 +152,35 @@ final class ExtractionMalformed extends ExtractionOutcome {
 }
 
 ExtractionOutcome parseExtraction(Map<String, dynamic> body) {
-  final usage = Usage.fromJson(_map(body['usage']));
-  final servedByModel = (body['model'] ?? '') as String;
-  final status = (body['status'] ?? '') as String;
+  final message = readMessage(body);
+  final usage = message.usage;
+  final servedByModel = message.servedByModel;
 
-  final texts = <String>[];
-  String? refusal;
-
-  for (final item in (body['output'] ?? const []) as List) {
-    if (item is! Map || item['type'] != 'message') continue;
-    for (final block in (item['content'] ?? const []) as List) {
-      if (block is! Map) continue;
-      if (block['type'] == 'refusal') {
-        refusal = (block['refusal'] ?? '') as String;
-      } else if (block['type'] == 'output_text') {
-        texts.add((block['text'] ?? '') as String);
-      }
-    }
-  }
-
-  if (refusal != null) {
+  if (message.refusal != null) {
     return ExtractionRefused(
-      message: refusal,
+      message: message.refusal!,
       usage: usage,
       servedByModel: servedByModel,
     );
   }
 
-  if (texts.isEmpty) {
+  if (message.texts.isEmpty) {
     return ExtractionNoOutput(
-      status: status,
-      reason: _map(body['incomplete_details'])['reason'] as String?,
+      status: message.status,
+      reason: message.incompleteReason,
       usage: usage,
       servedByModel: servedByModel,
     );
   }
 
-  final text = texts.last;
+  final text = message.texts.last;
   final Object? decoded;
   try {
     decoded = jsonDecode(text);
   } on FormatException catch (e) {
     return ExtractionMalformed(
       text: text,
-      truncated: status == 'incomplete',
+      truncated: message.status == 'incomplete',
       detail: e.message,
       usage: usage,
       servedByModel: servedByModel,

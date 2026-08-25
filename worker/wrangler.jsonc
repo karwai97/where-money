@@ -14,13 +14,13 @@
     // The ceiling a client-requested cap is clamped to, not the cap itself.
     // Remote Config moves the cap below this without a deploy; nothing moves
     // it above.
-    "DAILY_SCAN_CEILING": "40",
+    "DAILY_MODEL_CEILING": "40",
     "OPENAI_RESPONSES_URL": "https://api.openai.com/v1/responses"
   },
   "kv_namespaces": [
     {
-      "binding": "SCAN_ALLOWANCE",
-      // From `wrangler kv namespace create SCAN_ALLOWANCE`. Local dev and the
+      "binding": "MODEL_ALLOWANCE",
+      // From `wrangler kv namespace create MODEL_ALLOWANCE`. Local dev and the
       // tests ignore it.
       "id": "710b0742f3d74d1ebba8b2da39d54c32"
     }

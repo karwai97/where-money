@@ -1,0 +1,37 @@
+{
+  "id": "resp_recap_fixture",
+  "object": "response",
+  "model": "gpt-5-nano-2025-08-07",
+  "status": "completed",
+  "output": [
+    {
+      "type": "reasoning",
+      "id": "rs_1",
+      "summary": []
+    },
+    {
+      "type": "message",
+      "id": "msg_1",
+      "role": "assistant",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "August came to MYR 1806.75, 43% more than July. Groceries were the biggest slice at MYR 423.10 across three shops, and Ikea Damansara at MYR 289.90 was the single largest purchase. The 23rd was the heaviest day of the month at MYR 311.90.",
+          "annotations": []
+        }
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 412,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 128,
+    "output_tokens_details": {
+      "reasoning_tokens": 64
+    },
+    "total_tokens": 540
+  }
+}

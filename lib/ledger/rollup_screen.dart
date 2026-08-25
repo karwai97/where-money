@@ -34,6 +34,8 @@ class RollupScreen extends StatelessWidget {
               _Headline(rollup),
               _LeftOut([rollup]),
               const SizedBox(height: 24),
+              _TheRecap(state.recap),
+              const SizedBox(height: 24),
               const _Heading('By category'),
               if (rollup.hasSpending)
                 CategoryBreakdown(rollup)
@@ -51,6 +53,72 @@ class RollupScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// The month in words. It says nothing the charts below do not also say — it
+/// is written from the same Rollup they are drawn from — so a month that could
+/// not be written up costs the reader nothing but the words.
+class _TheRecap extends StatelessWidget {
+  const _TheRecap(this.recap);
+
+  final RecapState recap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Where your money went', style: theme.textTheme.titleMedium),
+          const SizedBox(height: 8),
+          switch (recap) {
+            RecapOnScreen(:final text) => Text(
+              text,
+              style: theme.textTheme.bodyMedium,
+            ),
+            RecapPending() => Row(
+              children: [
+                const SizedBox(
+                  height: 14,
+                  width: 14,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                const SizedBox(width: 12),
+                Text('Reading the month.', style: theme.textTheme.bodyMedium),
+              ],
+            ),
+            RecapTooFewExpenses(:final needed) => Text(
+              'A month needs $needed Expenses before there is anything worth '
+              'writing up. The charts work either way.',
+              style: theme.textTheme.bodyMedium,
+            ),
+            RecapUnavailable(:final why) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(why, style: theme.textTheme.bodyMedium),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    onPressed: () =>
+                        context.read<LedgerBloc>().add(const RecapAskedAgain()),
+                    child: const Text('Ask again'),
+                  ),
+                ),
+              ],
+            ),
+          },
+        ],
+      ),
     );
   }
 }

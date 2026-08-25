@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Walks the criteria in .scratch/scan-to-recap/issues/05-the-worker.md that need
-# a deployed Worker, a real key and a real Firebase user — the ones no test can
-# reach. Everything it prints is either a status code or the field the app would
+# Walks the criteria in .scratch/scan-to-recap/issues/05-the-worker.md and
+# 10-the-recap.md that need a deployed Worker, a real key and a real Firebase
+# user — the ones no test can reach. Everything it prints is either a status code or the field the app would
 # read, so what passed and what did not is visible rather than inferred.
 #
 #   ./verify-deployed.sh https://where-money.<subdomain>.workers.dev receipt.jpg
@@ -119,6 +119,42 @@ for effort in low omit; do
 done
 echo 'A 400 on effort=low and a 200 on effort=omit means the tier does not take'
 echo 'the parameter, and the omit path is the one to configure.'
+
+step 'a Rollup comes back written up'
+recap() {
+  local token=$1 query=${2:-}
+  curl -sS -o /tmp/where-money-recap.json -w '%{http_code}'     -X POST "$base/recap$query"     -H "authorization: Bearer $token"     -H 'content-type: application/json'     --data-binary @- <<'ROLLUP'
+{"month":"August 2026","currency":"MYR","total":1806.75,"previous_month":"July 2026","previous_total":1262.10,"expenses":18,"daily_average":58.28,"by_category":[{"category":"Groceries","amount":423.10,"previous":289.60,"count":3},{"category":"Dining out","amount":135.60,"previous":188.20,"count":4},{"category":"Fuel","amount":235.00,"previous":118.00,"count":2}],"largest":[{"merchant":"Ikea Damansara","amount":289.90,"category":"Home","day":23},{"merchant":"Uniqlo Mid Valley","amount":219.00,"category":"Apparel","day":12}],"heaviest_day":{"day":23,"amount":311.90},"excluded":{"count":1,"currencies":["USD"]}}
+ROLLUP
+}
+echo "status: $(recap "$ID_TOKEN")"
+$py - <<'PY' || cat /tmp/where-money-recap.json
+import json
+body = json.load(open('/tmp/where-money-recap.json'))
+if body.get('error'):
+    print('failed:', json.dumps(body)[:400])
+    raise SystemExit
+text = next(
+    (c['text'] for item in body.get('output', []) if item.get('type') == 'message'
+     for c in item.get('content', []) if c.get('type') == 'output_text'),
+    None,
+)
+print('status:', body.get('status'), 'model:', body.get('model'))
+print('usage:', body.get('usage'))
+print(text or 'no output_text — refusal or incomplete. The screen has words for both.')
+PY
+echo
+echo 'Read it against the Rollup above: every figure in it should be one of'
+echo 'those, and nothing else.'
+
+step 'a Recap does not spend the allowance a Scan needs'
+echo "recap at cap=1:        $(recap "$ID_TOKEN" '?cap=1')"
+echo "recap again at cap=1:  $(recap "$ID_TOKEN" '?cap=1')  <- expect 429"
+echo "a Scan at cap=1 after: $(scan "$ID_TOKEN" '?cap=1')  <- expect 200, its own counter"
+
+step 'a Recap with no token is refused'
+curl -sS -w ' <- %{http_code}
+' -X POST "$base/recap"   -H 'content-type: application/json' --data '{"month":"August 2026"}'
 
 step 'CPU time per request'
 echo 'wrangler tail, or the Worker metrics page, next to npm run measure.'

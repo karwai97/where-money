@@ -1,4 +1,6 @@
-// The one performance risk in this Worker, measured.
+// The one performance risk in this Worker, measured — and the Recap beside it,
+// because /recap does the parse and re-encode that /extract goes out of its way
+// to avoid, and a claim that it is cheap at a kilobyte should be a number.
 //
 // The free plan allows 10ms of CPU per request. Waiting on fetch is exempt, so
 // the model round trip is free, but the ~270KB base64 of a resized receipt is
@@ -15,6 +17,7 @@ import { describe, expect, it } from 'vitest';
 
 import { extractionBody, looksLikeBase64 } from '../src/extraction_request';
 import type { Knobs } from '../src/knobs';
+import { looksLikeRollup, recapBody } from '../src/recap_request';
 
 const knobs: Knobs = {
   model: 'gpt-5-nano',
@@ -71,4 +74,52 @@ describe('the CPU a Scan costs the Worker', () => {
       expect(checking + templatingAndEncoding).toBeLessThan(5);
     });
   }
+});
+
+// A month of the Ledger reduced to totals, deltas and outliers, at the size
+// rollupPrompt actually produces: 12 categories, five largest purchases.
+const rollup = JSON.stringify({
+  month: 'August 2026',
+  currency: 'MYR',
+  total: 1806.75,
+  previous_month: 'July 2026',
+  previous_total: 1262.1,
+  expenses: 18,
+  daily_average: 58.28,
+  by_category: Array.from({ length: 12 }, (_, i) => ({
+    category: `Category number ${i}`,
+    amount: 423.1,
+    previous: 289.6,
+    count: 3,
+  })),
+  largest: Array.from({ length: 5 }, (_, i) => ({
+    merchant: `A merchant with a fairly long name ${i}`,
+    amount: 289.9,
+    category: 'Home',
+    day: 23,
+  })),
+  heaviest_day: { day: 23, amount: 311.9 },
+  excluded: { count: 1, currencies: ['USD'] },
+});
+
+describe('the CPU a Recap costs the Worker', () => {
+  it('is a rounding error beside a Scan, parse and re-encode included', () => {
+    const encoder = new TextEncoder();
+
+    const checking = millisPerRun(() => looksLikeRollup(rollup));
+    const buildingAndEncoding = millisPerRun(() =>
+      encoder.encode(recapBody(rollup, knobs)),
+    );
+
+    console.log(
+      [
+        `a Rollup (${rollup.length} characters)`,
+        `  checking it is JSON:     ${checking.toFixed(3)}ms`,
+        `  building and encoding:   ${buildingAndEncoding.toFixed(3)}ms`,
+        `  per Recap, together:     ${(checking + buildingAndEncoding).toFixed(3)}ms`,
+      ].join('\n'),
+    );
+
+    expect(checking + buildingAndEncoding).toBeLessThan(0.5);
+  });
 });

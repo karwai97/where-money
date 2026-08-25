@@ -31,7 +31,7 @@ class LedgerScreen extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) => LedgerBloc(store)..add(const LedgerOpened()),
+          create: (_) => LedgerBloc(store, model)..add(const LedgerOpened()),
         ),
         // Held here rather than on the Review route, so leaving Review and
         // coming back finds the work still there.

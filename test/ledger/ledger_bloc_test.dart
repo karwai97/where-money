@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:where_money/ledger/ledger_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import '../fakes/fake_model_gateway.dart';
 import '../fakes/in_memory_ledger_store.dart';
 
 void main() {
@@ -11,7 +12,7 @@ void main() {
 
   blocTest<LedgerBloc, LedgerState>(
     'opening an empty Ledger settles on nothing rather than on a spinner',
-    build: () => LedgerBloc(InMemoryLedgerStore()),
+    build: () => LedgerBloc(InMemoryLedgerStore(), FakeModelGateway()),
     act: (bloc) => bloc.add(const LedgerOpened()),
     expect: () => [
       isA<LedgerReady>().having((state) => state.expenses, 'expenses', isEmpty),
@@ -20,7 +21,8 @@ void main() {
 
   blocTest<LedgerBloc, LedgerState>(
     'an existing Ledger arrives newest first',
-    build: () => LedgerBloc(InMemoryLedgerStore(augustLedger)),
+    build: () =>
+        LedgerBloc(InMemoryLedgerStore(augustLedger), FakeModelGateway()),
     act: (bloc) => bloc.add(const LedgerOpened()),
     verify: (bloc) {
       final expenses = (bloc.state as LedgerReady).expenses;
@@ -36,7 +38,8 @@ void main() {
   test('an Expense committed elsewhere turns up in the Ledger without it '
       'being asked again', () async {
     final store = InMemoryLedgerStore();
-    final bloc = LedgerBloc(store)..add(const LedgerOpened());
+    final bloc = LedgerBloc(store, FakeModelGateway())
+      ..add(const LedgerOpened());
     await Future<void>.delayed(Duration.zero);
 
     await store.add(
@@ -53,14 +56,17 @@ void main() {
 
   blocTest<LedgerBloc, LedgerState>(
     'a Ledger the rules refuse to read says so instead of showing an empty list',
-    build: () =>
-        LedgerBloc(InMemoryLedgerStore()..refuseReads = StateError('denied')),
+    build: () => LedgerBloc(
+      InMemoryLedgerStore()..refuseReads = StateError('denied'),
+      FakeModelGateway(),
+    ),
     act: (bloc) => bloc.add(const LedgerOpened()),
     expect: () => [isA<LedgerUnavailable>()],
   );
 
   LedgerBloc opened(InMemoryLedgerStore store) =>
-      LedgerBloc(store, now: august)..add(const LedgerOpened());
+      LedgerBloc(store, FakeModelGateway(), now: august)
+        ..add(const LedgerOpened());
 
   Future<LedgerReady> settled(LedgerBloc bloc) async {
     await Future<void>.delayed(Duration.zero);

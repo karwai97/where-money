@@ -228,7 +228,7 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
 /// Where an answer leaves the Scan. The allowance is not a failure and a photo
 /// of a cat is not something to Review; everything else that went wrong is a
 /// failure the Scan carries, because the Inbox has different words for each.
-Scan _after(Scan scan, ModelAnswer answer) => switch (answer) {
+Scan _after(Scan scan, ScanAnswer answer) => switch (answer) {
   ModelAnswered(outcome: ExtractionRead(:final extraction)) =>
     extraction.isReceipt
         ? scan.movedTo(ScanState.extracted, extraction: extraction)

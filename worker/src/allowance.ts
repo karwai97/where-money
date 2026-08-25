@@ -1,5 +1,10 @@
 // The per-user daily cap, so one account cannot run up the bill.
 //
+// Scans and Recaps are counted separately under the same ceiling. Both cost
+// money and both are capped; what they must not do is spend each other's
+// allowance, because a month's worth of Recaps eating the day's Scans would
+// make the cap fail at the job it exists for.
+//
 // Reserved before the model is called rather than counted after: the call is
 // what costs, so a Scan that failed on its way to the model still spends the
 // allowance. Refunding would mean a second write, and the counter is already
@@ -18,12 +23,19 @@ export interface Allowance {
 // to clean up.
 const keepForSeconds = 2 * 24 * 60 * 60;
 
-export async function reserveScan(
+export type Counted = 'scans' | 'recaps';
+
+export async function reserve(
   counters: KVNamespace,
-  { uid, limit, now }: { uid: string; limit: number; now: number },
+  {
+    counted,
+    uid,
+    limit,
+    now,
+  }: { counted: Counted; uid: string; limit: number; now: number },
 ): Promise<Allowance> {
   const resetsAt = startOfNextDay(now);
-  const key = `scans:${uid}:${dayOf(now)}`;
+  const key = `${counted}:${uid}:${dayOf(now)}`;
   const used = Number((await counters.get(key)) ?? 0) || 0;
 
   if (used >= limit) {
