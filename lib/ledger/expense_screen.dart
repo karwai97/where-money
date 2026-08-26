@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
-import '../data/ledger_store.dart';
+import '../data/receipt_store.dart';
 import '../on_screen.dart';
 import '../review/review_bloc.dart';
 import '../review/review_screen.dart';
@@ -19,14 +19,14 @@ class ExpenseScreen extends StatelessWidget {
   const ExpenseScreen({
     super.key,
     required this.expenseId,
-    required this.store,
+    required this.receipts,
   });
 
   final String expenseId;
 
   /// For the receipt, which is a file on this phone rather than anything the
   /// Ledger's states carry.
-  final LedgerStore store;
+  final ReceiptStore receipts;
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +73,7 @@ class ExpenseScreen extends StatelessWidget {
               const SizedBox(height: 16),
               _LineItems(expense),
               const SizedBox(height: 24),
-              _Receipt(store: store, path: expense.receiptPath),
+              _Receipt(receipts: receipts, path: expense.receiptPath),
             ],
           ),
         );
@@ -215,9 +215,9 @@ class _LineItems extends StatelessWidget {
 /// no file behind it — images never leave the device they were taken on
 /// (ADR-0003) — and that is worth saying rather than leaving a blank.
 class _Receipt extends StatefulWidget {
-  const _Receipt({required this.store, required this.path});
+  const _Receipt({required this.receipts, required this.path});
 
-  final LedgerStore store;
+  final ReceiptStore receipts;
   final String? path;
 
   @override
@@ -233,7 +233,7 @@ class _ReceiptState extends State<_Receipt> {
   void initState() {
     super.initState();
     final path = widget.path;
-    if (path != null) _reading = widget.store.receiptAt(path);
+    if (path != null) _reading = widget.receipts.bytesAt(path);
   }
 
   @override

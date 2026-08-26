@@ -4,6 +4,7 @@ import 'package:where_money_core/where_money_core.dart';
 
 import '../data/device_preferences.dart';
 import '../data/ledger_store.dart';
+import '../data/receipt_store.dart';
 import '../on_screen.dart';
 import '../review/review_bloc.dart';
 import '../review/review_screen.dart';
@@ -41,10 +42,10 @@ class LedgerScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        // The receipt is a file on this phone rather than anything the
-        // Ledger's states carry, so the store itself has to be reachable from
-        // the Expense a user opens.
-        RepositoryProvider<LedgerStore>.value(value: store),
+        // The Receipt is a file on this phone rather than anything the
+        // Ledger's states carry, so its seam has to be reachable from the
+        // Expense a user opens.
+        RepositoryProvider<ReceiptStore>.value(value: store),
         BlocProvider(
           create: (_) => LedgerBloc(store, model)..add(const LedgerOpened()),
         ),
@@ -315,7 +316,7 @@ class _ExpenseTile extends StatelessWidget {
         ],
         child: ExpenseScreen(
           expenseId: expense.id,
-          store: context.read<LedgerStore>(),
+          receipts: context.read<ReceiptStore>(),
         ),
       ),
     ),
