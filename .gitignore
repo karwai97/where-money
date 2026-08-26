@@ -48,3 +48,26 @@ app.*.map.json
 # fetch your own with `firebase apps:sdkconfig` (see README).
 /android/app/google-services.json
 /ios/Runner/GoogleService-Info.plist
+
+# Firestore rules tests (Node, not part of the Dart workspace)
+tools/firestore-rules/node_modules/
+
+# The Worker (Node, not part of the Dart workspace)
+worker/node_modules/
+worker/.wrangler/
+# The OpenAI key for local dev. The deployed key is a Worker secret.
+worker/.dev.vars
+
+# Firebase emulator
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+.firebase/
+
+# Agent scratch. The issue tracker under .scratch/ is committed on purpose
+# (see CLAUDE.md); these are per-machine and per-session.
+.claude/settings.local.json
+.claude/*.local.json
+*-handoff.md
+CONTEXT.md
+.scratch/

@@ -1,0 +1,27 @@
+{
+  "conditions": [],
+  "parameters": {
+    "model": {
+      "defaultValue": { "value": "gpt-5-nano" },
+      "valueType": "STRING",
+      "description": "Which model reads a receipt. The Worker allowlists this and falls back to gpt-5-nano on anything it does not recognise, so a typo degrades rather than taking scanning down."
+    },
+    "reasoning_effort": {
+      "defaultValue": { "value": "low" },
+      "valueType": "STRING",
+      "description": "How much reasoning to buy before the answer: omit, none, minimal, low, medium, high. 'omit' leaves the setting out of the request entirely, for a tier that will not take one."
+    },
+    "image_long_edge": {
+      "defaultValue": { "value": "1024" },
+      "valueType": "STRING",
+      "description": "The long edge a receipt is stored and sent at, in pixels. Above roughly 1440 the model downscales anyway, so the upload is wasted. Anything outside 256-4096 is treated as a typo and the app keeps its own value."
+    },
+    "daily_cap": {
+      "defaultValue": { "value": "40" },
+      "valueType": "STRING",
+      "description": "Scans a day, counted by the Worker. Lowers what the deployment allows and never raises it, so the ceiling in wrangler.jsonc still holds."
+    }
+  },
+  "parameterGroups": {},
+  "version": {}
+}

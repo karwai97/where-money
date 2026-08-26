@@ -1,0 +1,20 @@
+{
+  "name": "where-money-worker",
+  "private": true,
+  "type": "module",
+  "description": "The only place the OpenAI key exists. Not part of the Dart workspace.",
+  "scripts": {
+    "test": "vitest run",
+    "watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "measure": "vitest run --config vitest.bench.config.ts",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.8.0",
+    "typescript": "^5.6.0",
+    "vitest": "~3.2.0",
+    "wrangler": "^4.0.0"
+  }
+}

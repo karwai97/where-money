@@ -19,8 +19,10 @@ A pub workspace of two Dart packages:
   promoted to an error there so the shared workspace resolution cannot smuggle
   `package:flutter` in. Its tests run under `dart test`, with no Flutter harness.
 
-A third deployable, the Cloudflare Worker that holds the OpenAI key, is not a
-Dart package and is not here yet (ADR-0001).
+- **[worker](worker)** — the Cloudflare Worker that holds the OpenAI key
+  (ADR-0001). TypeScript, not a Dart package, deployed separately. It is the
+  only place the key exists, and it owns the prompt, the schema and the daily
+  cap so that a client cannot.
 
 ## Getting it onto a device
 
@@ -45,11 +47,49 @@ shape you should get back is in
 There is no generated `firebase_options.dart`: `Firebase.initializeApp()` reads
 the native config file, which keeps project keys out of Dart source entirely.
 
+Google Sign-In will not work until your signing certificate's SHA-1 is
+registered on the Android app in the Firebase console. Print the debug one with:
+
+```sh
+keytool -list -v -alias androiddebugkey -keystore ~/.android/debug.keystore \
+  -storepass android -keypass android
+```
+
+Add it under Project settings, then re-fetch `google-services.json` — the file
+only grows its `oauth_client` entries once a fingerprint is registered, and
+without the web client (`client_type: 3`) sign-in fails with `ApiException: 10`.
+Release builds are signed with the debug key today, so only the debug
+fingerprint is registered and no claim is made about release sign-in.
+
 ## Tests
 
 ```sh
 dart test                # from packages/core — pure Dart, no Flutter harness
 flutter test             # from the root — widgets and blocs
+
+(cd tools/firestore-rules && npm install && npm test)
+(cd worker && npm install && npm test)
+```
+
+The third one runs [firestore.rules](firestore.rules) against the Firestore
+emulator, so what is asserted is what the rules actually do rather than what
+they look like they do. It needs Node and a JDK on the path; nothing is sent to
+the real project, and the emulator runs under a `demo-` project id so it cannot
+be.
+
+The fourth runs the [Worker](worker) against the local Workers runtime, with
+Google's signing keys and the model both intercepted. It needs no Cloudflare
+account and no OpenAI key; deploying it needs both, and
+[worker/README.md](worker/README.md) says how.
+
+## Security rules
+
+The Ledger lives at `users/{uid}/expenses/{id}`, and the rules say only that
+path is readable and writable, and only by the user who owns it. Deploy them
+before signing in on a device, or every read comes back refused:
+
+```sh
+firebase deploy --only firestore:rules
 ```
 
 ## iOS is unbuilt and unverified

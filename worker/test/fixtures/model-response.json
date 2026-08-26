@@ -1,0 +1,37 @@
+{
+  "id": "resp_worker_fixture",
+  "object": "response",
+  "model": "gpt-5-nano-2025-08-07",
+  "status": "completed",
+  "output": [
+    {
+      "type": "reasoning",
+      "id": "rs_1",
+      "summary": []
+    },
+    {
+      "type": "message",
+      "id": "msg_1",
+      "role": "assistant",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "{\"is_receipt\":true,\"merchant\":\"Village Grocer Bangsar\",\"purchased_at\":\"2026-08-21\",\"currency\":\"MYR\",\"subtotal\":41.6,\"tax\":2.5,\"tip\":null,\"total\":44.1,\"payment_method\":\"card\",\"category\":\"groceries\",\"category_reason\":\"Fresh food and household staples, nothing else on the bill.\",\"line_items\":[{\"description\":\"Farm Fresh Milk 1L\",\"quantity\":2,\"unit_price\":8.5,\"amount\":17,\"category\":\"groceries\"},{\"description\":\"Wholemeal Bread\",\"quantity\":1,\"unit_price\":4.4,\"amount\":4.4,\"category\":\"groceries\"},{\"description\":\"Free Range Eggs 10s\",\"quantity\":1,\"unit_price\":12.9,\"amount\":12.9,\"category\":\"groceries\"},{\"description\":\"Cavendish Bananas\",\"quantity\":1,\"unit_price\":7.3,\"amount\":7.3,\"category\":\"groceries\"}],\"needs_review\":false,\"review_reasons\":[]}",
+          "annotations": []
+        }
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 3796,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 912,
+    "output_tokens_details": {
+      "reasoning_tokens": 640
+    },
+    "total_tokens": 4708
+  }
+}
