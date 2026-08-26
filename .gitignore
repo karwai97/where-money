@@ -63,3 +63,9 @@ firebase-debug.log
 firestore-debug.log
 ui-debug.log
 .firebase/
+
+# Agent scratch. The issue tracker under .scratch/ is committed on purpose
+# (see CLAUDE.md); these are per-machine and per-session.
+.claude/settings.local.json
+.claude/*.local.json
+*-handoff.md
