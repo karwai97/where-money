@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:where_money_core/where_money_core.dart';
 
 import '../data/device_preferences.dart';
 import '../lock/device_lock.dart';
 import '../session/session_bloc.dart';
+import 'how_scans_are_read.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  const SettingsScreen({super.key, required this.knobs});
+
+  /// Handed down rather than looked up: knobs are plain values everywhere else
+  /// they go, and this is the last place they land.
+  final Knobs knobs;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -81,6 +87,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: const Text('Sign out'),
             onTap: _signOut,
           ),
+          // Below what the user came here for. This half is for whoever is
+          // diagnosing a Scan, not for whoever is using the app.
+          const Divider(),
+          HowScansAreRead(knobs: widget.knobs),
+          const Divider(),
+          const WhatReviewHadToCorrect(),
         ],
       ),
     );

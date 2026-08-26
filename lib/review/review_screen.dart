@@ -144,10 +144,10 @@ class _FormState extends State<_Form> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
                 children: [
-                  _text(ReviewField.merchant, 'Merchant'),
+                  _text(ReviewField.merchant),
                   Row(
                     children: [
-                      Expanded(child: _text(ReviewField.purchasedAt, 'Date')),
+                      Expanded(child: _text(ReviewField.purchasedAt)),
                       IconButton(
                         tooltip: 'Pick a date',
                         icon: const Icon(Icons.calendar_today),
@@ -155,9 +155,9 @@ class _FormState extends State<_Form> {
                       ),
                     ],
                   ),
-                  _text(ReviewField.currency, 'Currency'),
+                  _text(ReviewField.currency),
                   _Closed(
-                    label: 'Category',
+                    label: ReviewField.category.label,
                     value: state.extraction.category,
                     options: categories,
                     copy: categoryLabel,
@@ -174,7 +174,7 @@ class _FormState extends State<_Form> {
                       ),
                     ),
                   _Closed(
-                    label: 'Paid with',
+                    label: ReviewField.paymentMethod.label,
                     value: state.extraction.paymentMethod,
                     options: paymentMethods,
                     copy: paymentMethodLabel,
@@ -182,13 +182,13 @@ class _FormState extends State<_Form> {
                       FieldCorrected(ReviewField.paymentMethod, value),
                     ),
                   ),
-                  _text(ReviewField.subtotal, 'Subtotal', number: true),
-                  _text(ReviewField.tax, 'Tax', number: true),
-                  _text(ReviewField.tip, 'Tip', number: true),
-                  _text(ReviewField.total, 'Total', number: true),
+                  _text(ReviewField.subtotal, number: true),
+                  _text(ReviewField.tax, number: true),
+                  _text(ReviewField.tip, number: true),
+                  _text(ReviewField.total, number: true),
                   const SizedBox(height: 24),
                   Text(
-                    'Line Items',
+                    ReviewField.lineItems.label,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   for (var index = 0; index < items.length; index++)
@@ -234,21 +234,20 @@ class _FormState extends State<_Form> {
     }
   }
 
-  Widget _text(ReviewField field, String label, {bool number = false}) =>
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: TextField(
-          controller: _fields[field],
-          decoration: InputDecoration(
-            labelText: label,
-            border: const OutlineInputBorder(),
-          ),
-          keyboardType: number
-              ? const TextInputType.numberWithOptions(decimal: true)
-              : TextInputType.text,
-          onChanged: (value) => _bloc.add(FieldCorrected(field, value)),
-        ),
-      );
+  Widget _text(ReviewField field, {bool number = false}) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: TextField(
+      controller: _fields[field],
+      decoration: InputDecoration(
+        labelText: field.label,
+        border: const OutlineInputBorder(),
+      ),
+      keyboardType: number
+          ? const TextInputType.numberWithOptions(decimal: true)
+          : TextInputType.text,
+      onChanged: (value) => _bloc.add(FieldCorrected(field, value)),
+    ),
+  );
 }
 
 /// The receipt, next to the fields it was read into. Beside them where there
@@ -494,7 +493,7 @@ class _Row extends StatelessWidget {
             ],
           ),
           _Closed(
-            label: 'Category',
+            label: ReviewField.category.label,
             value: category,
             options: categories,
             copy: categoryLabel,

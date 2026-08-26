@@ -17,7 +17,9 @@ dependencies:
   where_money_core:
     path: packages/core
   firebase_core: ^4.13.0
-  firebase_auth: ^6.5.7
+  # Not below 6.6.0: firebase_remote_config pulls firebase_core past 4.14.0,
+  # where the field 6.5.7 compiles against is gone and Android will not build.
+  firebase_auth: ^6.6.0
   google_sign_in: ^7.2.0
   cloud_firestore: ^6.8.0
   flutter_bloc: ^9.1.1
@@ -29,6 +31,7 @@ dependencies:
   http: ^1.6.0
   local_auth: ^3.0.2
   shared_preferences: ^2.5.5
+  firebase_remote_config: ^6.6.0
 
 dev_dependencies:
   flutter_test:

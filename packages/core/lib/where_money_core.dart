@@ -7,9 +7,11 @@
 library;
 
 export 'src/check.dart';
+export 'src/corrected_fields.dart';
 export 'src/expense.dart';
 export 'src/extraction.dart';
 export 'src/fixtures.dart';
+export 'src/knobs.dart';
 export 'src/model_response.dart';
 export 'src/recap.dart';
 export 'src/review_field.dart';

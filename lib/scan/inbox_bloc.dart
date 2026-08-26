@@ -88,10 +88,15 @@ final class InboxReady extends InboxState {
 }
 
 class InboxBloc extends Bloc<InboxEvent, InboxState> {
-  InboxBloc(this._store, this._model, {Duration readAgainAfter = _defaultWait})
-    : _firstWait = readAgainAfter,
-      _wait = readAgainAfter,
-      super(const InboxLoading()) {
+  InboxBloc(
+    this._store,
+    this._model, {
+    Knobs knobs = const Knobs(),
+    Duration readAgainAfter = _defaultWait,
+  }) : _longEdge = knobs.longEdge,
+       _firstWait = readAgainAfter,
+       _wait = readAgainAfter,
+       super(const InboxLoading()) {
     on<InboxOpened>(_onOpened);
     on<ScanCaptured>(_onCaptured);
     on<ScanAbandoned>((event, emit) => _store.abandon(event.scanId));
@@ -114,6 +119,7 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
 
   final LedgerStore _store;
   final ModelGateway _model;
+  final int _longEdge;
   final Duration _firstWait;
   StreamSubscription<List<Scan>>? _watching;
   Timer? _nextSweep;
@@ -137,7 +143,7 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
   /// no network, which is what makes a plane and a basement behave the same as
   /// anywhere else. The Scan is durable before this answers.
   Future<void> _onCaptured(ScanCaptured event, Emitter<InboxState> emit) async {
-    await _store.capture(await _resized(event.photograph));
+    await _store.capture(await _resized(event.photograph, _longEdge));
   }
 
   /// A Scan still at `extracting` that this bloc never claimed was left there
@@ -261,5 +267,5 @@ Scan _failed(Scan scan, ScanFailure failure) =>
 /// Off the main isolate: a 4200x2500 photograph takes 824ms to decode and
 /// re-encode, and the user is meant to be photographing the next receipt
 /// rather than watching this one.
-Future<Uint8List> _resized(Uint8List photograph) =>
-    compute(resizeForStorage, photograph);
+Future<Uint8List> _resized(Uint8List photograph, int longEdge) =>
+    compute(resizeForStorage, (photograph: photograph, longEdge: longEdge));

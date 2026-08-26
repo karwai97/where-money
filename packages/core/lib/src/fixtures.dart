@@ -191,3 +191,34 @@ List<Expense> seedLedger({DateTime? around}) {
         currency: 'SGD'),
   ];
 }
+
+/// A Ledger with Review's corrections on it, for anything that reads the
+/// Corrected Fields tally. The hand-typed Expense carries corrections too:
+/// without them there would be nothing for the filter that leaves it out to be
+/// tested against.
+List<Expense> seedCorrectedLedger() {
+  Expense reviewed(String id,
+          {ExpenseSource source = ExpenseSource.scanned,
+          List<String> corrected = const []}) =>
+      Expense(
+        id: id,
+        merchant: 'Village Grocer',
+        date: DateTime(2026, 8, 3),
+        currency: 'MYR',
+        total: 44.10,
+        category: 'groceries',
+        lineItems: const [],
+        source: source,
+        needsReview: false,
+        correctedFields: corrected,
+      );
+
+  return [
+    reviewed('corrected-1', corrected: const ['merchant', 'category']),
+    reviewed('corrected-2', corrected: const ['merchant']),
+    reviewed('corrected-3'),
+    reviewed('typed-1',
+        source: ExpenseSource.manual,
+        corrected: const ['merchant', 'total', 'category']),
+  ];
+}

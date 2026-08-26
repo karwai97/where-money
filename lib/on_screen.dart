@@ -13,3 +13,5 @@ String asMoney(String currency, double amount) =>
     '$currency ${amount.toStringAsFixed(2)}';
 
 String asExpenses(int count) => count == 1 ? '1 Expense' : '$count Expenses';
+
+String asReceipts(int count) => count == 1 ? '1 receipt' : '$count receipts';

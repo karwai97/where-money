@@ -11,6 +11,7 @@ import 'app.dart';
 import 'data/device_preferences.dart';
 import 'data/device_scan_store.dart';
 import 'data/firestore_ledger_store.dart';
+import 'knobs/remote_config_knobs.dart';
 import 'lock/local_auth_lock.dart';
 import 'scan/worker_model_gateway.dart';
 import 'session/google_sign_in_gateway.dart';
@@ -30,14 +31,17 @@ Future<void> main() async {
   await signIn.initialize();
 
   final documents = await getApplicationDocumentsDirectory();
+  final knobs = await knobsFromRemoteConfig();
 
   runApp(
     WhereMoneyApp(
       signIn: signIn,
       lock: LocalAuthLock(),
       preferences: StoredDevicePreferences(),
+      knobs: knobs,
       model: WorkerModelGateway(
         endpoint: worker,
+        knobs: knobs,
         idToken: () =>
             FirebaseAuth.instance.currentUser?.getIdToken() ?? Future.value(),
       ),

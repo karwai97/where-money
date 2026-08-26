@@ -103,6 +103,21 @@ void main() {
     await bloc.close();
   });
 
+  test('a console that asks for a smaller image gets one', () async {
+    final bloc = InboxBloc(store, model, knobs: const Knobs(longEdge: 512))
+      ..add(const InboxOpened());
+    bloc.add(ScanCaptured(photograph(width: 2268, height: 3024)));
+    await bloc.stream.firstWhere(
+      (state) => state is InboxReady && state.scans.isNotEmpty,
+    );
+
+    final scan = (bloc.state as InboxReady).scans.single;
+    final stored = sizeOf((await store.imageFor(scan.id))!);
+    expect(stored.height, 512);
+    expect(stored.width, 384);
+    await bloc.close();
+  });
+
   test('a photograph already small enough is stored as it arrived', () async {
     final original = photograph(width: 600, height: 800);
     final bloc = InboxBloc(store, model)..add(const InboxOpened());

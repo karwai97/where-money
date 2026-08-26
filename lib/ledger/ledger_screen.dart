@@ -24,6 +24,7 @@ class LedgerScreen extends StatelessWidget {
     required this.uid,
     required this.store,
     required this.model,
+    required this.knobs,
     required this.photograph,
   });
 
@@ -33,6 +34,7 @@ class LedgerScreen extends StatelessWidget {
 
   final LedgerStore store;
   final ModelGateway model;
+  final Knobs knobs;
   final Photographer photograph;
 
   @override
@@ -50,7 +52,8 @@ class LedgerScreen extends StatelessWidget {
         // coming back finds the work still there.
         BlocProvider(create: (_) => ReviewBloc(store)),
         BlocProvider(
-          create: (_) => InboxBloc(store, model)..add(const InboxOpened()),
+          create: (_) =>
+              InboxBloc(store, model, knobs: knobs)..add(const InboxOpened()),
         ),
         BlocProvider(
           create: (context) =>
@@ -120,13 +123,24 @@ class LedgerScreen extends StatelessWidget {
     );
   }
 
-  Widget _settingsAction(BuildContext context) => IconButton(
-    tooltip: 'Settings',
-    icon: const Icon(Icons.settings),
-    onPressed: () => Navigator.of(
-      context,
-    ).push(MaterialPageRoute<void>(builder: (_) => const SettingsScreen())),
-  );
+  Widget _settingsAction(BuildContext context) {
+    // The Ledger, because Settings is where the Corrected Fields tally is read
+    // and the route is outside the providers this screen holds.
+    final ledger = context.read<LedgerBloc>();
+
+    return IconButton(
+      tooltip: 'Settings',
+      icon: const Icon(Icons.settings),
+      onPressed: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => BlocProvider.value(
+            value: ledger,
+            child: SettingsScreen(knobs: knobs),
+          ),
+        ),
+      ),
+    );
+  }
 
   void _addByHand(BuildContext context) {
     final review = context.read<ReviewBloc>()

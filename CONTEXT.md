@@ -104,6 +104,19 @@ allowance can be counted, and neither stands in for the other. A phone with no
 screen lock has no Lock, and is shown the Ledger rather than shut out of it.
 _Avoid_: Passcode, auth, security, biometrics as a noun for the feature
 
+### Operating it
+
+**Knobs**:
+The few values that change how a receipt is read — which model, how much
+reasoning it buys, how large an image it is given, how many Scans a day are
+paid for — without a new version of the app. Delivered by Remote Config with
+compiled-in defaults behind them, and passed down as a plain value rather than
+something to go and ask. Not the same as a Setting: a Setting is the user's
+choice about their own phone, a Knob is the operator's choice about how the
+Model is used, and neither belongs in the other's storage. Never a secret — the
+key is a Worker secret and could not be one of these.
+_Avoid_: Config, flags, feature toggles, parameters
+
 ## Vocabulary this project does not use
 
 **"AI"** as a noun in code. The thing being called is a Model; what comes back is

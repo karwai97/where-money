@@ -19,10 +19,12 @@ void main() {
   WorkerModelGateway gateway(
     Future<http.Response> Function(http.Request) answer, {
     String? token = 'an-id-token',
+    Knobs knobs = const Knobs(),
   }) => WorkerModelGateway(
     endpoint: Uri.parse('https://where-money.example.workers.dev'),
     idToken: () async => token,
     client: MockClient(answer),
+    knobs: knobs,
   );
 
   http.Response refusing(int status, Map<String, Object?> body) =>
@@ -53,6 +55,30 @@ void main() {
     expect(sent.headers['authorization'], 'Bearer an-id-token');
     expect(sent.url.path, '/extract');
   });
+
+  test(
+    'the knobs this launch is running on are what the Worker is asked for',
+    () async {
+      late http.Request scanned;
+      late http.Request recapped;
+      const knobs = Knobs(model: 'gpt-5-mini', effort: 'medium', dailyCap: 15);
+
+      await gateway((request) async {
+        scanned = request;
+        return http.Response('{}', 200);
+      }, knobs: knobs).extract(receipt);
+      await gateway((request) async {
+        recapped = request;
+        return http.Response('{}', 200);
+      }, knobs: knobs).recap('{}');
+
+      for (final sent in [scanned, recapped]) {
+        expect(sent.url.queryParameters['model'], 'gpt-5-mini');
+        expect(sent.url.queryParameters['effort'], 'medium');
+        expect(sent.url.queryParameters['cap'], '15');
+      }
+    },
+  );
 
   test('a photo that is not a JPEG is not labelled one', () async {
     final png = img.encodePng(img.Image(width: 8, height: 8));

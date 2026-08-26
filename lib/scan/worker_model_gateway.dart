@@ -22,9 +22,7 @@ class WorkerModelGateway implements ModelGateway {
     required this.endpoint,
     required this.idToken,
     http.Client? client,
-    this.model = 'gpt-5-nano',
-    this.effort = 'low',
-    this.dailyCap = 40,
+    this.knobs = const Knobs(),
   }) : _client = client ?? http.Client();
 
   final Uri endpoint;
@@ -34,9 +32,11 @@ class WorkerModelGateway implements ModelGateway {
   final Future<String?> Function() idToken;
 
   final http.Client _client;
-  final String model;
-  final String effort;
-  final int dailyCap;
+
+  /// Plain values rather than a collaborator to ask. They are whatever a
+  /// console had to say when the app started, so a knob turned now reaches
+  /// this on the next launch.
+  final Knobs knobs;
 
   @override
   Future<ScanAnswer> extract(Uint8List receipt) async {
@@ -98,9 +98,9 @@ class WorkerModelGateway implements ModelGateway {
         endpoint.replace(
           path: '${endpoint.path}/$path',
           queryParameters: {
-            'model': model,
-            'effort': effort,
-            'cap': '$dailyCap',
+            'model': knobs.model,
+            'effort': knobs.effort,
+            'cap': '${knobs.dailyCap}',
             ...query,
           },
         ),

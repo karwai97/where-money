@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:where_money_core/where_money_core.dart';
 
 import 'data/device_preferences.dart';
 import 'data/ledger_store.dart';
@@ -24,7 +25,8 @@ class WhereMoneyApp extends StatelessWidget {
     required this.model,
     required this.lock,
     required this.preferences,
-    this.photograph = photographWithDevice,
+    this.knobs = const Knobs(),
+    this.photograph,
   });
 
   final SignInGateway signIn;
@@ -41,9 +43,15 @@ class WhereMoneyApp extends StatelessWidget {
 
   final DevicePreferences preferences;
 
+  /// What a console has to say about how a receipt is read. Plain values,
+  /// handed down: nothing below here asks anything for them.
+  final Knobs knobs;
+
   /// Injected so tests can hand down bytes: the camera is the one thing above
-  /// the tested surface, and this is the line it sits on.
-  final Photographer photograph;
+  /// the tested surface, and this is the line it sits on. The device's own
+  /// camera is built from [knobs] rather than defaulted to, so the size a
+  /// console asks for is the size the picker is given.
+  final Photographer? photograph;
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +89,11 @@ class WhereMoneyApp extends StatelessWidget {
                 uid: user.uid,
                 store: ledgerFor(user.uid),
                 model: model,
-                photograph: photograph,
+                knobs: knobs,
+                photograph:
+                    photograph ??
+                    (from) =>
+                        photographWithDevice(from, longEdge: knobs.longEdge),
               ),
             },
           ),
