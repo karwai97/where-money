@@ -2,9 +2,12 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:where_money/data/ledger_store.dart';
+import 'package:where_money/data/receipt_store.dart';
 import 'package:where_money_core/where_money_core.dart';
 
 /// The LedgerStore seam's fake: one of the two things this project fakes.
+/// Satisfies the Scan and Receipt seams with it, since LedgerStore still
+/// implements both while the callers narrow.
 class InMemoryLedgerStore implements LedgerStore {
   InMemoryLedgerStore([List<Expense> initial = const []])
     : _expenses = [...initial];
@@ -51,12 +54,18 @@ class InMemoryLedgerStore implements LedgerStore {
   }
 
   @override
-  Future<Uint8List?> receiptAt(String path) async => _receipts[path];
+  Future<Uint8List?> bytesAt(String path) async => _receipts[path];
 
   @override
-  Future<bool> hasReceiptAt(String path) async => _receipts.containsKey(path);
+  Future<bool> hasAt(String path) async => _receipts.containsKey(path);
 
-  /// A receipt already on this phone, for a Ledger seeded without anyone
+  @override
+  Future<Uint8List?> receiptAt(String path) => bytesAt(path);
+
+  @override
+  Future<bool> hasReceiptAt(String path) => hasAt(path);
+
+  /// A Receipt already on this phone, for a Ledger seeded without anyone
   /// having photographed anything.
   void keepReceipt(String path, Uint8List bytes) => _receipts[path] = bytes;
 
@@ -87,6 +96,9 @@ class InMemoryLedgerStore implements LedgerStore {
     _inbox.add(_waiting);
   }
 
+  /// A Scan's Receipt by its id, which is what most of the suite asserts on.
+  /// Kept when the seam drops it: naming the path is the caller's job now, and
+  /// spelling it out at every expectation would say nothing.
   @override
   Future<Uint8List?> imageFor(String scanId) async =>
       _receipts[receiptPathFor(scanId)];

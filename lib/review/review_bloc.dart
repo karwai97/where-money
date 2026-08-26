@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
 import '../data/ledger_store.dart';
+import '../data/receipt_store.dart';
 
 sealed class ReviewEvent extends Equatable {
   const ReviewEvent();

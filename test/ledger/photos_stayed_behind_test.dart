@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:where_money/data/ledger_store.dart';
+import 'package:where_money/data/receipt_store.dart';
 import 'package:where_money/ledger/photos_stayed_behind.dart';
 import 'package:where_money_core/where_money_core.dart';
 

@@ -39,6 +39,13 @@ One thing a Check noticed, at severity warn or fail. A clean Extraction
 produces none at all.
 _Avoid_: Error, issue, warning, flag
 
+**Receipt**:
+The stored image a Scan was read from, on the phone that took it. Named after
+its Scan, and an Expense records the name rather than the picture. Not the paper
+thing photographed: that is a receipt, lowercase, and the app never holds one.
+A Receipt is written once, when the Scan is captured, and read thereafter.
+_Avoid_: Image, photo, attachment, scan as a noun for this
+
 **Inbox**:
 The set of Scans not yet Reviewed — some still extracting, some failed, some
 ready. The only place an Extraction is ever seen.

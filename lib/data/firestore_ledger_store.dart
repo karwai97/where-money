@@ -6,6 +6,7 @@ import 'package:where_money_core/where_money_core.dart';
 import 'device_scan_store.dart';
 import 'expense_document.dart';
 import 'ledger_store.dart';
+import 'receipt_store.dart';
 
 /// The only place in the app that knows Firestore's shape. Above it there are
 /// Expenses; here there are documents, and the converter is the border.
@@ -44,10 +45,16 @@ class FirestoreLedgerStore implements LedgerStore {
   Future<void> remove(String expenseId) => _expenses.doc(expenseId).delete();
 
   @override
-  Future<Uint8List?> receiptAt(String path) => scans.receiptAt(path);
+  Future<Uint8List?> bytesAt(String path) => scans.bytesAt(path);
 
   @override
-  Future<bool> hasReceiptAt(String path) => scans.hasReceiptAt(path);
+  Future<bool> hasAt(String path) => scans.hasAt(path);
+
+  @override
+  Future<Uint8List?> receiptAt(String path) => scans.bytesAt(path);
+
+  @override
+  Future<bool> hasReceiptAt(String path) => scans.hasAt(path);
 
   @override
   Stream<List<Scan>> inbox() => scans.inbox();
@@ -60,7 +67,8 @@ class FirestoreLedgerStore implements LedgerStore {
   Future<void> put(Scan scan) => scans.put(scan);
 
   @override
-  Future<Uint8List?> imageFor(String scanId) => scans.imageFor(scanId);
+  Future<Uint8List?> imageFor(String scanId) =>
+      scans.bytesAt(receiptPathFor(scanId));
 
   @override
   Future<void> abandon(String scanId) => scans.abandon(scanId);

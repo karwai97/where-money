@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:where_money/data/device_scan_store.dart';
-import 'package:where_money/data/ledger_store.dart';
+import 'package:where_money/data/receipt_store.dart';
 import 'package:path/path.dart' as p;
 import 'package:where_money_core/where_money_core.dart';
 
@@ -35,7 +35,7 @@ void main() {
     expect(await restarted.inbox().first, [
       isA<Scan>().having((scan) => scan.id, 'id', first.id),
     ]);
-    expect(await restarted.imageFor(first.id), image);
+    expect(await restarted.bytesAt(receiptPathFor(first.id)), image);
   });
 
   test('the Inbox lists the newest Scan first', () async {
@@ -56,7 +56,7 @@ void main() {
     await store.abandon(scan.id);
 
     expect(await store.inbox().first, isEmpty);
-    expect(await store.imageFor(scan.id), isNull);
+    expect(await store.bytesAt(receiptPathFor(scan.id)), isNull);
     expect(directory.listSync(), isEmpty);
   });
 
@@ -112,19 +112,19 @@ void main() {
     final store = DeviceScanStore(directory);
     final scan = await store.capture(image);
 
-    expect(await store.receiptAt(receiptPathFor(scan.id)), image);
+    expect(await store.bytesAt(receiptPathFor(scan.id)), image);
   });
 
   test('a receipt that never came to this device reads as missing rather than '
       'throwing', () async {
     final store = DeviceScanStore(directory);
 
-    expect(await store.receiptAt('a-phone-ago.jpg'), isNull);
+    expect(await store.bytesAt('a-phone-ago.jpg'), isNull);
   });
 
   test('a receipt path cannot reach outside the Scan directory', () async {
     final store = DeviceScanStore(directory);
 
-    expect(await store.receiptAt('../../secrets.jpg'), isNull);
+    expect(await store.bytesAt('../../secrets.jpg'), isNull);
   });
 }

@@ -1,13 +1,20 @@
-/// The boundary to persistence. Above this line an Expense is an Expense and a
-/// Scan is a Scan; below it, and nowhere else, one is a Firestore document and
-/// the other is a file on disk.
+/// The boundary to the Ledger's persistence. Above this line an Expense is an
+/// Expense; below it, and nowhere else, it is a Firestore document.
+///
+/// The Scan and Receipt halves have moved out to [ScanStore] and
+/// [ReceiptStore]. This still implements both so that one object can satisfy
+/// all three while the callers narrow one at a time; the three methods below
+/// them go when the last one has.
 library;
 
 import 'dart:typed_data';
 
 import 'package:where_money_core/where_money_core.dart';
 
-abstract interface class LedgerStore {
+import 'receipt_store.dart';
+import 'scan_store.dart';
+
+abstract interface class LedgerStore implements ScanStore, ReceiptStore {
   /// The user's whole Ledger, newest first, updating as it changes.
   Stream<List<Expense>> ledger();
 
@@ -19,38 +26,13 @@ abstract interface class LedgerStore {
   /// camera roll.
   Future<void> remove(String expenseId);
 
-  /// The receipt an Expense was read from, by the path recorded on it, or null
-  /// when the photo is not on this device. Images never leave the phone they
-  /// were taken on (ADR-0003), so a Ledger restored somewhere else has none of
-  /// them and that is not a failure.
+  /// Transitional, all three. [receiptAt] and [hasReceiptAt] are
+  /// [ReceiptStore.bytesAt] and [ReceiptStore.hasAt] under their old names;
+  /// [imageFor] is [ReceiptStore.bytesAt] of [receiptPathFor], which is the
+  /// redundancy this split exists to remove.
   Future<Uint8List?> receiptAt(String path);
 
-  /// Whether that receipt is on this device, without reading it. A Ledger
-  /// restored onto a new phone has none of them, and finding that out should
-  /// not cost a pass over every image on disk.
   Future<bool> hasReceiptAt(String path);
 
-  /// Every Scan the user has not yet Reviewed, newest first.
-  Stream<List<Scan>> inbox();
-
-  /// Writes the image and the Scan together and answers only once both are
-  /// durable. Touches no network, so it works on a plane and cannot fail for
-  /// any reason the user could have avoided.
-  Future<Scan> capture(Uint8List image, {DateTime? at});
-
-  /// Moves a Scan on — into `extracting`, into `extracted` with what the
-  /// Model read, or into `committed` once it is an Expense. A Scan the user
-  /// has abandoned stays gone.
-  Future<void> put(Scan scan);
-
-  /// The image as it was stored, or null if the Scan is gone.
   Future<Uint8List?> imageFor(String scanId);
-
-  /// The user throwing a Scan away. The only thing that ever removes one.
-  Future<void> abandon(String scanId);
 }
-
-/// Where a Scan's receipt lives, as the Expense records it. Named here rather
-/// than in the device store so that an Expense can carry the path without
-/// anything above this boundary knowing there are files at all.
-String receiptPathFor(String scanId) => '$scanId.jpg';
