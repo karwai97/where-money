@@ -169,7 +169,7 @@ void main() {
 
     await photographInto(tester, 'Your sign-in was not accepted');
 
-    expect(await store.imageFor(store.waiting.single.id), isNotNull);
+    expect(await store.receiptFor(store.waiting.single.id), isNotNull);
     await shut(tester);
   });
 }

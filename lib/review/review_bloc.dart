@@ -243,7 +243,7 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
 
     if (started == null) {
       _store
-          .imageFor(event.scan.id)
+          .receiptFor(event.scan.id)
           .then((receipt) => add(_ReceiptArrived(event.scan.id, receipt)));
     }
   }

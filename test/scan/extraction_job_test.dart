@@ -98,7 +98,7 @@ void main() {
 
       final scan = await readOne(bloc);
 
-      expect(model.sent, await store.imageFor(scan.id));
+      expect(model.sent, await store.receiptFor(scan.id));
       await bloc.close();
     },
   );
@@ -137,7 +137,7 @@ void main() {
       final scan = await readOne(bloc);
 
       expect(scan.state, ScanState.failed);
-      expect(await store.imageFor(scan.id), isNotNull);
+      expect(await store.receiptFor(scan.id), isNotNull);
       await bloc.close();
     });
   }
@@ -168,7 +168,7 @@ void main() {
     await pumpEventQueue();
 
     expect(store.waiting, isEmpty);
-    expect(await store.imageFor(scan.id), isNull);
+    expect(await store.receiptFor(scan.id), isNull);
     await bloc.close();
   });
 

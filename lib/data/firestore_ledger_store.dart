@@ -6,7 +6,6 @@ import 'package:where_money_core/where_money_core.dart';
 import 'device_scan_store.dart';
 import 'expense_document.dart';
 import 'ledger_store.dart';
-import 'receipt_store.dart';
 
 /// The only place in the app that knows Firestore's shape. Above it there are
 /// Expenses; here there are documents, and the converter is the border.
@@ -67,8 +66,7 @@ class FirestoreLedgerStore implements LedgerStore {
   Future<void> put(Scan scan) => scans.put(scan);
 
   @override
-  Future<Uint8List?> imageFor(String scanId) =>
-      scans.bytesAt(receiptPathFor(scanId));
+  Future<Uint8List?> receiptFor(String scanId) => scans.receiptFor(scanId);
 
   @override
   Future<void> abandon(String scanId) => scans.abandon(scanId);

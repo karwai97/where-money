@@ -96,11 +96,8 @@ class InMemoryLedgerStore implements LedgerStore {
     _inbox.add(_waiting);
   }
 
-  /// A Scan's Receipt by its id, which is what most of the suite asserts on.
-  /// Kept when the seam drops it: naming the path is the caller's job now, and
-  /// spelling it out at every expectation would say nothing.
   @override
-  Future<Uint8List?> imageFor(String scanId) async =>
+  Future<Uint8List?> receiptFor(String scanId) async =>
       _receipts[receiptPathFor(scanId)];
 
   @override

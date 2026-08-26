@@ -90,7 +90,7 @@ void main() {
 
         expect(scan.state, ScanState.failed);
         expect(scan.failure, failure);
-        expect(await store.imageFor(scan.id), isNotNull);
+        expect(await store.receiptFor(scan.id), isNotNull);
         await bloc.close();
       });
     }
@@ -118,7 +118,7 @@ void main() {
 
       expect(scan.state, ScanState.notReceipt);
       expect(scan.failure, isNull);
-      expect(await store.imageFor(scan.id), isNotNull);
+      expect(await store.receiptFor(scan.id), isNotNull);
       await bloc.close();
     });
 

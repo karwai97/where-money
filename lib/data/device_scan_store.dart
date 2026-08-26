@@ -65,6 +65,10 @@ class DeviceScanStore implements ScanStore, ReceiptStore {
   }
 
   @override
+  Future<Uint8List?> receiptFor(String scanId) =>
+      bytesAt(receiptPathFor(scanId));
+
+  @override
   Future<Uint8List?> bytesAt(String path) async {
     final file = _receiptFile(path);
     return file != null && file.existsSync() ? file.readAsBytes() : null;

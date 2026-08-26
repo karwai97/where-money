@@ -26,13 +26,10 @@ abstract interface class LedgerStore implements ScanStore, ReceiptStore {
   /// camera roll.
   Future<void> remove(String expenseId);
 
-  /// Transitional, all three. [receiptAt] and [hasReceiptAt] are
-  /// [ReceiptStore.bytesAt] and [ReceiptStore.hasAt] under their old names;
-  /// [imageFor] is [ReceiptStore.bytesAt] of [receiptPathFor], which is the
-  /// redundancy this split exists to remove.
+  /// Transitional, both: [ReceiptStore.bytesAt] and [ReceiptStore.hasAt] under
+  /// their old names, until the two callers holding an Expense's path have
+  /// moved onto the Receipt seam.
   Future<Uint8List?> receiptAt(String path);
 
   Future<bool> hasReceiptAt(String path);
-
-  Future<Uint8List?> imageFor(String scanId);
 }

@@ -27,4 +27,12 @@ abstract interface class ScanStore {
 
   /// The user throwing a Scan away. The only thing that ever removes one.
   Future<void> abandon(String scanId);
+
+  /// The Receipt this Scan was read from, or null if the Scan is gone.
+  ///
+  /// Keyed by the Scan rather than by a path, because that is the question its
+  /// callers have: they are holding a Scan, not an Expense. That this answers
+  /// the same file as a ReceiptStore read of `receiptPathFor` is a fact about
+  /// the directory, and it stays down there.
+  Future<Uint8List?> receiptFor(String scanId);
 }
