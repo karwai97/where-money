@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
 import '../data/device_preferences.dart';
-import '../data/ledger_store.dart';
 import '../data/receipt_store.dart';
+import '../data/stores.dart';
 import '../on_screen.dart';
 import '../review/review_bloc.dart';
 import '../review/review_screen.dart';
@@ -23,17 +23,17 @@ class LedgerScreen extends StatelessWidget {
   const LedgerScreen({
     super.key,
     required this.uid,
-    required this.store,
+    required this.stores,
     required this.model,
     required this.knobs,
     required this.photograph,
   });
 
   /// Whose Ledger this is. Only the once-per-account notice needs it; the
-  /// store already knows.
+  /// stores already know.
   final String uid;
 
-  final LedgerStore store;
+  final Stores stores;
   final ModelGateway model;
   final Knobs knobs;
   final Photographer photograph;
@@ -45,20 +45,27 @@ class LedgerScreen extends StatelessWidget {
         // The Receipt is a file on this phone rather than anything the
         // Ledger's states carry, so its seam has to be reachable from the
         // Expense a user opens.
-        RepositoryProvider<ReceiptStore>.value(value: store),
+        RepositoryProvider<ReceiptStore>.value(value: stores.receipts),
         BlocProvider(
-          create: (_) => LedgerBloc(store, model)..add(const LedgerOpened()),
+          create: (_) =>
+              LedgerBloc(stores.ledger, model)..add(const LedgerOpened()),
         ),
         // Held here rather than on the Review route, so leaving Review and
         // coming back finds the work still there.
-        BlocProvider(create: (_) => ReviewBloc(store, store, store)),
         BlocProvider(
           create: (_) =>
-              InboxBloc(store, model, knobs: knobs)..add(const InboxOpened()),
+              ReviewBloc(stores.ledger, stores.scans, stores.receipts),
         ),
         BlocProvider(
-          create: (context) =>
-              PhotosStayedBehind(store, context.read<DevicePreferences>(), uid),
+          create: (_) => InboxBloc(stores.scans, model, knobs: knobs)
+            ..add(const InboxOpened()),
+        ),
+        BlocProvider(
+          create: (context) => PhotosStayedBehind(
+            stores.receipts,
+            context.read<DevicePreferences>(),
+            uid,
+          ),
         ),
       ],
       child: _SaysThePhotosStayedBehind(

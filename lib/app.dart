@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
 import 'data/device_preferences.dart';
-import 'data/ledger_store.dart';
+import 'data/stores.dart';
 import 'ledger/ledger_screen.dart';
 import 'lock/device_lock.dart';
 import 'lock/lock_gate.dart';
@@ -13,15 +13,16 @@ import 'session/session_bloc.dart';
 import 'session/sign_in_gateway.dart';
 import 'session/sign_in_screen.dart';
 
-/// A Ledger belongs to exactly one user, so the store is built from the uid
-/// rather than told about it — which is all the app ever wants from signing in.
-typedef LedgerFor = LedgerStore Function(String uid);
+/// A Ledger belongs to exactly one user, and so does the directory their
+/// Receipts sit in, so all three seams are built from the uid rather than told
+/// about it — which is all the app ever wants from signing in.
+typedef StoresFor = Stores Function(String uid);
 
 class WhereMoneyApp extends StatelessWidget {
   const WhereMoneyApp({
     super.key,
     required this.signIn,
-    required this.ledgerFor,
+    required this.storesFor,
     required this.model,
     required this.lock,
     required this.preferences,
@@ -30,7 +31,7 @@ class WhereMoneyApp extends StatelessWidget {
   });
 
   final SignInGateway signIn;
-  final LedgerFor ledgerFor;
+  final StoresFor storesFor;
 
   /// The Worker, or its fake. Not built per uid: the ID token the Worker reads
   /// is what says who is calling.
@@ -87,7 +88,7 @@ class WhereMoneyApp extends StatelessWidget {
                 // account's Ledger bloc.
                 key: ValueKey(user.uid),
                 uid: user.uid,
-                store: ledgerFor(user.uid),
+                stores: storesFor(user.uid),
                 model: model,
                 knobs: knobs,
                 photograph:

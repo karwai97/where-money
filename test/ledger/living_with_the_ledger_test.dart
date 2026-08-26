@@ -104,7 +104,7 @@ void main() {
         lock: FakeDeviceLock(),
         preferences: preferences,
         signIn: FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai),
-        ledgerFor: (_) => store,
+        storesFor: (_) => store.stores,
         model: FakeModelGateway(),
         photograph: (_) async => null,
       ),

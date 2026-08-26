@@ -41,7 +41,7 @@ void main() {
         lock: FakeDeviceLock(),
         preferences: InMemoryDevicePreferences(locksOnOpen: false),
         signIn: FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai),
-        ledgerFor: (_) => store,
+        storesFor: (_) => store.stores,
         model: model,
         photograph: (_) async => null,
       ),

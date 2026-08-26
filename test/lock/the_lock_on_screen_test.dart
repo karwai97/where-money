@@ -24,7 +24,7 @@ void main() {
     await tester.pumpWidget(
       WhereMoneyApp(
         signIn: FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai),
-        ledgerFor: (_) => store,
+        storesFor: (_) => store.stores,
         model: FakeModelGateway(),
         lock: lock,
         preferences: preferences,
@@ -95,7 +95,7 @@ void main() {
     await tester.pumpWidget(
       WhereMoneyApp(
         signIn: FakeSignInGateway(),
-        ledgerFor: (_) => store,
+        storesFor: (_) => store.stores,
         model: FakeModelGateway(),
         lock: lock,
         preferences: preferences,

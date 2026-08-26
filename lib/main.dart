@@ -45,13 +45,23 @@ Future<void> main() async {
         idToken: () =>
             FirebaseAuth.instance.currentUser?.getIdToken() ?? Future.value(),
       ),
-      ledgerFor: (uid) => FirestoreLedgerStore(
-        firestore: FirebaseFirestore.instance,
-        uid: uid,
+      storesFor: (uid) {
         // Per user, so signing in as someone else on a shared phone does not
-        // show their receipts.
-        scans: DeviceScanStore(Directory(p.join(documents.path, 'scans', uid))),
-      ),
+        // show their receipts. One object for two of the seams, because a Scan
+        // and its Receipt are one directory.
+        final device = DeviceScanStore(
+          Directory(p.join(documents.path, 'scans', uid)),
+        );
+
+        return (
+          ledger: FirestoreLedgerStore(
+            firestore: FirebaseFirestore.instance,
+            uid: uid,
+          ),
+          scans: device,
+          receipts: device,
+        );
+      },
     ),
   );
 }
