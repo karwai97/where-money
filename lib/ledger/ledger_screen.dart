@@ -51,7 +51,7 @@ class LedgerScreen extends StatelessWidget {
         ),
         // Held here rather than on the Review route, so leaving Review and
         // coming back finds the work still there.
-        BlocProvider(create: (_) => ReviewBloc(store)),
+        BlocProvider(create: (_) => ReviewBloc(store, store, store)),
         BlocProvider(
           create: (_) =>
               InboxBloc(store, model, knobs: knobs)..add(const InboxOpened()),

@@ -17,7 +17,7 @@ void main() {
   setUp(() => store = InMemoryLedgerStore());
 
   ReviewBloc against(InMemoryLedgerStore store) =>
-      ReviewBloc(store, clock: () => now);
+      ReviewBloc(store, store, store, clock: () => now);
 
   Future<ReviewInProgress> reviewing(ReviewBloc bloc) async {
     await pumpEventQueue();
