@@ -69,3 +69,5 @@ ui-debug.log
 .claude/settings.local.json
 .claude/*.local.json
 *-handoff.md
+CONTEXT.md
+.scratch/
