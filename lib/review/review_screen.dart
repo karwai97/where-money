@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
 import '../scan/receipt_on_screen.dart';
+import 'finding_copy.dart';
 import 'review_bloc.dart';
 
 /// Review: what the Model read, beside the receipt it read it from, with
@@ -309,9 +310,9 @@ class _Clean extends StatelessWidget {
   }
 }
 
-/// What the Check noticed, in the words it wrote them in. A Finding is already
-/// a sentence about the receipt; a rule name would be worse copy than what is
-/// already on it.
+/// What the Check noticed, said in full. A Finding carries only its kind and
+/// the values it found; the sentence comes from [sayingFor], because a rule
+/// name would be worse copy than a sentence about this receipt.
 class _Findings extends StatelessWidget {
   const _Findings(this.findings);
 
@@ -331,7 +332,9 @@ class _Findings extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            for (final finding in findings)
+            for (final (finding, (label, detail)) in findings.map(
+              (finding) => (finding, sayingFor(finding)),
+            ))
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
@@ -352,11 +355,11 @@ class _Findings extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            finding.label,
+                            label,
                             style: Theme.of(context).textTheme.titleSmall,
                           ),
                           Text(
-                            finding.detail,
+                            detail,
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ],

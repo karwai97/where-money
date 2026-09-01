@@ -17,10 +17,7 @@ void main() {
       'that is not', () {
     final findings = Check.of(Extraction.blank(), now: fixtureNow).findings;
 
-    expect(
-      findings.map((finding) => finding.label),
-      isNot(contains('Not a receipt')),
-    );
+    expect(findings, isNot(contains(isA<NotAReceipt>())));
   });
 
   test('a blank Extraction raises a Finding for everything it is missing', () {

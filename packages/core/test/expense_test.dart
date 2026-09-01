@@ -168,12 +168,9 @@ void main() {
       correctedFields: const ['purchasedAt', 'lineItems'],
     );
 
-    final labels = Check.of(
-      expense.asExtraction(),
-      now: now,
-    ).findings.map((finding) => finding.label);
+    final findings = Check.of(expense.asExtraction(), now: now).findings;
 
-    expect(labels, isNot(contains('Model asked for review')));
+    expect(findings, isNot(contains(isA<ModelAskedForReview>())));
   });
 
   test('an Expense typed by hand has no receipt to point at', () {

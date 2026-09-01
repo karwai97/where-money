@@ -85,9 +85,9 @@ void main() {
       final bloc = against(store)
         ..add(ScanReviewStarted(await waiting(flawedExtraction)));
 
-      final labels = (await reviewing(bloc)).check.findings.map((f) => f.label);
-      expect(labels, contains('No date'));
-      expect(labels, contains('Line items do not match subtotal'));
+      final findings = (await reviewing(bloc)).check.findings;
+      expect(findings, contains(isA<NoDate>()));
+      expect(findings, contains(isA<LineItemsDoNotMatch>()));
     },
   );
 

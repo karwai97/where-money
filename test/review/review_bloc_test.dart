@@ -18,8 +18,8 @@ void main() {
     return bloc.state as ReviewInProgress;
   }
 
-  Future<Iterable<String>> labels(ReviewBloc bloc) async =>
-      (await reviewing(bloc)).check.findings.map((finding) => finding.label);
+  Future<List<Finding>> findings(ReviewBloc bloc) async =>
+      (await reviewing(bloc)).check.findings;
 
   /// The shortest path from a blank Extraction to something committable.
   void fillIn(ReviewBloc bloc) {
@@ -47,8 +47,8 @@ void main() {
     final bloc = against(InMemoryLedgerStore())
       ..add(const ManualExpenseStarted());
 
-    expect(await labels(bloc), contains('No total'));
-    expect(await labels(bloc), contains('No merchant'));
+    expect(await findings(bloc), contains(isA<NoTotal>()));
+    expect(await findings(bloc), contains(isA<NoMerchant>()));
   });
 
   test('a total that does not add up loses its Finding once corrected', () async {
@@ -58,11 +58,11 @@ void main() {
       ..add(const FieldCorrected(ReviewField.tax, '1.20'))
       ..add(const FieldCorrected(ReviewField.total, '30.00'));
 
-    expect(await labels(bloc), contains('Total does not add up'));
+    expect(await findings(bloc), contains(isA<TotalDoesNotAddUp>()));
 
     bloc.add(const FieldCorrected(ReviewField.total, '21.20'));
 
-    expect(await labels(bloc), isNot(contains('Total does not add up')));
+    expect(await findings(bloc), isNot(contains(isA<TotalDoesNotAddUp>())));
   });
 
   test('the Check re-runs on a half-typed number without throwing it away', () async {
@@ -72,7 +72,7 @@ void main() {
       ..add(const FieldCorrected(ReviewField.total, '26.'));
 
     expect((await reviewing(bloc)).extraction.total, 26.00);
-    expect(await labels(bloc), isNot(contains('No total')));
+    expect(await findings(bloc), isNot(contains(isA<NoTotal>())));
   });
 
   test('an emptied optional amount goes back to being unstated', () async {
@@ -313,13 +313,13 @@ void main() {
         final bloc = against(InMemoryLedgerStore([expense]))
           ..add(ExpenseEditStarted(expense));
 
-        expect(await labels(bloc), isEmpty);
+        expect(await findings(bloc), isEmpty);
 
         bloc.add(const FieldCorrected(ReviewField.total, '99.00'));
-        expect(await labels(bloc), contains('Total does not add up'));
+        expect(await findings(bloc), contains(isA<TotalDoesNotAddUp>()));
 
         bloc.add(const FieldCorrected(ReviewField.total, '44.10'));
-        expect(await labels(bloc), isEmpty);
+        expect(await findings(bloc), isEmpty);
       },
     );
 
@@ -331,7 +331,7 @@ void main() {
           ..add(ExpenseEditStarted(old));
 
         expect(
-          await labels(bloc),
+          await findings(bloc),
           isEmpty,
           reason:
               'the date was confirmed when it was committed, and no edit can '
@@ -348,7 +348,7 @@ void main() {
           ..add(ExpenseEditStarted(expense))
           ..add(const FieldCorrected(ReviewField.purchasedAt, '2027-01-04'));
 
-        expect(await labels(bloc), contains('Date in the future'));
+        expect(await findings(bloc), contains(isA<DateInTheFuture>()));
       },
     );
 
