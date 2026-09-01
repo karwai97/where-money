@@ -12,29 +12,33 @@ import 'dart:convert';
 
 import 'model_response.dart';
 import 'rollup.dart';
-import 'taxonomy.dart';
 
 /// Below this, no Recap is asked for. Three receipts have no shape to find and
 /// asking anyway is asking to be told something invented.
 const int minimumExpensesForRecap = 5;
 
-/// What the Model is given. Categories carry the label the charts print rather
-/// than the slug, so the words and the picture name the same things.
+/// What the Model is given. Numbers and slugs only — the month is a year and a
+/// month rather than a formatted label, and a Category is its slug. The Model
+/// is the thing best placed to name a month or a Category in the language it is
+/// writing in, and nothing English is left on this path for it to copy
+/// (ADR-0007). The Worker's instructions describe this shape.
 Map<String, dynamic> rollupPrompt(Rollup rollup) {
   final heaviest = rollup.heaviestDay;
 
   return {
-    'month': rollup.monthLabel,
+    'year': rollup.year,
+    'month': rollup.month,
     'currency': rollup.homeCurrency,
     'total': _money(rollup.total),
-    'previous_month': rollup.previousMonthLabel,
+    'previous_year': rollup.previousYear,
+    'previous_month': rollup.previousMonth,
     'previous_total': _money(rollup.previousTotal),
     'expenses': rollup.expenseCount,
     'daily_average': _money(rollup.dailyAverage),
     'by_category': [
       for (final category in rollup.byCategory)
         {
-          'category': category.label,
+          'category': category.category,
           'amount': _money(category.amount),
           'previous': _money(category.previousAmount),
           'count': category.count,
@@ -45,7 +49,7 @@ Map<String, dynamic> rollupPrompt(Rollup rollup) {
         {
           'merchant': expense.merchant,
           'amount': _money(expense.total),
-          'category': categoryLabel(expense.category),
+          'category': expense.category,
           'day': expense.date.day,
         },
     ],

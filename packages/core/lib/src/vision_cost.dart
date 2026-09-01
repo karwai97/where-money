@@ -22,7 +22,6 @@ import 'dart:math' as math;
 
 class ModelTier {
   final String id;
-  final String label;
 
   /// USD per million tokens.
   final double inputPerMTok;
@@ -36,7 +35,6 @@ class ModelTier {
 
   const ModelTier({
     required this.id,
-    required this.label,
     required this.inputPerMTok,
     required this.outputPerMTok,
     required this.imageMultiplier,
@@ -48,7 +46,6 @@ class ModelTier {
   /// exists to answer.
   static const nano5 = ModelTier(
     id: 'gpt-5-nano',
-    label: 'gpt-5-nano · cheapest',
     inputPerMTok: 0.05,
     outputPerMTok: 0.40,
     imageMultiplier: 2.46,
@@ -58,7 +55,6 @@ class ModelTier {
   /// The fallback if nano starts misreading totals. ~3.3x the image cost.
   static const mini5 = ModelTier(
     id: 'gpt-5-mini',
-    label: 'gpt-5-mini · safer',
     inputPerMTok: 0.25,
     outputPerMTok: 2.00,
     imageMultiplier: 1.62,

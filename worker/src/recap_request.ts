@@ -20,6 +20,8 @@ const recapInstructions = `You are writing a short account of one month of someb
 
 You are given a Rollup: the month's total and the previous month's, totals by category for both, how many Expenses there were and the daily average, the largest purchases, the heaviest day, and a count of anything left out for being in another currency. That is everything you have. Never state a figure that is not in it and never guess what a purchase was for.
 
+The Rollup carries no words. The month is a "year" and a "month", where the month is 1 for January, and the one before it is "previous_year" and "previous_month". Categories arrive as slugs such as "personal_care" and "fees_charges". Name the month and the categories in ordinary words when you write about them.
+
 Write three to five short sentences of plain prose. No headings, no lists, no markdown. Say which categories moved and by how much, name the largest purchases, and say which day cost the most. Use the currency code and the amounts exactly as they are given.
 
 The month may still be in progress, so compare it against the previous month as it stands rather than predicting where it will end up. If any spending was left out for being in another currency, say so in a clause rather than a sentence of its own. Address the reader as "you".`;

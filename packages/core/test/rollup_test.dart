@@ -197,11 +197,11 @@ void main() {
       homeCurrency: 'MYR',
     );
 
-    expect(trend.map((r) => r.monthLabel), [
-      'May 2026',
-      'June 2026',
-      'July 2026',
-      'August 2026',
+    expect(trend.map((r) => (r.year, r.month)), [
+      (2026, 5),
+      (2026, 6),
+      (2026, 7),
+      (2026, 8),
     ]);
     expect(trend.map((r) => r.total), [0, 10.00, 0, 20.00]);
   });
@@ -215,10 +215,10 @@ void main() {
       homeCurrency: 'MYR',
     );
 
-    expect(trend.map((r) => r.monthLabel), [
-      'December 2025',
-      'January 2026',
-      'February 2026',
+    expect(trend.map((r) => (r.year, r.month)), [
+      (2025, 12),
+      (2026, 1),
+      (2026, 2),
     ]);
     expect(trend.first.total, 60.00);
   });
@@ -252,21 +252,18 @@ void main() {
     expect(rollup.excludedCount, 1);
   });
 
-  test('a month has a short label for a chart axis', () {
-    expect(august(const []).monthLabel, 'August 2026');
-    expect(august(const []).shortMonthLabel, 'Aug');
-  });
-
-  test('a month names the one it is being compared against', () {
-    expect(august(const []).previousMonthLabel, 'July 2026');
+  test('a month numbers the one it is being compared against', () {
     expect(
-      Rollup.forMonth(
-        const [],
-        year: 2026,
-        month: 1,
-        homeCurrency: 'MYR',
-      ).previousMonthLabel,
-      'December 2025',
+      (august(const []).previousYear, august(const []).previousMonth),
+      (2026, 7),
     );
+
+    final january = Rollup.forMonth(
+      const [],
+      year: 2026,
+      month: 1,
+      homeCurrency: 'MYR',
+    );
+    expect((january.previousYear, january.previousMonth), (2025, 12));
   });
 }

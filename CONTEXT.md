@@ -72,7 +72,8 @@ _Avoid_: Item, product, detail
 **Category**:
 A member of the closed spend taxonomy. Closed on purpose: it is sent to the
 model as an enum, which is what makes the field unguessable rather than free
-text.
+text. The Category is the slug; "Dining out" is a rendering of it, and lives in
+the app rather than the domain (ADR-0007).
 _Avoid_: Tag, label, type
 
 **Home Currency**:

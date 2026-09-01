@@ -11,24 +11,38 @@ void main() {
       Rollup.forMonth(of, year: 2026, month: 8, homeCurrency: 'MYR');
 
   group('the Rollup as a prompt', () {
-    test('carries the month, its total and the month before it', () {
+    test('carries the month as numbers, its total and the month before it', () {
       final prompt = rollupPrompt(august2026(ledger));
 
-      expect(prompt['month'], 'August 2026');
+      expect(prompt['year'], 2026);
+      expect(prompt['month'], 8);
       expect(prompt['currency'], 'MYR');
       expect(prompt['total'], closeTo(1806.75, 0.01));
-      expect(prompt['previous_month'], 'July 2026');
+      expect(prompt['previous_year'], 2026);
+      expect(prompt['previous_month'], 7);
       expect(prompt['previous_total'], greaterThan(0));
     });
 
-    test('names Categories the way the charts name them', () {
+    test('sends Categories as slugs, leaving the naming to whoever writes', () {
       final prompt = rollupPrompt(august2026(ledger));
-      final categories = (prompt['by_category'] as List)
-          .map((c) => (c as Map)['category'])
-          .toList();
+      final named = [
+        ...(prompt['by_category'] as List).map((c) => (c as Map)['category']),
+        ...(prompt['largest'] as List).map((e) => (e as Map)['category']),
+      ];
 
-      expect(categories, contains('Dining out'));
-      expect(categories, isNot(contains('dining')));
+      expect(named, contains('dining'));
+      expect(named, isNot(contains('Dining out')));
+      for (final category in named) {
+        expect(categories, contains(category));
+      }
+    });
+
+    test('spells out no month for a translator to work around', () {
+      final text = jsonEncode(rollupPrompt(august2026(ledger)));
+
+      for (final month in const ['Jan', 'Aug', 'Sep', 'Dec']) {
+        expect(text, isNot(contains(month)));
+      }
     });
 
     test('points at the biggest purchases and the heaviest day', () {

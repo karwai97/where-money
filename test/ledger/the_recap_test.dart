@@ -63,7 +63,7 @@ void main() {
     final (:bloc, model: _) = opened(seedLedger(around: august));
     final state = await settled(bloc);
 
-    expect(state.rollup.monthLabel, 'August 2026');
+    expect(state.rollup.month, 8);
     expect(state.recap, isA<RecapOnScreen>());
     await bloc.close();
   });
@@ -78,10 +78,10 @@ void main() {
     bloc.add(const MonthStepped(1));
     final state = await settled(bloc);
 
-    expect(state.rollup.monthLabel, 'August 2026');
+    expect(state.rollup.month, 8);
     expect(state.recap, isA<RecapOnScreen>());
     expect(
-      model.rollupsAsked.where((sent) => sent.contains('August 2026')),
+      model.rollupsAsked.where((sent) => sent.contains('"month":8')),
       hasLength(1),
       reason: 'the Rollup had not changed, so there was nothing to ask',
     );
@@ -189,10 +189,11 @@ void main() {
 
     final sent = jsonDecode(model.rollupsAsked.single) as Map<String, dynamic>;
     expect(sent['total'], closeTo(state.rollup.total, 0.01));
-    expect(sent['month'], state.rollup.monthLabel);
+    expect(sent['year'], state.rollup.year);
+    expect(sent['month'], state.rollup.month);
     expect(
       (sent['by_category'] as List).first,
-      containsPair('category', state.rollup.byCategory.first.label),
+      containsPair('category', state.rollup.byCategory.first.category),
     );
     await bloc.close();
   });
@@ -231,7 +232,7 @@ void main() {
 
     expect(state.recap, isA<RecapUnavailable>());
     expect(
-      model.rollupsAsked.where((sent) => sent.contains('August 2026')),
+      model.rollupsAsked.where((sent) => sent.contains('"month":8')),
       hasLength(1),
       reason: 'a refusal is an answer, and asking it again would cost money',
     );

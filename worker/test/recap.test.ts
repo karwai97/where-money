@@ -13,14 +13,16 @@ const modelOrigin = 'https://api.openai.test';
 const modelPath = '/v1/responses';
 
 const rollup = {
-  month: 'August 2026',
+  year: 2026,
+  month: 8,
   currency: 'MYR',
   total: 1806.75,
-  previous_month: 'July 2026',
+  previous_year: 2026,
+  previous_month: 7,
   previous_total: 1262.1,
   expenses: 18,
-  by_category: [{ category: 'Groceries', amount: 423.1, previous: 289.6, count: 3 }],
-  largest: [{ merchant: 'Ikea Damansara', amount: 289.9, category: 'Home', day: 23 }],
+  by_category: [{ category: 'groceries', amount: 423.1, previous: 289.6, count: 3 }],
+  largest: [{ merchant: 'Ikea Damansara', amount: 289.9, category: 'home', day: 23 }],
   heaviest_day: { day: 23, amount: 311.9 },
   excluded: { count: 1, currencies: ['USD'] },
 };

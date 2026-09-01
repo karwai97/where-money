@@ -76,7 +76,7 @@ void main() {
   test('the Ledger opens on the month the user is in', () async {
     final bloc = opened(InMemoryLedgerStore(seedLedger(around: august)));
 
-    expect((await settled(bloc)).rollup.monthLabel, 'August 2026');
+    expect((await settled(bloc)).rollup.month, 8);
     await bloc.close();
   });
 
@@ -105,7 +105,7 @@ void main() {
       bloc.add(const MonthStepped(-1));
       final state = await settled(bloc);
 
-      expect(state.rollup.monthLabel, 'July 2026');
+      expect(state.rollup.month, 7);
       expect(state.inMonth.map((e) => e.merchant), contains('AirAsia'));
       expect(
         state.inMonth.map((e) => e.merchant),
@@ -124,7 +124,7 @@ void main() {
       bloc.add(const MonthStepped(-4));
       final state = await settled(bloc);
 
-      expect(state.rollup.monthLabel, 'April 2026');
+      expect(state.rollup.month, 4);
       expect(state.inMonth, isEmpty);
       expect(state.rollup.hasSpending, isFalse);
       expect(state.rollup.byCategory, isEmpty);
@@ -136,13 +136,13 @@ void main() {
     final bloc = opened(InMemoryLedgerStore(seedLedger(around: august)));
     final state = await settled(bloc);
 
-    expect(state.trend.map((r) => r.monthLabel), [
-      'March 2026',
-      'April 2026',
-      'May 2026',
-      'June 2026',
-      'July 2026',
-      'August 2026',
+    expect(state.trend.map((r) => (r.year, r.month)), [
+      (2026, 3),
+      (2026, 4),
+      (2026, 5),
+      (2026, 6),
+      (2026, 7),
+      (2026, 8),
     ]);
     await bloc.close();
   });
@@ -185,7 +185,7 @@ void main() {
     final bloc = opened(InMemoryLedgerStore());
     final state = await settled(bloc);
 
-    expect(state.rollup.monthLabel, 'August 2026');
+    expect(state.rollup.month, 8);
     expect(state.inMonth, isEmpty);
     expect(state.rollup.hasSpending, isFalse);
     expect(state.hasLaterMonth, isFalse);

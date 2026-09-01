@@ -7,7 +7,6 @@
 library;
 
 import 'expense.dart';
-import 'taxonomy.dart';
 
 class CategoryTotal {
   final String category;
@@ -21,8 +20,6 @@ class CategoryTotal {
     required this.count,
     required this.previousAmount,
   });
-
-  String get label => categoryLabel(category);
 
   double get delta => amount - previousAmount;
 }
@@ -150,20 +147,16 @@ class Rollup {
     );
   });
 
-  String get monthLabel => _label(year, month);
-
   /// Whether there is anything to chart. False for a month with no Expenses,
   /// and for one whose Expenses were all in another currency — in both cases
   /// the honest picture is nothing rather than bars of zero.
   bool get hasSpending => expenseCount > 0;
 
-  String get previousMonthLabel {
-    final previous = DateTime(year, month - 1);
-    return _label(previous.year, previous.month);
-  }
+  /// The month before this one, as numbers. Whoever shows it names it; the
+  /// domain holds no month names (ADR-0007).
+  int get previousYear => DateTime(year, month - 1).year;
 
-  /// Short enough for an axis on a phone.
-  String get shortMonthLabel => _monthNames[month - 1].substring(0, 3);
+  int get previousMonth => DateTime(year, month - 1).month;
 
   double get delta => total - previousTotal;
 
@@ -192,11 +185,8 @@ List<Expense> expensesIn(
   List<Expense> ledger, {
   required int year,
   required int month,
-}) => ledger
-    .where((e) => e.date.year == year && e.date.month == month)
-    .toList();
-
-String _label(int year, int month) => '${_monthNames[month - 1]} $year';
+}) =>
+    ledger.where((e) => e.date.year == year && e.date.month == month).toList();
 
 const int _topPurchases = 5;
 
@@ -207,18 +197,3 @@ Map<String, double> _sumByCategory(Iterable<Expense> expenses) {
   }
   return sums;
 }
-
-const _monthNames = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];

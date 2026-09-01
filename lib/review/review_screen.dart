@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import '../on_screen.dart';
 import '../scan/receipt_on_screen.dart';
 import 'finding_copy.dart';
 import 'review_bloc.dart';
