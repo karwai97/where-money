@@ -38,6 +38,9 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   bloc_test: ^10.0.0
+  # For the in-memory preference store, so what a Setting persists as can be
+  # asserted without a device.
+  shared_preferences_platform_interface: ^2.4.1
 
 flutter:
   uses-material-design: true

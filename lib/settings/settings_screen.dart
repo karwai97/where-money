@@ -6,6 +6,7 @@ import '../data/device_preferences.dart';
 import '../lock/device_lock.dart';
 import '../session/session_bloc.dart';
 import 'how_scans_are_read.dart';
+import 'settings_cubit.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key, required this.knobs});
@@ -60,6 +61,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         children: [
+          const _ThemeChoice(),
           if (availability == null || locks == null)
             const ListTile(title: Text('Lock where_money'))
           else
@@ -97,4 +99,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
+}
+
+class _ThemeChoice extends StatelessWidget {
+  const _ThemeChoice();
+
+  @override
+  Widget build(BuildContext context) => ListTile(
+    title: const Text('Theme'),
+    trailing: DropdownButton<ThemeMode>(
+      value: context.watch<SettingsCubit>().state.theme,
+      onChanged: (theme) =>
+          context.read<SettingsCubit>().chooseTheme(theme ?? ThemeMode.system),
+      items: const [
+        DropdownMenuItem(value: ThemeMode.system, child: Text('System')),
+        DropdownMenuItem(value: ThemeMode.light, child: Text('Light')),
+        DropdownMenuItem(value: ThemeMode.dark, child: Text('Dark')),
+      ],
+    ),
+  );
 }

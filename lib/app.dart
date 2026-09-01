@@ -12,6 +12,8 @@ import 'scan/photographer.dart';
 import 'session/session_bloc.dart';
 import 'session/sign_in_gateway.dart';
 import 'session/sign_in_screen.dart';
+import 'settings/settings_cubit.dart';
+import 'settings/themes.dart';
 
 /// A Ledger belongs to exactly one user, so the store is built from the uid
 /// rather than told about it — which is all the app ever wants from signing in.
@@ -26,6 +28,7 @@ class WhereMoneyApp extends StatelessWidget {
     required this.lock,
     required this.preferences,
     this.knobs = const Knobs(),
+    this.theme = ThemeMode.system,
     this.photograph,
   });
 
@@ -43,6 +46,12 @@ class WhereMoneyApp extends StatelessWidget {
 
   final DevicePreferences preferences;
 
+  /// The theme this launch opens with, already read off the phone. Handed
+  /// down as a plain value like the Knobs beside it, so the first frame is
+  /// drawn in the theme the user chose rather than in whatever was quickest to
+  /// reach.
+  final ThemeMode theme;
+
   /// What a console has to say about how a receipt is read. Plain values,
   /// handed down: nothing below here asks anything for them.
   final Knobs knobs;
@@ -55,6 +64,28 @@ class WhereMoneyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Built once and handed to every MaterialApp a Setting rebuilds, so
+    // changing the theme is not also a reason to build a second LedgerStore
+    // over the top of the one the blocs are already reading.
+    final home = BlocBuilder<SessionBloc, SessionState>(
+      builder: (context, state) => switch (state) {
+        SessionUnknown() => const _Opening(),
+        SignedOut() || SigningIn() => SignInScreen(state: state),
+        SignedIn(:final user) => LedgerScreen(
+          // Keyed by uid so a second account never inherits the first
+          // account's Ledger bloc.
+          key: ValueKey(user.uid),
+          uid: user.uid,
+          store: ledgerFor(user.uid),
+          model: model,
+          knobs: knobs,
+          photograph:
+              photograph ??
+              (from) => photographWithDevice(from, longEdge: knobs.longEdge),
+        ),
+      },
+    );
+
     // Above the MaterialApp, so the lock and the Settings route reach these
     // without being handed down through every screen in between.
     return MultiRepositoryProvider(
@@ -62,40 +93,33 @@ class WhereMoneyApp extends StatelessWidget {
         RepositoryProvider<DeviceLock>.value(value: lock),
         RepositoryProvider<DevicePreferences>.value(value: preferences),
       ],
-      child: BlocProvider(
-        create: (_) => SessionBloc(signIn)..add(const SessionOpened()),
-        child: MaterialApp(
-          title: 'where_money',
-          theme: ThemeData(useMaterial3: true),
-          // The charts take their one hue from the scheme, so a phone in dark
-          // mode needs a scheme built for a dark surface. Without this there
-          // is no dark theme to be legible in.
-          darkTheme: ThemeData(useMaterial3: true, brightness: Brightness.dark),
-          // Above the Navigator rather than inside `home`, so a phone locked
-          // while an Expense was open covers that route too. There is nothing
-          // to lock when nobody is signed in.
-          builder: (context, child) =>
-              context.watch<SessionBloc>().state is SignedIn
-              ? LockGate(lock: lock, preferences: preferences, child: child!)
-              : child!,
-          home: BlocBuilder<SessionBloc, SessionState>(
-            builder: (context, state) => switch (state) {
-              SessionUnknown() => const _Opening(),
-              SignedOut() || SigningIn() => SignInScreen(state: state),
-              SignedIn(:final user) => LedgerScreen(
-                // Keyed by uid so a second account never inherits the first
-                // account's Ledger bloc.
-                key: ValueKey(user.uid),
-                uid: user.uid,
-                store: ledgerFor(user.uid),
-                model: model,
-                knobs: knobs,
-                photograph:
-                    photograph ??
-                    (from) =>
-                        photographWithDevice(from, longEdge: knobs.longEdge),
-              ),
-            },
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (_) => SessionBloc(signIn)..add(const SessionOpened()),
+          ),
+          BlocProvider(
+            create: (_) =>
+                SettingsCubit(preferences, from: Settings(theme: theme)),
+          ),
+        ],
+        child: BlocBuilder<SettingsCubit, Settings>(
+          builder: (context, settings) => MaterialApp(
+            title: 'where_money',
+            themeMode: settings.theme,
+            theme: themeFor(Brightness.light),
+            // The charts take their one hue from the scheme, so a phone in dark
+            // mode needs a scheme built for a dark surface. Without this there
+            // is no dark theme to be legible in.
+            darkTheme: themeFor(Brightness.dark),
+            // Above the Navigator rather than inside `home`, so a phone locked
+            // while an Expense was open covers that route too. There is nothing
+            // to lock when nobody is signed in.
+            builder: (context, child) =>
+                context.watch<SessionBloc>().state is SignedIn
+                ? LockGate(lock: lock, preferences: preferences, child: child!)
+                : child!,
+            home: home,
           ),
         ),
       ),

@@ -1,10 +1,22 @@
+import 'package:flutter/material.dart';
 import 'package:where_money/data/device_preferences.dart';
 
 class InMemoryDevicePreferences implements DevicePreferences {
-  InMemoryDevicePreferences({bool locksOnOpen = true}) : _locks = locksOnOpen;
+  InMemoryDevicePreferences({
+    bool locksOnOpen = true,
+    ThemeMode theme = ThemeMode.system,
+  }) : _locks = locksOnOpen,
+       _mode = theme;
 
   bool _locks;
+  ThemeMode _mode;
   final _explained = <String>{};
+
+  @override
+  Future<ThemeMode> theme() async => _mode;
+
+  @override
+  Future<void> setTheme(ThemeMode value) async => _mode = value;
 
   @override
   Future<bool> locksOnOpen() async => _locks;

@@ -5,9 +5,16 @@
 /// they never chose it for.
 library;
 
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 abstract interface class DevicePreferences {
+  /// Whether the app is drawn light, dark, or however the phone is set.
+  /// Follows the phone unless the user has said otherwise.
+  Future<ThemeMode> theme();
+
+  Future<void> setTheme(ThemeMode value);
+
   /// Whether the app asks for a fingerprint or the device PIN when it opens.
   /// On unless the user has said otherwise.
   Future<bool> locksOnOpen();
@@ -26,6 +33,20 @@ class StoredDevicePreferences implements DevicePreferences {
     : _preferences = preferences ?? SharedPreferencesAsync();
 
   final SharedPreferencesAsync _preferences;
+
+  @override
+  Future<ThemeMode> theme() async {
+    // Stored by name rather than by index, so reordering the enum cannot
+    // quietly hand somebody a theme they never chose. A name this version does
+    // not know is one a newer version wrote: fall back rather than fail.
+    final stored = await _preferences.getString('theme');
+    return ThemeMode.values.where((mode) => mode.name == stored).firstOrNull ??
+        ThemeMode.system;
+  }
+
+  @override
+  Future<void> setTheme(ThemeMode value) =>
+      _preferences.setString('theme', value.name);
 
   @override
   Future<bool> locksOnOpen() async =>

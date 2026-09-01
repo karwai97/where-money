@@ -40,6 +40,11 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// The diagnostic half sits below the fold, so a test that reads it has to
+  /// get there the way a person would.
+  Future<void> scrollTo(WidgetTester tester, Finder panel) =>
+      tester.scrollUntilVisible(panel, 200);
+
   testWidgets('the lock can be turned off, and the choice sticks', (
     tester,
   ) async {
@@ -104,6 +109,7 @@ void main() {
     store = InMemoryLedgerStore(seedCorrectedLedger());
 
     await openSettings(tester);
+    await scrollTo(tester, find.text('3 receipts read, 1 left alone.'));
 
     expect(find.text('3 receipts read, 1 left alone.'), findsOneWidget);
     expect(find.text('Merchant, corrected on 2 of 3'), findsOneWidget);
@@ -114,6 +120,7 @@ void main() {
     store = InMemoryLedgerStore();
 
     await openSettings(tester);
+    await scrollTo(tester, find.textContaining('No receipt has been read yet'));
 
     expect(find.textContaining('No receipt has been read yet'), findsOneWidget);
   });

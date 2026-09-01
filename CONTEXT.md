@@ -96,6 +96,15 @@ _Avoid_: Narrative, summary, story, insight
 
 ### The phone
 
+**Setting**:
+A choice the user has made about how the app behaves on this phone — whether it
+locks on open, which theme it is drawn in. Lives in the phone's own preferences
+and never in the Ledger, because it is a fact about this device rather than
+about the money, and it is read before the first frame so the app opens the way
+it was left. Not the same as a Knob: a Setting is the user's choice about their
+own phone, a Knob is the operator's choice about how the Model is used.
+_Avoid_: Preference, option, config, toggle
+
 **Lock**:
 The fingerprint or device PIN this app asks for before showing a Ledger.
 Guards the data already on this device and nothing else. Signing in is the

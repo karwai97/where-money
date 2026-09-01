@@ -33,12 +33,20 @@ Future<void> main() async {
   final documents = await getApplicationDocumentsDirectory();
   final knobs = await knobsFromRemoteConfig();
 
+  // Read before the first frame is drawn: whoever chose Dark should not be
+  // shown a light app on the way in. Awaited before `runApp`, so a preference
+  // store that will not answer has to leave the app opening on the default
+  // rather than on nothing at all.
+  final preferences = StoredDevicePreferences();
+  final theme = await preferences.theme().catchError((_) => ThemeMode.system);
+
   runApp(
     WhereMoneyApp(
       signIn: signIn,
       lock: LocalAuthLock(),
-      preferences: StoredDevicePreferences(),
+      preferences: preferences,
       knobs: knobs,
+      theme: theme,
       model: WorkerModelGateway(
         endpoint: worker,
         knobs: knobs,
