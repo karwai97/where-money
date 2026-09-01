@@ -22,9 +22,9 @@ void main() {
 
   Widget app({ThemeMode theme = ThemeMode.system}) => WhereMoneyApp(
     signIn: FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai),
-    ledgerFor: (_) {
+    storesFor: (_) {
       storesBuilt++;
-      return store;
+      return store.stores;
     },
     model: FakeModelGateway(),
     lock: FakeDeviceLock(),

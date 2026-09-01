@@ -8,8 +8,8 @@ import 'package:flutter_test/flutter_test.dart';
 /// already is, by reading what the code is built from.
 void main() {
   /// Everything a photograph passes through between the shutter and the disk.
-  /// `FirestoreLedgerStore` is deliberately not here: it hands all four Scan
-  /// methods straight to the device store and is short enough to read.
+  /// `FirestoreLedgerStore` is not here because it cannot be: the Scan seam is
+  /// its own now, and the Ledger's repository does not implement it.
   final scanPath = const [
     'lib/scan/inbox_bloc.dart',
     'lib/scan/receipt_image.dart',

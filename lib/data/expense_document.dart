@@ -7,7 +7,7 @@ library;
 
 import 'package:where_money_core/where_money_core.dart';
 
-import 'ledger_store.dart';
+import 'receipt_store.dart';
 
 Map<String, Object?> expenseToDocument(Expense expense) => {
   'merchant': expense.merchant,

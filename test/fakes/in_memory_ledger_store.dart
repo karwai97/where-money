@@ -2,10 +2,16 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:where_money/data/ledger_store.dart';
+import 'package:where_money/data/receipt_store.dart';
+import 'package:where_money/data/scan_store.dart';
+import 'package:where_money/data/stores.dart';
 import 'package:where_money_core/where_money_core.dart';
 
-/// The LedgerStore seam's fake: one of the two things this project fakes.
-class InMemoryLedgerStore implements LedgerStore {
+/// All three data seams in one object: one of the two things this project
+/// fakes. One rather than three because a Scan and its Receipt share a
+/// directory on the real device too, and because a test that seeds a Ledger and
+/// then photographs something wants both halves to agree.
+class InMemoryLedgerStore implements LedgerStore, ScanStore, ReceiptStore {
   InMemoryLedgerStore([List<Expense> initial = const []])
     : _expenses = [...initial];
 
@@ -51,12 +57,15 @@ class InMemoryLedgerStore implements LedgerStore {
   }
 
   @override
-  Future<Uint8List?> receiptAt(String path) async => _receipts[path];
+  Future<Uint8List?> bytesAt(String path) async => _receipts[path];
 
   @override
-  Future<bool> hasReceiptAt(String path) async => _receipts.containsKey(path);
+  Future<bool> hasAt(String path) async => _receipts.containsKey(path);
 
-  /// A receipt already on this phone, for a Ledger seeded without anyone
+  /// This one object standing in for all three, for handing to the app.
+  Stores get stores => (ledger: this, scans: this, receipts: this);
+
+  /// A Receipt already on this phone, for a Ledger seeded without anyone
   /// having photographed anything.
   void keepReceipt(String path, Uint8List bytes) => _receipts[path] = bytes;
 
@@ -88,7 +97,7 @@ class InMemoryLedgerStore implements LedgerStore {
   }
 
   @override
-  Future<Uint8List?> imageFor(String scanId) async =>
+  Future<Uint8List?> receiptFor(String scanId) async =>
       _receipts[receiptPathFor(scanId)];
 
   @override

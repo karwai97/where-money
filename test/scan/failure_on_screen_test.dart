@@ -29,7 +29,7 @@ void main() {
         lock: FakeDeviceLock(),
         preferences: InMemoryDevicePreferences(locksOnOpen: false),
         signIn: FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai),
-        ledgerFor: (_) => store,
+        storesFor: (_) => store.stores,
         model: model,
         photograph: (_) async => photograph(width: 600, height: 800),
       ),
@@ -169,7 +169,7 @@ void main() {
 
     await photographInto(tester, 'Your sign-in was not accepted');
 
-    expect(await store.imageFor(store.waiting.single.id), isNotNull);
+    expect(await store.receiptFor(store.waiting.single.id), isNotNull);
     await shut(tester);
   });
 }

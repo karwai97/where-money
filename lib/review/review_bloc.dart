@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
 import '../data/ledger_store.dart';
+import '../data/receipt_store.dart';
+import '../data/scan_store.dart';
 
 sealed class ReviewEvent extends Equatable {
   const ReviewEvent();
@@ -181,8 +183,12 @@ final class ReviewInProgress extends ReviewState {
 }
 
 class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
-  ReviewBloc(this._store, {DateTime Function()? clock})
-    : _now = clock ?? DateTime.now,
+  ReviewBloc(
+    this._ledger,
+    this._scans,
+    this._receipts, {
+    DateTime Function()? clock,
+  }) : _now = clock ?? DateTime.now,
       super(const ReviewIdle()) {
     on<ManualExpenseStarted>(_onManualExpenseStarted);
     on<ScanReviewStarted>(_onScanReviewStarted);
@@ -195,7 +201,13 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
     on<ReviewCommitted>(_onCommitted);
   }
 
-  final LedgerStore _store;
+  /// All three, because a Review really does touch all three: it reads the
+  /// Receipt to check the fields against, writes the Expense, and moves the
+  /// Scan out of the Inbox once that Expense is durable.
+  final LedgerStore _ledger;
+  final ScanStore _scans;
+  final ReceiptStore _receipts;
+
   final DateTime Function() _now;
   var _committed = 0;
 
@@ -241,8 +253,8 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
     );
 
     if (started == null) {
-      _store
-          .imageFor(event.scan.id)
+      _scans
+          .receiptFor(event.scan.id)
           .then((receipt) => add(_ReceiptArrived(event.scan.id, receipt)));
     }
   }
@@ -265,8 +277,8 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
 
     final path = event.expense.receiptPath;
     if (started == null && path != null) {
-      _store
-          .receiptAt(path)
+      _receipts
+          .bytesAt(path)
           .then((receipt) => add(_ReceiptArrived(fresh.lane, receipt)));
     }
   }
@@ -385,7 +397,7 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
 
     final at = _now();
     try {
-      await _store.add(
+      await _ledger.add(
         Expense.fromExtraction(
           current.extraction,
           // An edit keeps the id it already has, so a correction writes over
@@ -408,7 +420,7 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
       );
       // Only now does the Scan leave the Inbox: the Expense is what it was
       // waiting to become.
-      if (scan != null) await _store.put(scan.movedTo(ScanState.committed));
+      if (scan != null) await _scans.put(scan.movedTo(ScanState.committed));
 
       _unfinished.remove(current.lane);
       emit(const ReviewIdle());

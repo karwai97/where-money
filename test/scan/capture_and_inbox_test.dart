@@ -34,7 +34,7 @@ void main() {
         lock: FakeDeviceLock(),
         preferences: InMemoryDevicePreferences(locksOnOpen: false),
         signIn: FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai),
-        ledgerFor: (_) => store,
+        storesFor: (_) => store.stores,
         model: model,
         photograph: (from) async {
           opened = from;
@@ -135,7 +135,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('No receipts waiting.'), findsOneWidget);
-    expect(await store.imageFor('scan-1'), isNull);
+    expect(await store.receiptFor('scan-1'), isNull);
   });
 
   testWidgets('keeping a Scan the user thought better of abandoning leaves it '
@@ -152,7 +152,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Being read'), findsOneWidget);
-    expect(await store.imageFor('scan-1'), isNotNull);
+    expect(await store.receiptFor('scan-1'), isNotNull);
   });
 
   testWidgets('an empty Inbox says so', (tester) async {

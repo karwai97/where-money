@@ -68,3 +68,11 @@ ui-debug.log
 # is build output rather than source. l10n.yaml says where it lands.
 /lib/l10n/app_localizations*.dart
 /l10n-untranslated.json
+
+# Agent scratch: per-machine, per-session, and nothing to do with the app.
+# CONTEXT.md is not in this list — it is the project's own vocabulary, it is
+# referenced by CLAUDE.md and the ADRs, and it stays tracked.
+.claude/settings.local.json
+.claude/*.local.json
+*-handoff.md
+.scratch/

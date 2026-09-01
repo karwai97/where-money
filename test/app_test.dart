@@ -25,7 +25,7 @@ void main() {
         lock: FakeDeviceLock(),
         preferences: InMemoryDevicePreferences(locksOnOpen: false),
         signIn: signIn,
-        ledgerFor: (_) => store,
+        storesFor: (_) => store.stores,
         model: model,
         photograph: (_) async => null,
       ),

@@ -70,7 +70,7 @@ void main() {
       );
 
       final scan = (bloc.state as InboxReady).scans.single;
-      expect(await store.imageFor(scan.id), isNotNull);
+      expect(await store.receiptFor(scan.id), isNotNull);
       await bloc.close();
     },
   );
@@ -97,7 +97,7 @@ void main() {
     );
 
     final scan = (bloc.state as InboxReady).scans.single;
-    final stored = sizeOf((await store.imageFor(scan.id))!);
+    final stored = sizeOf((await store.receiptFor(scan.id))!);
     expect(stored.height, 1024);
     expect(stored.width, 768);
     await bloc.close();
@@ -112,7 +112,7 @@ void main() {
     );
 
     final scan = (bloc.state as InboxReady).scans.single;
-    final stored = sizeOf((await store.imageFor(scan.id))!);
+    final stored = sizeOf((await store.receiptFor(scan.id))!);
     expect(stored.height, 512);
     expect(stored.width, 384);
     await bloc.close();
@@ -127,7 +127,7 @@ void main() {
     );
 
     final scan = (bloc.state as InboxReady).scans.single;
-    expect(await store.imageFor(scan.id), original);
+    expect(await store.receiptFor(scan.id), original);
     await bloc.close();
   });
 
@@ -147,7 +147,7 @@ void main() {
       );
 
       expect((emptied as InboxReady).scans, isEmpty);
-      expect(await store.imageFor(scan.id), isNull);
+      expect(await store.receiptFor(scan.id), isNull);
       await bloc.close();
     },
   );

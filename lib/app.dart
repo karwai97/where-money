@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
 import 'data/device_preferences.dart';
+import 'data/stores.dart';
 import 'l10n/app_localizations.dart';
-import 'data/ledger_store.dart';
 import 'ledger/ledger_screen.dart';
 import 'lock/device_lock.dart';
 import 'lock/lock_gate.dart';
@@ -16,15 +16,16 @@ import 'session/sign_in_screen.dart';
 import 'settings/settings_cubit.dart';
 import 'settings/themes.dart';
 
-/// A Ledger belongs to exactly one user, so the store is built from the uid
-/// rather than told about it — which is all the app ever wants from signing in.
-typedef LedgerFor = LedgerStore Function(String uid);
+/// A Ledger belongs to exactly one user, and so does the directory their
+/// Receipts sit in, so all three seams are built from the uid rather than told
+/// about it — which is all the app ever wants from signing in.
+typedef StoresFor = Stores Function(String uid);
 
 class WhereMoneyApp extends StatelessWidget {
   const WhereMoneyApp({
     super.key,
     required this.signIn,
-    required this.ledgerFor,
+    required this.storesFor,
     required this.model,
     required this.lock,
     required this.preferences,
@@ -35,7 +36,7 @@ class WhereMoneyApp extends StatelessWidget {
   });
 
   final SignInGateway signIn;
-  final LedgerFor ledgerFor;
+  final StoresFor storesFor;
 
   /// The Worker, or its fake. Not built per uid: the ID token the Worker reads
   /// is what says who is calling.
@@ -72,8 +73,8 @@ class WhereMoneyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Built once and handed to every MaterialApp a Setting rebuilds, so
-    // changing the theme is not also a reason to build a second LedgerStore
-    // over the top of the one the blocs are already reading.
+    // changing the theme or the language is not also a reason to build a second
+    // set of Stores over the top of the ones the blocs are already reading.
     final home = BlocBuilder<SessionBloc, SessionState>(
       builder: (context, state) => switch (state) {
         SessionUnknown() => const _Opening(),
@@ -83,7 +84,7 @@ class WhereMoneyApp extends StatelessWidget {
           // account's Ledger bloc.
           key: ValueKey(user.uid),
           uid: user.uid,
-          store: ledgerFor(user.uid),
+          stores: storesFor(user.uid),
           model: model,
           knobs: knobs,
           photograph:

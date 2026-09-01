@@ -6,28 +6,35 @@ import 'dart:typed_data';
 import 'package:path/path.dart' as p;
 import 'package:where_money_core/where_money_core.dart';
 
-import 'ledger_store.dart';
+import 'receipt_store.dart';
 import 'scan_record.dart';
+import 'scan_store.dart';
 
-/// Scans and their images, in a directory on the phone. Nothing here touches
+/// Scans and their Receipts, in a directory on the phone. Nothing here touches
 /// the network — an image never leaves the device (ADR-0003), and capture has
 /// to work in a basement.
 ///
 /// One JSON file per Scan beside its image, rather than one index over all of
 /// them: an index half-written by a force-quit would lose every Scan, and a
 /// Scan is the one thing this app promises not to lose.
-class DeviceScanStore {
+///
+/// Both seams, because both are the same directory: the rule that a Scan is
+/// only ever written beside its Receipt is a fact about these files, and it
+/// stays inside the one class that owns them.
+class DeviceScanStore implements ScanStore, ReceiptStore {
   DeviceScanStore(this.directory);
 
   final Directory directory;
   final _changes = StreamController<List<Scan>>.broadcast();
   var _captured = 0;
 
+  @override
   Stream<List<Scan>> inbox() async* {
     yield await _read();
     yield* _changes.stream;
   }
 
+  @override
   Future<Scan> capture(Uint8List image, {DateTime? at}) async {
     final capturedAt = at ?? DateTime.now();
     final scan = Scan.captured(
@@ -46,6 +53,7 @@ class DeviceScanStore {
   /// Written only beside an image. Capture puts the image down first, so the
   /// one case this turns away is a Scan the user abandoned while the Model was
   /// still reading it — which must stay abandoned rather than reappear.
+  @override
   Future<void> put(Scan scan) async {
     if (!_imageFile(scan.id).existsSync()) return;
 
@@ -56,25 +64,27 @@ class DeviceScanStore {
     _changes.add(await _read());
   }
 
-  Future<Uint8List?> imageFor(String scanId) async {
-    final file = _imageFile(scanId);
-    return file.existsSync() ? file.readAsBytes() : null;
-  }
+  @override
+  Future<Uint8List?> receiptFor(String scanId) =>
+      bytesAt(receiptPathFor(scanId));
 
-  Future<Uint8List?> receiptAt(String path) async {
+  @override
+  Future<Uint8List?> bytesAt(String path) async {
     final file = _receiptFile(path);
     return file != null && file.existsSync() ? file.readAsBytes() : null;
   }
 
-  Future<bool> hasReceiptAt(String path) async =>
+  @override
+  Future<bool> hasAt(String path) async =>
       _receiptFile(path)?.existsSync() ?? false;
 
-  /// A receipt by the path an Expense recorded. Anything that is not a plain
+  /// A Receipt by the path an Expense recorded. Anything that is not a plain
   /// name in this directory is null rather than followed — a path out of a
   /// document is not a path to trust.
   File? _receiptFile(String path) =>
       p.basename(path) == path ? File(p.join(directory.path, path)) : null;
 
+  @override
   Future<void> abandon(String scanId) async {
     for (final file in [_recordFile(scanId), _imageFile(scanId)]) {
       if (file.existsSync()) await file.delete();

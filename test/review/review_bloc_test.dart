@@ -9,7 +9,7 @@ void main() {
   final now = fixtureNow;
 
   ReviewBloc against(InMemoryLedgerStore store) =>
-      ReviewBloc(store, clock: () => now);
+      ReviewBloc(store, store, store, clock: () => now);
 
   /// Bloc handlers run off the event queue, so nothing here reads a state
   /// without letting the queue drain first.

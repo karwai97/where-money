@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
-import '../data/ledger_store.dart';
+import '../data/scan_store.dart';
 import 'model_gateway.dart';
 import 'receipt_image.dart';
 
@@ -89,7 +89,7 @@ final class InboxReady extends InboxState {
 
 class InboxBloc extends Bloc<InboxEvent, InboxState> {
   InboxBloc(
-    this._store,
+    this._scans,
     this._model, {
     Knobs knobs = const Knobs(),
     Duration readAgainAfter = _defaultWait,
@@ -100,7 +100,7 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
        super(const InboxLoading()) {
     on<InboxOpened>(_onOpened);
     on<ScanCaptured>(_onCaptured);
-    on<ScanAbandoned>((event, emit) => _store.abandon(event.scanId));
+    on<ScanAbandoned>((event, emit) => _scans.abandon(event.scanId));
     on<ScanReadAgain>(_onReadAgain);
     on<_ReadAgainDue>(_onReadAgainDue);
     on<_InboxChanged>((event, emit) {
@@ -118,7 +118,7 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
   static const _defaultWait = Duration(seconds: 15);
   static const _longestWaitMultiple = 8;
 
-  final LedgerStore _store;
+  final ScanStore _scans;
   final ModelGateway _model;
 
   /// The language the Model is asked to write its own words in — the reason it
@@ -144,14 +144,14 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
 
   void _onOpened(InboxOpened event, Emitter<InboxState> emit) {
     _watching?.cancel();
-    _watching = _store.inbox().listen((scans) => add(_InboxChanged(scans)));
+    _watching = _scans.inbox().listen((scans) => add(_InboxChanged(scans)));
   }
 
   /// Nothing here can fail in a way worth telling the user about: it touches
   /// no network, which is what makes a plane and a basement behave the same as
   /// anywhere else. The Scan is durable before this answers.
   Future<void> _onCaptured(ScanCaptured event, Emitter<InboxState> emit) async {
-    await _store.capture(await _resized(event.photograph, _longEdge));
+    await _scans.capture(await _resized(event.photograph, _longEdge));
   }
 
   /// A Scan still at `extracting` that this bloc never claimed was left there
@@ -209,9 +209,9 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
   /// The background job. It emits nothing itself: every step is written to the
   /// store, and the Inbox learns about it the same way the user does.
   Future<void> _extract(Scan scan) async {
-    await _store.put(scan.movedTo(ScanState.extracting));
+    await _scans.put(scan.movedTo(ScanState.extracting));
 
-    final receipt = await _store.imageFor(scan.id);
+    final receipt = await _scans.receiptFor(scan.id);
     if (receipt == null) return;
 
     final answer = await _model.extract(receipt, language: language);
@@ -225,7 +225,7 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
 
     // Abandoning is the user's, and they may have done it while the Model was
     // reading. `put` is what keeps that decision.
-    await _store.put(_after(scan, answer));
+    await _scans.put(_after(scan, answer));
     // Held only for the flight. A Scan that has landed is protected by the
     // state it landed in, and letting go is what lets it be read again.
     _claimed.remove(scan.id);

@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:where_money/app.dart';
-import 'package:where_money/data/ledger_store.dart';
+import 'package:where_money/data/receipt_store.dart';
 import 'package:where_money_core/where_money_core.dart';
 
 import '../fakes/fake_device_lock.dart';
@@ -42,7 +42,7 @@ void main() {
     await tester.pumpWidget(
       WhereMoneyApp(
         signIn: FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai),
-        ledgerFor: (_) => store,
+        storesFor: (_) => store.stores,
         model: FakeModelGateway(),
         lock: FakeDeviceLock(),
         preferences: preferences,
