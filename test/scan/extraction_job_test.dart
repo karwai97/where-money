@@ -61,6 +61,25 @@ void main() {
     return settled(bloc, scan.id);
   }
 
+  test('the Model is asked to read in the language the app is in', () async {
+    final bloc = InboxBloc(store, model, language: 'zh')
+      ..add(const InboxOpened());
+
+    await readOne(bloc);
+
+    expect(model.extractedIn, ['zh']);
+    await bloc.close();
+  });
+
+  test('an app that has not been told a language asks in English', () async {
+    final bloc = InboxBloc(store, model)..add(const InboxOpened());
+
+    await readOne(bloc);
+
+    expect(model.extractedIn, ['en']);
+    await bloc.close();
+  });
+
   test(
     'a photographed receipt is read without the user waiting on it',
     () async {

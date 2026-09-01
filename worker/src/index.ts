@@ -18,6 +18,7 @@ import { reserve } from './allowance';
 import type { Counted } from './allowance';
 import { extractionBody, looksLikeBase64 } from './extraction_request';
 import { readKnobs } from './knobs';
+import { readLanguage } from './language';
 import { looksLikeRollup, recapBody } from './recap_request';
 import { verifyIdToken } from './token';
 
@@ -125,7 +126,7 @@ async function extract(
   const refusal = await spendAllowance(env, 'scans', uid, knobs.dailyCap);
   if (refusal) return refusal;
 
-  return askTheModel(env, extractionBody(image, knobs));
+  return askTheModel(env, extractionBody(image, knobs, readLanguage(url)));
 }
 
 async function recap(
@@ -153,7 +154,7 @@ async function recap(
   const refusal = await spendAllowance(env, 'recaps', uid, knobs.dailyCap);
   if (refusal) return refusal;
 
-  return askTheModel(env, recapBody(rollup, knobs));
+  return askTheModel(env, recapBody(rollup, knobs, readLanguage(url)));
 }
 
 // The refusal to send back, or nothing when there was allowance to spend.

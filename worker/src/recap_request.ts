@@ -12,6 +12,7 @@
 // No schema. What comes back is prose, which is what the screen wants, and the
 // app reads it with the same walk that reads an Extraction.
 
+import { languageName } from './language';
 import type { Knobs } from './knobs';
 
 const maxRecapOutputTokens = 4000;
@@ -26,9 +27,30 @@ Write three to five short sentences of plain prose. No headings, no lists, no ma
 
 The month may still be in progress, so compare it against the previous month as it stands rather than predicting where it will end up. If any spending was left out for being in another currency, say so in a clause rather than a sentence of its own. Address the reader as "you".`;
 
-const instructionsJson = JSON.stringify(recapInstructions);
+// The instruction is the same prose plus one sentence naming the language, so
+// no language is the special case. Built once each because there are two of
+// them and a Recap is not the place to spend CPU on JSON.stringify.
+const instructionsByLanguage = new Map<string, string>();
 
-export function recapBody(rollupJson: string, knobs: Knobs): string {
+function instructionsJsonIn(language: string): string {
+  const held = instructionsByLanguage.get(language);
+  if (held) return held;
+
+  const name = languageName(language);
+  const built = JSON.stringify(
+    `${recapInstructions}
+
+Write in ${name}. Merchant names stay exactly as they are given, whatever language they are in.`,
+  );
+  instructionsByLanguage.set(language, built);
+  return built;
+}
+
+export function recapBody(
+  rollupJson: string,
+  knobs: Knobs,
+  language: string,
+): string {
   const reasoning =
     knobs.effort === 'omit' ? '' : `"reasoning":{"effort":"${knobs.effort}"},`;
 
@@ -37,7 +59,7 @@ export function recapBody(rollupJson: string, knobs: Knobs): string {
     // Somebody's month, itemised. The API keeps each response for later
     // retrieval unless told not to, and nothing here ever reads one back.
     `"store":false,` +
-    `"instructions":${instructionsJson},` +
+    `"instructions":${instructionsJsonIn(language)},` +
     `"max_output_tokens":${maxRecapOutputTokens},` +
     reasoning +
     `"input":[{"role":"user","content":[` +

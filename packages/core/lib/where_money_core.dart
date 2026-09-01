@@ -12,6 +12,7 @@ export 'src/expense.dart';
 export 'src/extraction.dart';
 export 'src/fixtures.dart';
 export 'src/knobs.dart';
+export 'src/language.dart';
 export 'src/model_response.dart';
 export 'src/recap.dart';
 export 'src/review_field.dart';

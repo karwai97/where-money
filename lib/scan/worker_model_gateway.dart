@@ -39,10 +39,13 @@ class WorkerModelGateway implements ModelGateway {
   final Knobs knobs;
 
   @override
-  Future<ScanAnswer> extract(Uint8List receipt) async {
+  Future<ScanAnswer> extract(
+    Uint8List receipt, {
+    required String language,
+  }) async {
     final (answer, failure) = await _post(
       'extract',
-      query: {'media': mediaTypeOf(receipt)},
+      query: {'media': mediaTypeOf(receipt), 'lang': language},
       contentType: 'text/plain',
       body: base64Encode(receipt),
     );
@@ -61,9 +64,13 @@ class WorkerModelGateway implements ModelGateway {
   }
 
   @override
-  Future<RecapAnswer> recap(String rollupJson) async {
+  Future<RecapAnswer> recap(
+    String rollupJson, {
+    required String language,
+  }) async {
     final (answer, failure) = await _post(
       'recap',
+      query: {'lang': language},
       contentType: 'application/json',
       body: rollupJson,
     );

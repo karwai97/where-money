@@ -93,6 +93,7 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
     this._model, {
     Knobs knobs = const Knobs(),
     Duration readAgainAfter = _defaultWait,
+    this.language = defaultLanguage,
   }) : _longEdge = knobs.longEdge,
        _firstWait = readAgainAfter,
        _wait = readAgainAfter,
@@ -119,6 +120,13 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
 
   final LedgerStore _store;
   final ModelGateway _model;
+
+  /// The language the Model is asked to write its own words in — the reason it
+  /// gives for a Category, and anything it wants Reviewed. Nothing chooses it
+  /// yet; pinning it here is how a Chinese Extraction can be watched arriving
+  /// under an English Inbox.
+  final String language;
+
   final int _longEdge;
   final Duration _firstWait;
   StreamSubscription<List<Scan>>? _watching;
@@ -206,7 +214,7 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
     final receipt = await _store.imageFor(scan.id);
     if (receipt == null) return;
 
-    final answer = await _model.extract(receipt);
+    final answer = await _model.extract(receipt, language: language);
     // Something answered, so there is no longer anything to back off from.
     // The pending sweep goes with it, or the backlog behind this Scan would
     // keep waiting the long wait that has just been proved unnecessary.

@@ -25,6 +25,12 @@ class FakeModelGateway implements ModelGateway {
   /// place in the suite where what is asserted on is the asking itself.
   final List<String> rollupsAsked = [];
 
+  /// The language each call was made in, newest last. Two lists rather than
+  /// one, because the two endpoints are asked by different blocs and a test
+  /// about the Recap should not have to know a Scan happened.
+  final List<String> extractedIn = [];
+  final List<String> recappedIn = [];
+
   Completer<void>? _held;
 
   /// Holds every call open until [release], so a Scan can be watched sitting at
@@ -37,15 +43,23 @@ class FakeModelGateway implements ModelGateway {
   }
 
   @override
-  Future<ScanAnswer> extract(Uint8List receipt) async {
+  Future<ScanAnswer> extract(
+    Uint8List receipt, {
+    required String language,
+  }) async {
     sent = receipt;
+    extractedIn.add(language);
     await _held?.future;
     return answer;
   }
 
   @override
-  Future<RecapAnswer> recap(String rollupJson) async {
+  Future<RecapAnswer> recap(
+    String rollupJson, {
+    required String language,
+  }) async {
     rollupsAsked.add(rollupJson);
+    recappedIn.add(language);
     await _held?.future;
     return recapAnswer;
   }

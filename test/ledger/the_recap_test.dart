@@ -26,10 +26,15 @@ void main() {
   ({LedgerBloc bloc, FakeModelGateway model}) opened(
     List<Expense> ledger, {
     FakeModelGateway? model,
+    String language = defaultLanguage,
   }) {
     final gateway = model ?? FakeModelGateway();
-    final bloc = LedgerBloc(InMemoryLedgerStore(ledger), gateway, now: august)
-      ..add(const LedgerOpened());
+    final bloc = LedgerBloc(
+      InMemoryLedgerStore(ledger),
+      gateway,
+      now: august,
+      language: language,
+    )..add(const LedgerOpened());
     return (bloc: bloc, model: gateway);
   }
 
@@ -39,6 +44,24 @@ void main() {
     }
     return bloc.state as LedgerReady;
   }
+
+  test('the Model is asked to write in the language the app is in', () async {
+    final (:bloc, :model) = opened(seedLedger(around: august), language: 'zh');
+
+    await settled(bloc);
+
+    expect(model.recappedIn, ['zh']);
+    await bloc.close();
+  });
+
+  test('an app that has not been told a language asks in English', () async {
+    final (:bloc, :model) = opened(seedLedger(around: august));
+
+    await settled(bloc);
+
+    expect(model.recappedIn, ['en']);
+    await bloc.close();
+  });
 
   test('the month on screen is read back in words', () async {
     final (:bloc, :model) = opened(

@@ -22,6 +22,7 @@ Rollup into prose.
 | `?effort=` | `omit`, `none`, `minimal`, `low` (default), `medium`, `high` |
 | `?media=` | `image/jpeg` (default), `image/png`, `image/webp` |
 | `?cap=` | today's cap, clamped to the deployment's `DAILY_MODEL_CEILING` |
+| `?lang=` | `en` (default) or `zh`; anything else is read as `en` |
 
 The body is the base64 and nothing else because the free plan allows 10ms of CPU
 per request. Taking a ~270KB string out of a JSON envelope and serialising it
@@ -35,11 +36,18 @@ that costs.
 |---|---|
 | `Authorization` | `Bearer <Firebase ID token>` |
 | Body | the Rollup as JSON, at most 10,000 characters |
-| `?model=`, `?effort=`, `?cap=` | as above; `?media=` means nothing here |
+| `?model=`, `?effort=`, `?cap=`, `?lang=` | as above; `?media=` means nothing here |
 
 The Rollup is the whole prompt: about 1,600 characters whatever the Ledger
 under it weighs, and no Expense the Rollup does not already single out. No
 schema — what comes back is prose, which is what the screen wants.
+
+`?lang=` says which language the Model writes its own words in: the whole of a
+Recap, and an Extraction's `category_reason` and `review_reasons`. What is
+transcribed off a receipt is never translated. The instruction itself is the
+Worker's — a client sends a code and never prompt text — and a language the
+Worker does not know falls back to English rather than being refused, so a
+client running ahead of a deploy degrades instead of breaking.
 
 Scans and Recaps are counted against **separate daily counters under the same
 ceiling** — `src/allowance.ts` says why.

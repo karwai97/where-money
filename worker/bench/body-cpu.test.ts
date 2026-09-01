@@ -52,7 +52,7 @@ describe('the CPU a Scan costs the Worker', () => {
       // something reads the whole string. fetch does, when it encodes the body,
       // and that is where the real cost of templating lands.
       const templatingAndEncoding = millisPerRun(() =>
-        encoder.encode(extractionBody(image, knobs)),
+        encoder.encode(extractionBody(image, knobs, 'en')),
       );
       // What the Worker would pay instead if the image arrived inside a JSON
       // envelope: the parse, and then the same encode on the way out.
@@ -108,7 +108,7 @@ describe('the CPU a Recap costs the Worker', () => {
 
     const checking = millisPerRun(() => looksLikeRollup(rollup));
     const buildingAndEncoding = millisPerRun(() =>
-      encoder.encode(recapBody(rollup, knobs)),
+      encoder.encode(recapBody(rollup, knobs, 'en')),
     );
 
     console.log(

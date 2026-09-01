@@ -64,6 +64,12 @@ Map<String, dynamic> rollupPrompt(Rollup rollup) {
 
 /// A hash of exactly what would be sent. Anything the prompt does not carry
 /// cannot change the Recap, so it has no business changing the hash either.
+///
+/// The Language is the one exception, and it is not one yet: the Worker is told
+/// which language to write in out of band, so a Recap is a function of this
+/// hash *and* that. Nothing changes the language while the app is running, so
+/// no cached Recap can be served in the wrong one — the ticket that lets a user
+/// change it is the ticket that has to bring the Language in here.
 String rollupHash(Rollup rollup) {
   final text = jsonEncode(rollupPrompt(rollup));
 

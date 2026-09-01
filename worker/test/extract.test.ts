@@ -249,3 +249,34 @@ describe('the Worker', () => {
     fetchMock.assertNoPendingInterceptors();
   });
 });
+
+describe('the language a Scan is read in', () => {
+  it('is the one the client asked for, for the words the Model writes itself', async () => {
+    expectModelCall();
+
+    await scan(await signIdToken(key, { sub: 'uid-scan-zh' }), {
+      query: '?lang=zh',
+    });
+
+    expect(sentToModel().instructions).toContain('Simplified Chinese');
+  });
+
+  it('is English when the client asked for nothing', async () => {
+    expectModelCall();
+
+    await scan(await signIdToken(key, { sub: 'uid-scan-no-lang' }));
+
+    expect(sentToModel().instructions).toContain('English');
+  });
+
+  it('is English when the client asked for one we do not know, rather than a refusal', async () => {
+    expectModelCall();
+
+    const response = await scan(await signIdToken(key, { sub: 'uid-scan-fr' }), {
+      query: '?lang=fr',
+    });
+
+    expect(response.status).toBe(200);
+    expect(sentToModel().instructions).toContain('English');
+  });
+});

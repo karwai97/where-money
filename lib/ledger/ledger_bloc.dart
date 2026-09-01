@@ -176,9 +176,13 @@ final class LedgerUnavailable extends LedgerState {
 }
 
 class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
-  LedgerBloc(this._store, this._model, {DateTime? now})
-    : _opened = _firstOf(now ?? DateTime.now()),
-      super(const LedgerLoading()) {
+  LedgerBloc(
+    this._store,
+    this._model, {
+    DateTime? now,
+    this.language = defaultLanguage,
+  }) : _opened = _firstOf(now ?? DateTime.now()),
+       super(const LedgerLoading()) {
     _month = _opened;
     on<LedgerOpened>(_onOpened);
     on<MonthStepped>(_onStepped);
@@ -196,6 +200,10 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
 
   /// The Worker, for the one thing on this screen that is not arithmetic.
   final ModelGateway _model;
+
+  /// The language the Recap is written in. Nothing chooses it yet; pinning it
+  /// here is how a Chinese Recap can be read under an English Ledger.
+  final String language;
 
   /// The month the app was opened in, which is as far forward as there is
   /// anything to see.
@@ -261,7 +269,7 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
   ) async {
     if (_recaps.containsKey(event.hash) || !_asking.add(event.hash)) return;
 
-    final answer = await _model.recap(event.prompt);
+    final answer = await _model.recap(event.prompt, language: language);
     _asking.remove(event.hash);
     _recaps[event.hash] = _recapFrom(answer);
     // The user can leave the screen while the Model is still writing, and a

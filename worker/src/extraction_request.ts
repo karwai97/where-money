@@ -8,8 +8,9 @@
 // are built once per knob combination and kept in the isolate, and a request is
 // one concatenation. bench/body-cpu.test.ts has the numbers.
 
-import type { Knobs } from './knobs';
 import { maxOutputTokens } from './knobs';
+import type { Knobs } from './knobs';
+import { languageName } from './language';
 import {
   extractionInstructions,
   extractionUserText,
@@ -17,13 +18,16 @@ import {
 } from './schema';
 
 const schemaJson = JSON.stringify(receiptSchema);
-const instructionsJson = JSON.stringify(extractionInstructions);
 const userTextJson = JSON.stringify(extractionUserText);
 
 const templates = new Map<string, [prefix: string, suffix: string]>();
 
-export function extractionBody(imageBase64: string, knobs: Knobs): string {
-  const [prefix, suffix] = templateFor(knobs);
+export function extractionBody(
+  imageBase64: string,
+  knobs: Knobs,
+  language: string,
+): string {
+  const [prefix, suffix] = templateFor(knobs, language);
   return prefix + imageBase64 + suffix;
 }
 
@@ -34,8 +38,11 @@ export function looksLikeBase64(text: string): boolean {
   return /^[A-Za-z0-9+/=\r\n]+$/.test(text);
 }
 
-function templateFor(knobs: Knobs): [string, string] {
-  const cacheKey = `${knobs.model}|${knobs.effort}|${knobs.mediaType}`;
+// The language is part of the key, not a substitution into a cached template:
+// it changes the instructions, so a Scan asked for in one language must not be
+// served the other one's prefix.
+function templateFor(knobs: Knobs, language: string): [string, string] {
+  const cacheKey = `${knobs.model}|${knobs.effort}|${knobs.mediaType}|${language}`;
   const cached = templates.get(cacheKey);
   if (cached) return cached;
 
@@ -47,7 +54,7 @@ function templateFor(knobs: Knobs): [string, string] {
       // each response for later retrieval unless told not to, and there is
       // nothing here that ever reads one back.
       `"store":false,` +
-      `"instructions":${instructionsJson},` +
+      `"instructions":${JSON.stringify(instructionsIn(language))},` +
       `"max_output_tokens":${maxOutputTokens},` +
       reasoning +
       `"text":{"format":{"type":"json_schema","name":"receipt_extraction",` +
@@ -59,4 +66,15 @@ function templateFor(knobs: Knobs): [string, string] {
   ];
   templates.set(cacheKey, template);
   return template;
+}
+
+// Only two fields on an Extraction are the Model's own words; the rest is
+// transcription, and a translated merchant name is a wrong merchant name.
+function instructionsIn(language: string): string {
+  return (
+    extractionInstructions +
+    `- Write category_reason and review_reasons in ${languageName(language)}.\n` +
+    '- Everything you transcribe stays as printed. The merchant name, the line\n' +
+    '  item descriptions and the currency code are never translated.\n'
+  );
 }

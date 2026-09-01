@@ -8,8 +8,11 @@ import { receiptSchema } from '../src/schema';
 const knobsFor = (query: string, ceiling = '40') =>
   readKnobs(new URL(`https://worker.test/extract${query}`), ceiling);
 
-const bodyFor = (query: string, image = 'aGVsbG8=') =>
-  JSON.parse(extractionBody(image, knobsFor(query))) as Record<string, any>;
+const bodyFor = (query: string, image = 'aGVsbG8=', language = 'en') =>
+  JSON.parse(extractionBody(image, knobsFor(query), language)) as Record<
+    string,
+    any
+  >;
 
 const dartList = (name: string): string[] => {
   const body = new RegExp(
@@ -142,6 +145,23 @@ describe('the request the Worker builds', () => {
 
   it('falls back to a known effort when the client asks for an unknown one', () => {
     expect(bodyFor('?effort=maximum').reasoning).toEqual({ effort: 'low' });
+  });
+
+  it('carries the language in its instructions, not in anything the image could reach', () => {
+    expect(bodyFor('', 'QUJD', 'zh').instructions).toContain(
+      'Simplified Chinese',
+    );
+    expect(bodyFor('', 'QUJD', 'en').instructions).toContain('English');
+  });
+
+  // The template is cached, and the language is part of what it templates: two
+  // Scans in one isolate asking for different languages must not share one.
+  it('does not serve one language the other one instructions', () => {
+    const zh = bodyFor('', 'QUJD', 'zh').instructions;
+    const en = bodyFor('', 'QUJD', 'en').instructions;
+
+    expect(zh).not.toBe(en);
+    expect(bodyFor('', 'QUJD', 'zh').instructions).toBe(zh);
   });
 
   it('falls back to jpeg when the client names a media type we do not send', () => {

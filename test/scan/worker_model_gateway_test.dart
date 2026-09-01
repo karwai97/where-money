@@ -37,7 +37,7 @@ void main() {
 
     final answer = await gateway(
       (_) async => http.Response(recorded, 200),
-    ).extract(receipt);
+    ).extract(receipt, language: 'en');
 
     final read = ((answer as ModelAnswered).outcome as ExtractionRead);
     expect(read.extraction.merchant, 'Village Grocer Bangsar');
@@ -49,7 +49,7 @@ void main() {
     await gateway((request) async {
       sent = request;
       return http.Response('{}', 200);
-    }).extract(receipt);
+    }).extract(receipt, language: 'en');
 
     expect(sent.body, base64Encode(receipt));
     expect(sent.headers['authorization'], 'Bearer an-id-token');
@@ -66,11 +66,11 @@ void main() {
       await gateway((request) async {
         scanned = request;
         return http.Response('{}', 200);
-      }, knobs: knobs).extract(receipt);
+      }, knobs: knobs).extract(receipt, language: 'en');
       await gateway((request) async {
         recapped = request;
         return http.Response('{}', 200);
-      }, knobs: knobs).recap('{}');
+      }, knobs: knobs).recap('{}', language: 'en');
 
       for (final sent in [scanned, recapped]) {
         expect(sent.url.queryParameters['model'], 'gpt-5-mini');
@@ -80,13 +80,32 @@ void main() {
     },
   );
 
+  test(
+    'the language is asked for a call at a time, not held by the gateway',
+    () async {
+      final asked = <http.Request>[];
+      final one = gateway((request) async {
+        asked.add(request);
+        return http.Response('{}', 200);
+      });
+
+      await one.extract(receipt, language: 'zh');
+      await one.recap('{}', language: 'en');
+
+      expect(asked.map((sent) => sent.url.queryParameters['lang']), [
+        'zh',
+        'en',
+      ]);
+    },
+  );
+
   test('a photo that is not a JPEG is not labelled one', () async {
     final png = img.encodePng(img.Image(width: 8, height: 8));
     late http.Request sent;
     await gateway((request) async {
       sent = request;
       return http.Response('{}', 200);
-    }).extract(png);
+    }).extract(png, language: 'en');
 
     expect(sent.url.queryParameters['media'], 'image/png');
   });
@@ -99,7 +118,7 @@ void main() {
           'error': 'image_too_large',
           'message': 'over 700,000 characters of base64',
         }),
-      ).extract(receipt);
+      ).extract(receipt, language: 'en');
 
       expect(answer, isA<ImageNotAccepted>());
     },
@@ -114,7 +133,7 @@ void main() {
         'limit': 40,
         'resets_at': '2026-08-26T00:00:00.000Z',
       }),
-    ).extract(receipt);
+    ).extract(receipt, language: 'en');
 
     expect(answer, isA<AllowanceSpent>());
     expect((answer as AllowanceSpent).resetsAt, DateTime.utc(2026, 8, 26));
@@ -124,7 +143,7 @@ void main() {
     final answer = await gateway(
       (_) async =>
           refusing(403, {'error': 'invalid_token', 'reason': 'expired'}),
-    ).extract(receipt);
+    ).extract(receipt, language: 'en');
 
     expect(answer, isA<TokenRefused>());
     expect((answer as TokenRefused).reason, 'expired');
@@ -134,7 +153,7 @@ void main() {
     final answer = await gateway(
       (_) async => fail('the Worker should not have been called'),
       token: null,
-    ).extract(receipt);
+    ).extract(receipt, language: 'en');
 
     expect(answer, isA<TokenRefused>());
   });
@@ -142,7 +161,7 @@ void main() {
   test('a dead network is not a refusal', () async {
     final answer = await gateway(
       (_) async => throw const SocketException('Network is unreachable'),
-    ).extract(receipt);
+    ).extract(receipt, language: 'en');
 
     expect(answer, isA<ModelOutOfReach>());
   });
@@ -155,7 +174,7 @@ void main() {
           'error': 'signing_keys_unavailable',
           'message': 'could not reach Google',
         }),
-      ).extract(receipt);
+      ).extract(receipt, language: 'en');
 
       expect(answer, isA<ModelUnavailable>());
     },
@@ -167,7 +186,7 @@ void main() {
         'error': 'model_unavailable',
         'message': 'upstream refused',
       }),
-    ).extract(receipt);
+    ).extract(receipt, language: 'en');
 
     expect(answer, isA<ModelUnavailable>());
   });
@@ -179,7 +198,7 @@ void main() {
 
     final answer = await gateway(
       (_) async => http.Response(recorded, 200),
-    ).recap('{"month":"August 2026"}');
+    ).recap('{"month":"August 2026"}', language: 'en');
 
     final written = ((answer as RecapAnswered).outcome as RecapWritten);
     expect(written.text, startsWith('August came to MYR 1806.75'));
@@ -190,7 +209,7 @@ void main() {
     await gateway((request) async {
       sent = request;
       return http.Response('{}', 200);
-    }).recap('{"month":"August 2026"}');
+    }).recap('{"month":"August 2026"}', language: 'en');
 
     expect(sent.body, '{"month":"August 2026"}');
     expect(sent.headers['authorization'], 'Bearer an-id-token');
@@ -204,7 +223,7 @@ void main() {
         'error': 'cap_reached',
         'resets_at': '2026-08-26T00:00:00.000Z',
       }),
-    ).recap('{}');
+    ).recap('{}', language: 'en');
 
     expect((answer as AllowanceSpent).resetsAt, DateTime.utc(2026, 8, 26));
   });
@@ -212,7 +231,7 @@ void main() {
   test('a dead network is not a refusal for a Recap either', () async {
     final answer = await gateway(
       (_) async => throw const SocketException('Network is unreachable'),
-    ).recap('{}');
+    ).recap('{}', language: 'en');
 
     expect(answer, isA<ModelOutOfReach>());
   });

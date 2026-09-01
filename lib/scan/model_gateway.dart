@@ -91,9 +91,18 @@ final class ImageNotAccepted implements ScanAnswer {
 
 abstract interface class ModelGateway {
   /// Reads a stored receipt image. Never throws: a failure is an answer.
-  Future<ScanAnswer> extract(Uint8List receipt);
+  ///
+  /// [language] is the words the Model writes itself — the reason it gives for
+  /// a Category, and anything it wants Reviewed. What it transcribes off the
+  /// receipt is not translated.
+  Future<ScanAnswer> extract(Uint8List receipt, {required String language});
 
   /// Writes a month up from its Rollup, which is the whole of what is sent —
   /// [rollupJson] is `rollupPrompt`'s. Never throws, for the same reason.
-  Future<RecapAnswer> recap(String rollupJson);
+  Future<RecapAnswer> recap(String rollupJson, {required String language});
 }
+
+/// A call at a time, on both of them, rather than a language the gateway
+/// holds: it is built once at startup before anyone has signed in, so a field
+/// here would be stale the moment the Setting changed. The token callback
+/// above is not a precedent for one — it exists because tokens expire.
