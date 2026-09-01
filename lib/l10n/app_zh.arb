@@ -1,0 +1,35 @@
+{
+  "@@locale": "zh",
+
+  "settingsTitle": "设置",
+
+  "settingsTheme": "主题",
+  "settingsThemeSystem": "跟随系统",
+  "settingsThemeLight": "浅色",
+  "settingsThemeDark": "深色",
+
+  "settingsLanguage": "语言",
+  "settingsLanguageEnglish": "English",
+  "settingsLanguageChinese": "中文",
+
+  "settingsLock": "锁定 where_money",
+  "settingsLockBiometrics": "显示你的消费记录之前，先要求指纹、面容，或本机的 PIN 码。",
+  "settingsLockDeviceCredential": "本机没有设置指纹，因此显示你的消费记录之前会要求 PIN 码。",
+  "settingsLockUnavailable": "本机没有设置屏幕锁。先到 Android 设置里设一个才能用这项。",
+
+  "settingsSignOut": "退出登录",
+
+  "settingsScansHeading": "每次扫描请求的设置",
+  "settingsScansModel": "模型：{model}",
+  "settingsScansEffort": "推理强度：{effort}",
+  "settingsScansLongEdge": "图片长边：{pixels} 像素",
+  "settingsScansDailyCap": "{count, plural, other{每日上限：{count} 次扫描}}",
+  "settingsScansFromConsole": "在 Firebase 控制台设置，应用启动时读取，所以那里的改动需要关闭应用再打开，不需要新版本。在新的值到达之前，这些就是应用内置的值。",
+  "settingsScansNotEnforced": "这是请求的值，不是最终生效的值：可调用的模型名单和每日上限的上限都由 Worker 保管，它不认识的名称，或高过它上限的数值，都会在那一端被悄悄换掉。如果这里的改动没有效果，原因就在那里。",
+
+  "settingsCorrectedHeading": "审核修正了什么",
+  "settingsCorrectedNothingYet": "还没有读过任何收据，暂时无话可说。",
+  "settingsCorrectedTally": "{count, plural, other{读取了 {count} 张收据，其中 {clean} 张没有改动。}}",
+  "settingsCorrectedField": "{field}：{total} 张里修正了 {count} 张",
+  "settingsCorrectedManualExcluded": "手动录入的支出不计在内：它们会把每个字段都记成改动，而对应的提取从来没有存在过。"
+}

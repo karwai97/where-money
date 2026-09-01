@@ -63,3 +63,8 @@ firebase-debug.log
 firestore-debug.log
 ui-debug.log
 .firebase/
+
+# Generated from lib/l10n/*.arb by `flutter pub get` and by every build, so it
+# is build output rather than source. l10n.yaml says where it lands.
+/lib/l10n/app_localizations*.dart
+/l10n-untranslated.json

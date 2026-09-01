@@ -1,0 +1,79 @@
+{
+  "@@locale": "en",
+
+  "settingsTitle": "Settings",
+  "@settingsTitle": {
+    "description": "Title of the Settings screen."
+  },
+
+  "settingsTheme": "Theme",
+  "settingsThemeSystem": "System",
+  "settingsThemeLight": "Light",
+  "settingsThemeDark": "Dark",
+
+  "settingsLanguage": "Language",
+  "settingsLanguageEnglish": "English",
+  "@settingsLanguageEnglish": {
+    "description": "Each language is named in its own language, so somebody can find theirs without already reading the other one. Identical in every ARB file on purpose."
+  },
+  "settingsLanguageChinese": "中文",
+  "@settingsLanguageChinese": {
+    "description": "Named in its own language, as above. Identical in every ARB file on purpose."
+  },
+
+  "settingsLock": "Lock where_money",
+  "settingsLockBiometrics": "Ask for your fingerprint or face, or this phone’s PIN, before showing your spending.",
+  "settingsLockDeviceCredential": "No fingerprint is set up on this phone, so it asks for your PIN before showing your spending.",
+  "settingsLockUnavailable": "This phone has no screen lock. Set one in Android settings to use this.",
+
+  "settingsSignOut": "Sign out",
+
+  "settingsScansHeading": "What each Scan asks for",
+  "settingsScansModel": "Model: {model}",
+  "@settingsScansModel": {
+    "placeholders": {
+      "model": { "type": "String" }
+    }
+  },
+  "settingsScansEffort": "Reasoning effort: {effort}",
+  "@settingsScansEffort": {
+    "placeholders": {
+      "effort": { "type": "String" }
+    }
+  },
+  "settingsScansLongEdge": "Image long edge: {pixels} px",
+  "@settingsScansLongEdge": {
+    "placeholders": {
+      "pixels": { "type": "int" }
+    }
+  },
+  "settingsScansDailyCap": "{count, plural, =1{Daily cap: 1 Scan} other{Daily cap: {count} Scans}}",
+  "@settingsScansDailyCap": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "settingsScansFromConsole": "Set in the Firebase console and read when the app starts, so a change there needs the app closed and opened again, never a new version. Until one arrives these are the values the app shipped with.",
+  "settingsScansNotEnforced": "What is asked for, not what is enforced: the Worker keeps the list of models it will call and the ceiling on the daily cap, so a name it does not know or a cap above its ceiling is quietly replaced at that end. If a change here has no effect, that is where it went.",
+
+  "settingsCorrectedHeading": "What Review had to correct",
+  "settingsCorrectedNothingYet": "No receipt has been read yet, so there is nothing to say.",
+  "settingsCorrectedTally": "{count, plural, =1{1 receipt read, {clean} left alone.} other{{count} receipts read, {clean} left alone.}}",
+  "@settingsCorrectedTally": {
+    "description": "How many Scans were read and how many needed no correction.",
+    "placeholders": {
+      "count": { "type": "int" },
+      "clean": { "type": "int" }
+    }
+  },
+  "settingsCorrectedField": "{field}, corrected on {count} of {total}",
+  "@settingsCorrectedField": {
+    "description": "One field of an Extraction and how often Review changed it.",
+    "placeholders": {
+      "field": { "type": "String" },
+      "count": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "settingsCorrectedManualExcluded": "Expenses typed by hand are not counted: those record a change to every field, against an Extraction that never existed."
+}

@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:where_money/data/device_preferences.dart';
+import 'package:where_money_core/where_money_core.dart';
 
 class InMemoryDevicePreferences implements DevicePreferences {
   InMemoryDevicePreferences({
     bool locksOnOpen = true,
     ThemeMode theme = ThemeMode.system,
+    this._language = defaultLanguage,
   }) : _locks = locksOnOpen,
        _mode = theme;
 
   bool _locks;
   ThemeMode _mode;
+  String _language;
   final _explained = <String>{};
 
   @override
@@ -17,6 +20,12 @@ class InMemoryDevicePreferences implements DevicePreferences {
 
   @override
   Future<void> setTheme(ThemeMode value) async => _mode = value;
+
+  @override
+  Future<String> language() async => _language;
+
+  @override
+  Future<void> setLanguage(String value) async => _language = value;
 
   @override
   Future<bool> locksOnOpen() async => _locks;

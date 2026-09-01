@@ -7,6 +7,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:where_money_core/where_money_core.dart';
 
 abstract interface class DevicePreferences {
   /// Whether the app is drawn light, dark, or however the phone is set.
@@ -14,6 +15,13 @@ abstract interface class DevicePreferences {
   Future<ThemeMode> theme();
 
   Future<void> setTheme(ThemeMode value);
+
+  /// Which language the app is read in. On this phone rather than on the
+  /// account, because the sign-in screen has to be drawn in some language
+  /// before the app knows who is signing in.
+  Future<String> language();
+
+  Future<void> setLanguage(String value);
 
   /// Whether the app asks for a fingerprint or the device PIN when it opens.
   /// On unless the user has said otherwise.
@@ -47,6 +55,19 @@ class StoredDevicePreferences implements DevicePreferences {
   @override
   Future<void> setTheme(ThemeMode value) =>
       _preferences.setString('theme', value.name);
+
+  @override
+  Future<String> language() async {
+    // Read against the closed set for the same reason the theme is read by
+    // name: a code this version does not know is one a newer version wrote,
+    // and English is a better answer than a crash.
+    final stored = await _preferences.getString('language');
+    return languages.contains(stored) ? stored! : defaultLanguage;
+  }
+
+  @override
+  Future<void> setLanguage(String value) =>
+      _preferences.setString('language', value);
 
   @override
   Future<bool> locksOnOpen() async =>

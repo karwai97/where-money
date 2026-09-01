@@ -19,6 +19,11 @@ A pub workspace of two Dart packages:
   promoted to an error there so the shared workspace resolution cannot smuggle
   `package:flutter` in. Its tests run under `dart test`, with no Flutter harness.
 
+- **[lib/l10n](lib/l10n)** — the app's words, one ARB file per language, and the
+  key convention the rest of them follow. `AppLocalizations` is generated from
+  them by `flutter pub get` and by every build, so it is gitignored: an analyze
+  or a test run on a fresh clone wants that `pub get` first.
+
 - **[worker](worker)** — the Cloudflare Worker that holds the OpenAI key
   (ADR-0001). TypeScript, not a Dart package, deployed separately. It is the
   only place the key exists, and it owns the prompt, the schema and the daily
@@ -31,7 +36,7 @@ You need Flutter 3.44+, the Android SDK, and the
 with access to the Firebase project.
 
 ```sh
-flutter pub get      # resolves the whole workspace
+flutter pub get      # resolves the whole workspace, and writes AppLocalizations
 
 # Firebase config is per-project and gitignored; fetch your own copy.
 firebase apps:sdkconfig ANDROID 1:607107275128:android:49602f2c132878e7ca908d \

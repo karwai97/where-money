@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 import 'package:where_money/data/device_preferences.dart';
+import 'package:where_money_core/where_money_core.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -36,5 +37,23 @@ void main() {
       await preferencesHolding({'theme': 'midnight'}).theme(),
       ThemeMode.system,
     );
+  });
+
+  test('a phone nobody has chosen a language on speaks English', () async {
+    expect(await preferencesHolding({}).language(), defaultLanguage);
+  });
+
+  test('the language is stored as its code', () async {
+    await preferencesHolding({}).setLanguage('zh');
+
+    expect(await SharedPreferencesAsync().getString('language'), 'zh');
+  });
+
+  test('a stored language comes back', () async {
+    expect(await preferencesHolding({'language': 'zh'}).language(), 'zh');
+  });
+
+  test('a language this version does not know falls back to English', () async {
+    expect(await preferencesHolding({'language': 'fr'}).language(), 'en');
   });
 }

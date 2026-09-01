@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import '../l10n/app_localizations.dart';
 import '../ledger/ledger_bloc.dart';
 import '../on_screen.dart';
 
@@ -15,27 +16,22 @@ class HowScansAreRead extends StatelessWidget {
   final Knobs knobs;
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      const _Heading('What each Scan asks for'),
-      _Line('Model: ${knobs.model}'),
-      _Line('Reasoning effort: ${knobs.effort}'),
-      _Line('Image long edge: ${knobs.longEdge} px'),
-      _Line('Daily cap: ${knobs.dailyCap} Scans'),
-      const _Note(
-        'Set in the Firebase console and read when the app starts, so a change '
-        'there needs the app closed and opened again, never a new version. '
-        'Until one arrives these are the values the app shipped with.',
-      ),
-      const _Note(
-        'What is asked for, not what is enforced: the Worker keeps the list of '
-        'models it will call and the ceiling on the daily cap, so a name it '
-        'does not know or a cap above its ceiling is quietly replaced at that '
-        'end. If a change here has no effect, that is where it went.',
-      ),
-    ],
-  );
+  Widget build(BuildContext context) {
+    final words = AppLocalizations.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _Heading(words.settingsScansHeading),
+        _Line(words.settingsScansModel(knobs.model)),
+        _Line(words.settingsScansEffort(knobs.effort)),
+        _Line(words.settingsScansLongEdge(knobs.longEdge)),
+        _Line(words.settingsScansDailyCap(knobs.dailyCap)),
+        _Note(words.settingsScansFromConsole),
+        _Note(words.settingsScansNotEnforced),
+      ],
+    );
+  }
 }
 
 /// The Corrected Fields tally: how often Review had to change what the Model
@@ -51,28 +47,28 @@ class WhatReviewHadToCorrect extends StatelessWidget {
       state is LedgerReady ? state.expenses : const [],
     );
 
+    final words = AppLocalizations.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const _Heading('What Review had to correct'),
+        _Heading(words.settingsCorrectedHeading),
         if (tally.scanned == 0)
-          const _Note(
-            'No receipt has been read yet, so there is nothing to say.',
-          )
+          _Note(words.settingsCorrectedNothingYet)
         else ...[
-          _Line(
-            '${asReceipts(tally.scanned)} read, '
-            '${tally.clean} left alone.',
-          ),
+          _Line(words.settingsCorrectedTally(tally.scanned, tally.clean)),
           for (final MapEntry(:key, :value) in tally.byField.entries)
+            // The field's own name is still English: it is the Review form's
+            // vocabulary as much as this panel's, and it moves when that screen
+            // does.
             _Line(
-              '${reviewFieldLabel(key)}, corrected on '
-              '$value of ${tally.scanned}',
+              words.settingsCorrectedField(
+                reviewFieldLabel(key),
+                value,
+                tally.scanned,
+              ),
             ),
-          const _Note(
-            'Expenses typed by hand are not counted: those record a change to '
-            'every field, against an Extraction that never existed.',
-          ),
+          _Note(words.settingsCorrectedManualExcluded),
         ],
       ],
     );

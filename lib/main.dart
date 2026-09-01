@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:where_money_core/where_money_core.dart';
 
 import 'app.dart';
 import 'data/device_preferences.dart';
@@ -39,6 +40,9 @@ Future<void> main() async {
   // rather than on nothing at all.
   final preferences = StoredDevicePreferences();
   final theme = await preferences.theme().catchError((_) => ThemeMode.system);
+  final language = await preferences.language().catchError(
+    (_) => defaultLanguage,
+  );
 
   runApp(
     WhereMoneyApp(
@@ -47,6 +51,7 @@ Future<void> main() async {
       preferences: preferences,
       knobs: knobs,
       theme: theme,
+      language: language,
       model: WorkerModelGateway(
         endpoint: worker,
         knobs: knobs,

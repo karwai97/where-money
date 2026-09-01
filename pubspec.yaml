@@ -13,6 +13,10 @@ workspace:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  # Pinned by flutter_localizations, so `any` is the only version that resolves.
+  intl: any
   cupertino_icons: ^1.0.8
   where_money_core:
     path: packages/core
@@ -44,3 +48,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  # Turns the ARB files under lib/l10n into AppLocalizations. Run by
+  # `flutter pub get` and by every build, so the generated file is build output
+  # rather than source and is gitignored — see l10n.yaml.
+  generate: true

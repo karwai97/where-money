@@ -1,0 +1,14 @@
+# Where the app's words live. One ARB file per language, keys camelCase and
+# prefixed by the screen they appear on, so a flat namespace stays navigable
+# and "did I miss one on this screen" is answerable by eye.
+arb-dir: lib/l10n
+template-arb-file: app_en.arb
+output-localization-file: app_localizations.dart
+output-dir: lib/l10n
+# `AppLocalizations.of(context)` never returns null: the delegate is installed
+# above every screen, so a null check at three hundred call sites would be a
+# check on something this app has already decided.
+nullable-getter: false
+# Both languages are hand-written. An untranslated key should be a build
+# warning, not a silent fall back to English.
+untranslated-messages-file: l10n-untranslated.json

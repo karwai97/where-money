@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
 import 'data/device_preferences.dart';
+import 'l10n/app_localizations.dart';
 import 'data/ledger_store.dart';
 import 'ledger/ledger_screen.dart';
 import 'lock/device_lock.dart';
@@ -29,6 +30,7 @@ class WhereMoneyApp extends StatelessWidget {
     required this.preferences,
     this.knobs = const Knobs(),
     this.theme = ThemeMode.system,
+    this.language = defaultLanguage,
     this.photograph,
   });
 
@@ -51,6 +53,11 @@ class WhereMoneyApp extends StatelessWidget {
   /// drawn in the theme the user chose rather than in whatever was quickest to
   /// reach.
   final ThemeMode theme;
+
+  /// The language this launch opens with, already read off the phone, for the
+  /// same reason as [theme]: the first frame is drawn in the language the user
+  /// chose rather than in whichever one was compiled in.
+  final String language;
 
   /// What a console has to say about how a receipt is read. Plain values,
   /// handed down: nothing below here asks anything for them.
@@ -99,13 +106,18 @@ class WhereMoneyApp extends StatelessWidget {
             create: (_) => SessionBloc(signIn)..add(const SessionOpened()),
           ),
           BlocProvider(
-            create: (_) =>
-                SettingsCubit(preferences, from: Settings(theme: theme)),
+            create: (_) => SettingsCubit(
+              preferences,
+              from: Settings(theme: theme, language: language),
+            ),
           ),
         ],
         child: BlocBuilder<SettingsCubit, Settings>(
           builder: (context, settings) => MaterialApp(
             title: 'where_money',
+            locale: Locale(settings.language),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             themeMode: settings.theme,
             theme: themeFor(Brightness.light),
             // The charts take their one hue from the scheme, so a phone in dark

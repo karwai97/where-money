@@ -21,8 +21,6 @@ String asMoney(String currency, double amount) =>
 
 String asExpenses(int count) => count == 1 ? '1 Expense' : '$count Expenses';
 
-String asReceipts(int count) => count == 1 ? '1 receipt' : '$count receipts';
-
 const Map<String, String> categoryLabels = {
   'groceries': 'Groceries',
   'dining': 'Dining out',
