@@ -51,6 +51,19 @@ final class ScanReadAgain extends InboxEvent {
   List<Object?> get props => [scanId];
 }
 
+/// The user picked a language in Settings. Only Scans read after this arrive
+/// in the new one: an Extraction already taken keeps the reasons it was read
+/// with, because re-reading would spend the user's Scan allowance on cosmetics
+/// and an Extraction is a claim made at a moment rather than a live value.
+final class InboxLanguageChanged extends InboxEvent {
+  const InboxLanguageChanged(this.language);
+
+  final String language;
+
+  @override
+  List<Object?> get props => [language];
+}
+
 final class _ReadAgainDue extends InboxEvent {
   const _ReadAgainDue();
 }
@@ -93,7 +106,7 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
     this._model, {
     Knobs knobs = const Knobs(),
     Duration readAgainAfter = _defaultWait,
-    this.language = defaultLanguage,
+    this._language = defaultLanguage,
   }) : _longEdge = knobs.longEdge,
        _firstWait = readAgainAfter,
        _wait = readAgainAfter,
@@ -102,6 +115,7 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
     on<ScanCaptured>(_onCaptured);
     on<ScanAbandoned>((event, emit) => _scans.abandon(event.scanId));
     on<ScanReadAgain>(_onReadAgain);
+    on<InboxLanguageChanged>((event, emit) => _language = event.language);
     on<_ReadAgainDue>(_onReadAgainDue);
     on<_InboxChanged>((event, emit) {
       emit(InboxReady(event.scans));
@@ -122,10 +136,10 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
   final ModelGateway _model;
 
   /// The language the Model is asked to write its own words in — the reason it
-  /// gives for a Category, and anything it wants Reviewed. Nothing chooses it
-  /// yet; pinning it here is how a Chinese Extraction can be watched arriving
-  /// under an English Inbox.
-  final String language;
+  /// gives for a Category, and anything it wants Reviewed. The Setting keeps it
+  /// up to date through [InboxLanguageChanged]; the constructor takes the one
+  /// the app opened in.
+  String _language;
 
   final int _longEdge;
   final Duration _firstWait;
@@ -214,7 +228,7 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
     final receipt = await _scans.receiptFor(scan.id);
     if (receipt == null) return;
 
-    final answer = await _model.extract(receipt, language: language);
+    final answer = await _model.extract(receipt, language: _language);
     // Something answered, so there is no longer anything to back off from.
     // The pending sweep goes with it, or the backlog behind this Scan would
     // keep waiting the long wait that has just been proved unnecessary.

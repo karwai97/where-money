@@ -92,7 +92,9 @@ _Avoid_: Aggregate, stats, digest
 **Recap**:
 The written account of a month's spending, generated from a Rollup rather than
 from the Ledger. "Where your money went" is user-facing copy for a Recap, never
-an identifier.
+an identifier. A pure function of its Rollup **and the Language it was asked
+for in** — the same month is two Recaps in two Languages, each cached under its
+own key, so switching Language twice costs one Recap and not two (ADR-0008).
 _Avoid_: Narrative, summary, story, insight
 
 ### The phone
@@ -105,6 +107,17 @@ about the money, and it is read before the first frame so the app opens the way
 it was left. Not the same as a Knob: a Setting is the user's choice about their
 own phone, a Knob is the operator's choice about how the Model is used.
 _Avoid_: Preference, option, config, toggle
+
+**Language**:
+Which of the languages the app can be read in this phone is set to, as a code.
+A Setting like the theme beside it, on the phone rather than on the account,
+because the sign-in screen has to be rendered in *some* language before the app
+knows whose account it is. It decides two separate things: the words the app
+assembles itself, and the language the Model is asked to write in. Those can
+disagree for a moment and that is not a bug — a Recap already paid for in
+English is served under a Chinese interface rather than bought again, with the
+reasons around it read in Chinese.
+_Avoid_: Locale, i18n, translation, region
 
 **Lock**:
 The fingerprint or device PIN this app asks for before showing a Ledger.

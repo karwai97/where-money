@@ -13,6 +13,7 @@ import '../scan/inbox_bloc.dart';
 import '../scan/inbox_screen.dart';
 import '../scan/model_gateway.dart';
 import '../scan/photographer.dart';
+import '../settings/settings_cubit.dart';
 import '../settings/settings_screen.dart';
 import 'expense_screen.dart';
 import 'how_it_got_here.dart';
@@ -42,6 +43,10 @@ class LedgerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final words = AppLocalizations.of(context);
+    // Read once, for the blocs that are about to be built. After this the
+    // Setting reaches them as events rather than as a rebuild — see
+    // [_FollowsTheLanguage].
+    final language = context.read<SettingsCubit>().state.language;
 
     return MultiBlocProvider(
       providers: [
@@ -50,8 +55,8 @@ class LedgerScreen extends StatelessWidget {
         // Expense a user opens.
         RepositoryProvider<ReceiptStore>.value(value: stores.receipts),
         BlocProvider(
-          create: (_) =>
-              LedgerBloc(stores.ledger, model)..add(const LedgerOpened()),
+          create: (_) => LedgerBloc(stores.ledger, model, language: language)
+            ..add(const LedgerOpened()),
         ),
         // Held here rather than on the Review route, so leaving Review and
         // coming back finds the work still there.
@@ -60,8 +65,9 @@ class LedgerScreen extends StatelessWidget {
               ReviewBloc(stores.ledger, stores.scans, stores.receipts),
         ),
         BlocProvider(
-          create: (_) => InboxBloc(stores.scans, model, knobs: knobs)
-            ..add(const InboxOpened()),
+          create: (_) =>
+              InboxBloc(stores.scans, model, knobs: knobs, language: language)
+                ..add(const InboxOpened()),
         ),
         BlocProvider(
           create: (context) => PhotosStayedBehind(
@@ -71,63 +77,65 @@ class LedgerScreen extends StatelessWidget {
           ),
         ),
       ],
-      child: _SaysThePhotosStayedBehind(
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text(words.ledgerTitle),
-            actions: [
-              Builder(builder: _chartsAction),
-              Builder(builder: _inboxAction),
-              Builder(builder: _settingsAction),
-            ],
-          ),
-          floatingActionButton: Builder(
-            builder: (context) => Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                FloatingActionButton.small(
-                  heroTag: 'manual',
-                  tooltip: words.ledgerAddByHand,
-                  onPressed: () => _addByHand(context),
-                  child: const Icon(Icons.add),
-                ),
-                const SizedBox(height: 12),
-                FloatingActionButton(
-                  heroTag: 'photograph',
-                  tooltip: words.ledgerPhotograph,
-                  onPressed: () => _photographAReceipt(context),
-                  child: const Icon(Icons.photo_camera),
-                ),
+      child: _FollowsTheLanguage(
+        child: _SaysThePhotosStayedBehind(
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text(words.ledgerTitle),
+              actions: [
+                Builder(builder: _chartsAction),
+                Builder(builder: _inboxAction),
+                Builder(builder: _settingsAction),
               ],
             ),
-          ),
-          body: BlocBuilder<LedgerBloc, LedgerState>(
-            builder: (context, state) => switch (state) {
-              LedgerLoading() => const Center(
-                child: CircularProgressIndicator(),
-              ),
-              LedgerUnavailable(:final reason) => _Message(
-                words.ledgerUnreadable,
-                detail: reason,
-              ),
-              LedgerReady() => Column(
+            floatingActionButton: Builder(
+              builder: (context) => Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  _MonthBar(state),
-                  Expanded(
-                    child: switch (state) {
-                      LedgerReady(expenses: []) => _Message(words.ledgerEmpty),
-                      LedgerReady(inMonth: []) => _Message(
-                        words.ledgerNothingInMonth(
-                          state.rollup.monthLabel(words),
-                        ),
-                      ),
-                      LedgerReady(:final inMonth) => _Expenses(inMonth),
-                    },
+                  FloatingActionButton.small(
+                    heroTag: 'manual',
+                    tooltip: words.ledgerAddByHand,
+                    onPressed: () => _addByHand(context),
+                    child: const Icon(Icons.add),
+                  ),
+                  const SizedBox(height: 12),
+                  FloatingActionButton(
+                    heroTag: 'photograph',
+                    tooltip: words.ledgerPhotograph,
+                    onPressed: () => _photographAReceipt(context),
+                    child: const Icon(Icons.photo_camera),
                   ),
                 ],
               ),
-            },
+            ),
+            body: BlocBuilder<LedgerBloc, LedgerState>(
+              builder: (context, state) => switch (state) {
+                LedgerLoading() => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+                LedgerUnavailable(:final reason) => _Message(
+                  words.ledgerUnreadable,
+                  detail: reason,
+                ),
+                LedgerReady() => Column(
+                  children: [
+                    _MonthBar(state),
+                    Expanded(
+                      child: switch (state) {
+                        LedgerReady(expenses: []) => _Message(words.ledgerEmpty),
+                        LedgerReady(inMonth: []) => _Message(
+                          words.ledgerNothingInMonth(
+                            state.rollup.monthLabel(words),
+                          ),
+                        ),
+                        LedgerReady(:final inMonth) => _Expenses(inMonth),
+                      },
+                    ),
+                  ],
+                ),
+              },
+            ),
           ),
         ),
       ),
@@ -372,6 +380,27 @@ class _Message extends StatelessWidget {
 
 /// Watches the Ledger arrive and, on a phone it was restored onto rather than
 /// photographed on, says once that the photos did not come with it.
+/// Hands a Language change to the two blocs that ask the Model for words. They
+/// are keyed by the user rather than by the language on purpose: re-keying
+/// would drop a loaded Ledger and an Inbox mid-Scan because somebody changed a
+/// UI preference. So the Setting arrives as an event, and each bloc decides
+/// what a new language costs it.
+class _FollowsTheLanguage extends StatelessWidget {
+  const _FollowsTheLanguage({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => BlocListener<SettingsCubit, Settings>(
+    listenWhen: (before, after) => before.language != after.language,
+    listener: (context, settings) {
+      context.read<LedgerBloc>().add(LanguageChanged(settings.language));
+      context.read<InboxBloc>().add(InboxLanguageChanged(settings.language));
+    },
+    child: child,
+  );
+}
+
 class _SaysThePhotosStayedBehind extends StatelessWidget {
   const _SaysThePhotosStayedBehind({required this.child});
 

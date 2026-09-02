@@ -186,6 +186,13 @@
   "rollupRecapPending": "正在读这个月。",
   "rollupRecapTooFew": "{needed, plural, other{一个月里至少要有 {needed} 笔支出，才有值得写的东西。图表不受影响。}}",
   "rollupRecapAskAgain": "再问一次",
+
+  "rollupRecapRefused": "模型不肯写这个月的回顾。",
+  "rollupRecapNothingToSay": "模型对这个月没什么可说的。",
+  "rollupRecapAllowanceSpent": "今天的次数用完了。明天会有回顾。",
+  "rollupRecapTokenRefused": "重新登录，回顾就会回来。",
+  "rollupRecapOutOfReach": "没有网络就没有回顾。图表不需要网络。",
+  "rollupRecapModelUnavailable": "联系不上模型。图表不需要它。",
   "rollupNothingToCompare": "{month}没有支出，无从比较。",
   "rollupAboutTheSame": "和{month}差不多。",
   "rollupMoreThan": "比{month}多 {percent}%。",

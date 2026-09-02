@@ -423,6 +423,16 @@
     }
   },
   "rollupRecapAskAgain": "Ask again",
+
+  "rollupRecapRefused": "The Model would not write up this month.",
+  "@rollupRecapRefused": {
+    "description": "Six reasons a month has no Recap, one per member of WhyNoRecap. They are read in the language the interface is in, which is not necessarily the one the Recap itself was asked for — a Recap already paid for in English is served to a Chinese interface with a Chinese explanation of what is missing rather than being asked for again."
+  },
+  "rollupRecapNothingToSay": "The Model had nothing to say about this month.",
+  "rollupRecapAllowanceSpent": "That is today's allowance. There will be a Recap tomorrow.",
+  "rollupRecapTokenRefused": "Sign in again and the Recap will come back.",
+  "rollupRecapOutOfReach": "No Recap without a connection. The charts do not need one.",
+  "rollupRecapModelUnavailable": "The Model could not be reached. The charts do not need it.",
   "rollupNothingToCompare": "Nothing was spent in {month} to compare against.",
   "@rollupNothingToCompare": {
     "description": "How this month compares to the one before it. Three separate messages rather than one with a translated \"more\" or \"less\" dropped into the middle of it.",

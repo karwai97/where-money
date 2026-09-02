@@ -17,7 +17,9 @@ import '../fakes/in_memory_ledger_store.dart';
 /// Three things deliberately do not move. Money keeps its explicit currency
 /// code, because the Home Currency rule depends on a foreign-currency Expense
 /// looking foreign (ADR-0006). A merchant's name and a line item's description
-/// are printed as the paper had them. And the Recap itself is ticket 10's.
+/// are printed as the paper had them. And the Recap itself is the Model's prose
+/// — the_recap_speaks_chinese_test.dart is what says it is asked for in the
+/// right language.
 void main() {
   final now = DateTime.now();
   final thisMonth = '${now.year}年${now.month}月';

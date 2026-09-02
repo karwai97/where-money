@@ -81,11 +81,14 @@ void main() {
 
   group('the hash a Recap is cached against', () {
     test('is the same for a month nobody has touched', () {
-      expect(rollupHash(august2026(ledger)), rollupHash(august2026(ledger)));
+      expect(
+        rollupHash(august2026(ledger), language: 'en'),
+        rollupHash(august2026(ledger), language: 'en'),
+      );
     });
 
     test('changes when an Expense is added', () {
-      final before = rollupHash(august2026(ledger));
+      final before = rollupHash(august2026(ledger), language: 'en');
       final after = rollupHash(
         august2026([
           ...ledger,
@@ -101,6 +104,7 @@ void main() {
             needsReview: false,
           ),
         ]),
+        language: 'en',
       );
 
       expect(after, isNot(before));
@@ -126,8 +130,8 @@ void main() {
       ];
 
       expect(
-        rollupHash(august2026(corrected)),
-        isNot(rollupHash(august2026(ledger))),
+        rollupHash(august2026(corrected), language: 'en'),
+        isNot(rollupHash(august2026(ledger), language: 'en')),
       );
     });
 
@@ -135,8 +139,8 @@ void main() {
       final without = ledger.where((e) => e.merchant != 'Netflix').toList();
 
       expect(
-        rollupHash(august2026(without)),
-        isNot(rollupHash(august2026(ledger))),
+        rollupHash(august2026(without), language: 'en'),
+        isNot(rollupHash(august2026(ledger), language: 'en')),
       );
     });
 
@@ -148,7 +152,34 @@ void main() {
         homeCurrency: 'MYR',
       );
 
-      expect(rollupHash(july), isNot(rollupHash(august2026(ledger))));
+      expect(
+        rollupHash(july, language: 'en'),
+        isNot(rollupHash(august2026(ledger), language: 'en')),
+      );
+    });
+
+    test('tells two languages apart, because the Recap is written in one', () {
+      expect(
+        rollupHash(august2026(ledger), language: 'zh'),
+        isNot(rollupHash(august2026(ledger), language: 'en')),
+      );
+    });
+
+    test(
+      'is the same month in the same language however often it is asked',
+      () {
+        expect(
+          rollupHash(august2026(ledger), language: 'zh'),
+          rollupHash(august2026(ledger), language: 'zh'),
+        );
+      },
+    );
+
+    test('a language nobody recognises is not silently the default', () {
+      expect(
+        rollupHash(august2026(ledger), language: 'de'),
+        isNot(rollupHash(august2026(ledger), language: defaultLanguage)),
+      );
     });
   });
 

@@ -80,6 +80,44 @@ void main() {
     await bloc.close();
   });
 
+  test('a Scan photographed after the language changed is read in the new '
+      'one', () async {
+    final bloc = InboxBloc(store, model)..add(const InboxOpened());
+    await readOne(bloc);
+
+    bloc.add(const InboxLanguageChanged('zh'));
+    bloc.add(ScanCaptured(photograph(width: 600, height: 800)));
+    await bloc.stream.firstWhere(
+      (state) =>
+          state is InboxReady &&
+          state.scans.length == 2 &&
+          state.scans.every((scan) => scan.extraction != null),
+    );
+
+    expect(model.extractedIn, ['en', 'zh']);
+    await bloc.close();
+  });
+
+  test(
+    'an Extraction already taken is not read again to translate it',
+    () async {
+      final bloc = InboxBloc(store, model)..add(const InboxOpened());
+      final first = await readOne(bloc);
+
+      bloc.add(const InboxLanguageChanged('zh'));
+      await pumpEventQueue();
+
+      expect(model.extractedIn, [
+        'en',
+      ], reason: 'a second read would spend a Scan on cosmetics');
+      expect(
+        (bloc.state as InboxReady).scans.single.extraction,
+        first.extraction,
+      );
+      await bloc.close();
+    },
+  );
+
   test(
     'a photographed receipt is read without the user waiting on it',
     () async {

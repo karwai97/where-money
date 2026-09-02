@@ -277,6 +277,137 @@ void main() {
     await bloc.close();
   });
 
+  test(
+    'changing the language asks for the month again, in the new one',
+    () async {
+      final (:bloc, :model) = opened(seedLedger(around: august));
+      await settled(bloc);
+      expect(model.recappedIn, ['en']);
+
+      model.recapAnswer = FakeModelGateway.wrote('八月花得不算少。');
+      bloc.add(const LanguageChanged('zh'));
+      final state = await settled(bloc);
+
+      expect(model.recappedIn, ['en', 'zh']);
+      expect((state.recap as RecapOnScreen).text, '八月花得不算少。');
+      await bloc.close();
+    },
+  );
+
+  test('changing back serves the Recap already paid for', () async {
+    final (:bloc, :model) = opened(seedLedger(around: august));
+    await settled(bloc);
+    final english = (await settled(bloc)).recap as RecapOnScreen;
+
+    model.recapAnswer = FakeModelGateway.wrote('八月花得不算少。');
+    bloc.add(const LanguageChanged('zh'));
+    await settled(bloc);
+
+    // A third answer, so serving either of the first two is distinguishable
+    // from asking again.
+    model.recapAnswer = FakeModelGateway.wrote(
+      'A third answer nobody asked for.',
+    );
+    bloc.add(const LanguageChanged('en'));
+    final state = await settled(bloc);
+
+    expect((state.recap as RecapOnScreen).text, english.text);
+    expect(model.recappedIn, [
+      'en',
+      'zh',
+    ], reason: 'the English Recap was already paid for');
+    await bloc.close();
+  });
+
+  test('changing the language does not reload the Ledger', () async {
+    final store = InMemoryLedgerStore(seedLedger(around: august));
+    final bloc = LedgerBloc(store, FakeModelGateway(), now: august)
+      ..add(const LedgerOpened());
+    final before = (await settled(bloc)).expenses;
+
+    final seen = <LedgerState>[];
+    bloc.stream.listen(seen.add);
+    bloc.add(const LanguageChanged('zh'));
+    final state = await settled(bloc);
+
+    expect(state.expenses, before);
+    expect(
+      seen.whereType<LedgerLoading>(),
+      isEmpty,
+      reason: 'a UI preference is no reason to fetch the Ledger over again',
+    );
+    await bloc.close();
+  });
+
+  test('the same month sends the same prompt in either language', () async {
+    final english = opened(seedLedger(around: august));
+    await settled(english.bloc);
+    await english.bloc.close();
+
+    final chinese = opened(seedLedger(around: august), language: 'zh');
+    await settled(chinese.bloc);
+
+    expect(
+      chinese.model.rollupsAsked.single,
+      english.model.rollupsAsked.single,
+      reason:
+          'the prompt carries slugs and numbers, so the Language rides '
+          'beside it rather than inside it (ADR-0007)',
+    );
+    expect(chinese.model.rollupsAsked.single, isNot(contains('Groceries')));
+    await chinese.bloc.close();
+  });
+
+  test(
+    'a month already in the language asked for is not asked again',
+    () async {
+      final (:bloc, :model) = opened(
+        seedLedger(around: august),
+        language: 'zh',
+      );
+      await settled(bloc);
+
+      bloc.add(const LanguageChanged('zh'));
+      await settled(bloc);
+
+      expect(model.recappedIn, ['zh']);
+      await bloc.close();
+    },
+  );
+
+  for (final (name, answer, why) in [
+    ('a refusal', FakeModelGateway.recapRefused, WhyNoRecap.refused),
+    (
+      'reasoning that ate the whole budget',
+      FakeModelGateway.recapSilence,
+      WhyNoRecap.nothingToSay,
+    ),
+    ("the day's allowance", const AllowanceSpent(), WhyNoRecap.allowanceSpent),
+    ('a refused token', const TokenRefused('expired'), WhyNoRecap.tokenRefused),
+    (
+      'a dead network',
+      const ModelOutOfReach('SocketException'),
+      WhyNoRecap.outOfReach,
+    ),
+    (
+      'the Model being down at the far end',
+      const ModelUnavailable('model_unavailable'),
+      WhyNoRecap.modelUnavailable,
+    ),
+  ]) {
+    test('$name is a kind rather than a sentence', () async {
+      final (:bloc, model: _) = opened(
+        seedLedger(around: august),
+        model: FakeModelGateway(recapAnswer: answer),
+      );
+
+      final state = await settled(bloc);
+
+      expect((state.recap as RecapUnavailable).why, why);
+      await bloc.close();
+    });
+  }
+
   test('the Recap is never written to the Ledger', () async {
     final store = InMemoryLedgerStore(seedLedger(around: august));
     final before = store.contents.length;

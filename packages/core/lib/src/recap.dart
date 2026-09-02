@@ -62,16 +62,23 @@ Map<String, dynamic> rollupPrompt(Rollup rollup) {
   };
 }
 
-/// A hash of exactly what would be sent. Anything the prompt does not carry
-/// cannot change the Recap, so it has no business changing the hash either.
+/// A hash of everything the answer depends on. Anything that cannot change the
+/// Recap has no business changing the hash either.
 ///
-/// The Language is the one exception, and it is not one yet: the Worker is told
-/// which language to write in out of band, so a Recap is a function of this
-/// hash *and* that. Nothing changes the language while the app is running, so
-/// no cached Recap can be served in the wrong one — the ticket that lets a user
-/// change it is the ticket that has to bring the Language in here.
-String rollupHash(Rollup rollup) {
-  final text = jsonEncode(rollupPrompt(rollup));
+/// That is the Rollup and the [language]. The prompt carries slugs and numbers
+/// and never a label (ADR-0007), so the Language does not appear in it — the
+/// Worker is told out of band which language to write in, and the same numbers
+/// come back as two different Recaps. So it is hashed alongside the prompt
+/// rather than read out of it, and a user switching language misses the cache,
+/// pays for one Recap, and switching back is free because the first one is
+/// still held under its own key.
+///
+/// An unrecognised code hashes as itself rather than as [defaultLanguage],
+/// which the Worker will answer in. Two keys for one answer costs one Recap
+/// nobody asked for; one key for two answers would serve a Recap in the wrong
+/// language, and that is the failure worth avoiding.
+String rollupHash(Rollup rollup, {required String language}) {
+  final text = '$language ${jsonEncode(rollupPrompt(rollup))}';
 
   // FNV-1a, 64-bit, because this package has no dependencies and a cache key
   // is not a security claim. Same input, same key, on every device.

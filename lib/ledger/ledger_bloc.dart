@@ -36,13 +36,32 @@ final class RecapAskedAgain extends LedgerEvent {
 }
 
 final class _RecapWanted extends LedgerEvent {
-  const _RecapWanted(this.hash, this.prompt);
+  const _RecapWanted(this.hash, this.prompt, this.language);
 
   final String hash;
   final String prompt;
 
+  /// Carried rather than read off the bloc when the answer comes back: the
+  /// user can change language while the Model is writing, and the answer
+  /// belongs to the hash that asked for it.
+  final String language;
+
   @override
   List<Object?> get props => [hash];
+}
+
+/// The user picked a language in Settings. Carries the tag rather than
+/// re-keying the bloc: re-keying would throw away a loaded Ledger and fetch it
+/// again over the network because somebody changed a UI preference. This way
+/// the hash simply misses, one Recap is paid for, and the old one is still held
+/// under its own key — so switching twice costs nothing.
+final class LanguageChanged extends LedgerEvent {
+  const LanguageChanged(this.language);
+
+  final String language;
+
+  @override
+  List<Object?> get props => [language];
 }
 
 /// Confirmed on screen before it gets here.
@@ -73,10 +92,10 @@ final class _LedgerFailed extends LedgerEvent {
   List<Object?> get props => [reason];
 }
 
-/// Where the month's Recap has got to. A Recap is a pure function of a Rollup,
-/// so which of these the month is in follows from the Rollup and from nothing
-/// else — there is no staleness to remember because there is nowhere for it to
-/// hide.
+/// Where the month's Recap has got to. A Recap is a pure function of a Rollup
+/// and the Language it was asked for in, so which of these the month is in
+/// follows from those two and from nothing else — there is no staleness to
+/// remember because there is nowhere for it to hide.
 sealed class RecapState extends Equatable {
   const RecapState();
 
@@ -109,12 +128,29 @@ final class RecapTooFewExpenses extends RecapState {
   List<Object?> get props => [needed];
 }
 
-/// The month has no Recap and the charts are unaffected. [why] is the Model's
-/// answer or the reason nothing got through, in the user's words.
+/// Why a month has no Recap. A kind rather than a sentence, so the words for
+/// it are assembled on the screen that shows them and this file stays wordless
+/// (ADR-0007) — which is also what lets the reason be read in the language the
+/// interface is in rather than the one the Recap was asked for.
+enum WhyNoRecap {
+  /// The Model read the month and declined to write it up.
+  refused,
+
+  /// The Model answered and the answer had no prose in it — reasoning that ate
+  /// the whole output budget.
+  nothingToSay,
+
+  allowanceSpent,
+  tokenRefused,
+  outOfReach,
+  modelUnavailable,
+}
+
+/// The month has no Recap and the charts are unaffected.
 final class RecapUnavailable extends RecapState {
   const RecapUnavailable(this.why);
 
-  final String why;
+  final WhyNoRecap why;
 
   @override
   List<Object?> get props => [why];
@@ -180,13 +216,14 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
     this._store,
     this._model, {
     DateTime? now,
-    this.language = defaultLanguage,
+    this._language = defaultLanguage,
   }) : _opened = _firstOf(now ?? DateTime.now()),
        super(const LedgerLoading()) {
     _month = _opened;
     on<LedgerOpened>(_onOpened);
     on<MonthStepped>(_onStepped);
     on<RecapAskedAgain>(_onAskedAgain);
+    on<LanguageChanged>(_onLanguageChanged);
     on<ExpenseDeleted>(_onDeleted);
     on<_RecapWanted>(_onRecapWanted);
     on<_LedgerChanged>((event, emit) {
@@ -201,9 +238,10 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
   /// The Worker, for the one thing on this screen that is not arithmetic.
   final ModelGateway _model;
 
-  /// The language the Recap is written in. Nothing chooses it yet; pinning it
-  /// here is how a Chinese Recap can be read under an English Ledger.
-  final String language;
+  /// The language the Recap is written in, which the Setting keeps up to date
+  /// through [LanguageChanged]. The constructor takes the one the app opened in
+  /// so the first Recap is not asked for in English and then replaced.
+  String _language;
 
   /// The month the app was opened in, which is as far forward as there is
   /// anything to see.
@@ -255,11 +293,11 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
       return const RecapTooFewExpenses(minimumExpensesForRecap);
     }
 
-    final hash = rollupHash(rollup);
+    final hash = rollupHash(rollup, language: _language);
     final held = _recaps[hash];
     if (held != null) return held;
 
-    add(_RecapWanted(hash, jsonEncode(rollupPrompt(rollup))));
+    add(_RecapWanted(hash, jsonEncode(rollupPrompt(rollup)), _language));
     return const RecapPending();
   }
 
@@ -269,7 +307,7 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
   ) async {
     if (_recaps.containsKey(event.hash) || !_asking.add(event.hash)) return;
 
-    final answer = await _model.recap(event.prompt, language: language);
+    final answer = await _model.recap(event.prompt, language: event.language);
     _asking.remove(event.hash);
     _recaps[event.hash] = _recapFrom(answer);
     // The user can leave the screen while the Model is still writing, and a
@@ -292,10 +330,19 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
     }
   }
 
+  /// Nothing here touches the Ledger stream. The hash misses, `_ready()` asks
+  /// for one Recap in the new language, and the old one stays in `_recaps`
+  /// under the key it was paid for.
+  void _onLanguageChanged(LanguageChanged event, Emitter<LedgerState> emit) {
+    if (event.language == _language) return;
+    _language = event.language;
+    if (state is LedgerReady) emit(_ready());
+  }
+
   void _onAskedAgain(RecapAskedAgain event, Emitter<LedgerState> emit) {
     if (state case final LedgerReady ready
         when ready.recap is RecapUnavailable) {
-      _recaps.remove(rollupHash(ready.rollup));
+      _recaps.remove(rollupHash(ready.rollup, language: _language));
       emit(_ready());
     }
   }
@@ -317,28 +364,20 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
 
 /// The Model's answer as the screen has to render it. A Recap the Model would
 /// not write is not a Failure in this project's sense — nothing is stuck and
-/// nothing needs retrying on a schedule — so the charts carry on and the words
-/// say why they are missing.
+/// nothing needs retrying on a schedule — so the charts carry on and the screen
+/// says why the words are missing.
 RecapState _recapFrom(RecapAnswer answer) => switch (answer) {
   RecapAnswered(outcome: RecapWritten(:final text)) => RecapOnScreen(text),
   RecapAnswered(outcome: RecapRefused()) => const RecapUnavailable(
-    'The Model would not write up this month.',
+    WhyNoRecap.refused,
   ),
   RecapAnswered(outcome: RecapNoOutput()) => const RecapUnavailable(
-    'The Model had nothing to say about this month.',
+    WhyNoRecap.nothingToSay,
   ),
-  AllowanceSpent() => const RecapUnavailable(
-    "That is today's allowance. There will be a Recap tomorrow.",
-  ),
-  TokenRefused() => const RecapUnavailable(
-    'Sign in again and the Recap will come back.',
-  ),
-  ModelOutOfReach() => const RecapUnavailable(
-    'No Recap without a connection. The charts do not need one.',
-  ),
-  ModelUnavailable() => const RecapUnavailable(
-    'The Model could not be reached. The charts do not need it.',
-  ),
+  AllowanceSpent() => const RecapUnavailable(WhyNoRecap.allowanceSpent),
+  TokenRefused() => const RecapUnavailable(WhyNoRecap.tokenRefused),
+  ModelOutOfReach() => const RecapUnavailable(WhyNoRecap.outOfReach),
+  ModelUnavailable() => const RecapUnavailable(WhyNoRecap.modelUnavailable),
 };
 
 DateTime _firstOf(DateTime at) => DateTime(at.year, at.month);
