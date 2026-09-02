@@ -206,6 +206,12 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
   final ReceiptStore _receipts;
 
   final Clock _now;
+
+  /// What day it is, for the one thing on this screen that needs it and is not
+  /// a Finding: the calendar the Date field opens has to be bounded, and a
+  /// test that pins those bounds cannot be left reading the machine's clock.
+  Clock get clock => _now;
+
   var _committed = 0;
 
   /// One half-finished Review per Scan, plus one for the manual lane. Leaving

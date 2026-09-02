@@ -118,12 +118,22 @@ class _FormState extends State<_Form> {
 
   Future<void> _pickDate() async {
     final controller = _fields[ReviewField.purchasedAt]!;
-    final today = DateTime.now();
+    final today = _bloc.clock();
+    final inTheField = DateTime.tryParse(controller.text) ?? today;
+    final earliest = DateTime(today.year - 5);
+
+    // Five years back to today is the ordinary range, and the end the field
+    // falls outside of stretches to reach it. A date in the future or one
+    // older than the range is exactly what the user opened the calendar to
+    // correct — the Check is complaining about it on the card above these
+    // fields — and a calendar that will not open on the date in the field is
+    // no use for correcting it. Widening only ever happens when the field is
+    // already outside, so an ordinary date still cannot be moved past today.
     final picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.tryParse(controller.text) ?? today,
-      firstDate: DateTime(today.year - 5),
-      lastDate: today,
+      initialDate: inTheField,
+      firstDate: inTheField.isBefore(earliest) ? inTheField : earliest,
+      lastDate: inTheField.isAfter(today) ? inTheField : today,
     );
     if (picked == null) return;
 

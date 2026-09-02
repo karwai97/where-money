@@ -178,6 +178,67 @@ void main() {
     expect(store.contents, hasLength(1));
   });
 
+  // Both of these are dates the Check has copy for and the card above the
+  // fields is already complaining about, so they are exactly the dates a user
+  // taps the calendar to correct. The picker asserts that the date it opens on
+  // falls inside the range it was given, and the range was the ordinary one.
+  testWidgets('the calendar opens on a future date rather than refusing to '
+      'open at all', (tester) async {
+    await openReview(tester, on: DateTime(2026, 6, 15));
+    // What a card expiry misread as the purchase date looks like.
+    await type(tester, 'Date', '2027-04-01');
+
+    await tester.tap(find.byTooltip('Pick a date'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('OK'), findsOneWidget);
+    expect(
+      find.textContaining('April 2027'),
+      findsWidgets,
+      reason: 'the calendar should open on the month the field names',
+    );
+  });
+
+  testWidgets('the calendar opens on a receipt older than the range it '
+      'ordinarily offers', (tester) async {
+    await openReview(tester, on: DateTime(2026, 6, 15));
+    await type(tester, 'Date', '2018-06-14');
+
+    await tester.tap(find.byTooltip('Pick a date'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('OK'), findsOneWidget);
+    expect(find.textContaining('June 2018'), findsWidgets);
+  });
+
+  // The widening above is conditional, and this is the condition: a field
+  // inside the ordinary range leaves the ceiling where it was, so a day that
+  // has not happened yet is still not a day anybody can choose.
+  // Pinned well away from whatever day this is really run on, so that the
+  // ceiling being tested is the clock the screen was handed rather than the
+  // machine's — which would make the whole assertion pass by accident.
+  testWidgets('an ordinary date leaves the calendar ending today', (
+    tester,
+  ) async {
+    await openReview(tester, on: DateTime(2026, 6, 15));
+    await type(tester, 'Date', '2026-06-15');
+
+    await tester.tap(find.byTooltip('Pick a date'));
+    await tester.pumpAndSettle();
+
+    // Tomorrow, in the month the calendar is showing.
+    await tester.tap(find.text('16'));
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('2026-06-15'),
+      findsOneWidget,
+      reason: 'the 16th has not happened yet, so tapping it chose nothing',
+    );
+    expect(find.text('2026-06-16'), findsNothing);
+  });
+
   testWidgets('leaving Review and going back in keeps the typing', (
     tester,
   ) async {
