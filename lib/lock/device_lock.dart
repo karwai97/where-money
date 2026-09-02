@@ -39,5 +39,8 @@ enum Unlocking {
 abstract interface class DeviceLock {
   Future<LockAvailability> availability();
 
-  Future<Unlocking> unlock();
+  /// [reason] is what the phone's own prompt says it is asking for, in the
+  /// language the user has chosen. It arrives here rather than being written
+  /// here because this file is below the app's words.
+  Future<Unlocking> unlock(String reason);
 }

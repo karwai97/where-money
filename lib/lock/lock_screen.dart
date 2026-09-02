@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart' hide LockState;
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../l10n/app_localizations.dart';
 import '../session/session_bloc.dart';
 import 'lock_bloc.dart';
 
@@ -14,6 +15,7 @@ class LockScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final words = AppLocalizations.of(context);
     final refused = switch (state) {
       Locked(:final refused) => refused,
       _ => false,
@@ -34,26 +36,26 @@ class LockScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'where_money is locked',
+                words.lockTitle,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 8),
               Text(
-                'Your spending is on this phone. Unlock it to read it.',
+                words.lockWhy,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 32),
               if (refused) ...[
                 Text(
-                  'That did not unlock it.',
+                  words.lockRefused,
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
                 const SizedBox(height: 16),
                 FilledButton(
                   onPressed: () =>
                       context.read<LockBloc>().add(const UnlockRequested()),
-                  child: const Text('Unlock'),
+                  child: Text(words.lockUnlock),
                 ),
               ] else
                 const CircularProgressIndicator(),
@@ -64,7 +66,7 @@ class LockScreen extends StatelessWidget {
               TextButton(
                 onPressed: () =>
                     context.read<SessionBloc>().add(const SignOutRequested()),
-                child: const Text('Sign out instead'),
+                child: Text(words.lockSignOutInstead),
               ),
             ],
           ),

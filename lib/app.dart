@@ -140,10 +140,18 @@ class WhereMoneyApp extends StatelessWidget {
   }
 }
 
+/// The first frame, before the app knows whether anybody is signed in. It has
+/// nothing to show, so the words it carries are the ones a screen reader is
+/// given rather than any a user reads.
 class _Opening extends StatelessWidget {
   const _Opening();
 
   @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: CircularProgressIndicator()));
+  Widget build(BuildContext context) => Scaffold(
+    body: Center(
+      child: CircularProgressIndicator(
+        semanticsLabel: AppLocalizations.of(context).openingWait,
+      ),
+    ),
+  );
 }

@@ -17,7 +17,10 @@ void main() {
     preferences = InMemoryDevicePreferences();
   });
 
-  LockBloc open() => LockBloc(lock, preferences);
+  /// Stands in for the words the gate reads off the chosen language.
+  const askedFor = 'unlock to see your spending';
+
+  LockBloc open() => LockBloc(lock, preferences, () => askedFor);
 
   final nineOClock = DateTime(2026, 8, 25, 9);
 

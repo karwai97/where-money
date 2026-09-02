@@ -67,7 +67,8 @@ final class Unlocked extends LockState {
 }
 
 class LockBloc extends Bloc<LockEvent, LockState> {
-  LockBloc(this._lock, this._preferences) : super(const LockUnknown()) {
+  LockBloc(this._lock, this._preferences, this._reason)
+    : super(const LockUnknown()) {
     on<LockOpened>(_onOpened);
     on<UnlockRequested>(_onUnlockRequested);
     // The first one wins. Coming back, Android says `hidden` again on its way
@@ -83,6 +84,11 @@ class LockBloc extends Bloc<LockEvent, LockState> {
 
   final DeviceLock _lock;
   final DevicePreferences _preferences;
+
+  /// What the phone's own prompt is told to say. Read at the moment of asking
+  /// rather than held as a string, so a prompt raised after the user changed
+  /// the Language is worded in the new one.
+  final String Function() _reason;
 
   DateTime? _leftAt;
   var _asking = false;
@@ -129,7 +135,7 @@ class LockBloc extends Bloc<LockEvent, LockState> {
 
   Future<Unlocking> _asked() async {
     try {
-      return await _lock.unlock();
+      return await _lock.unlock(_reason());
     } on Exception {
       return Unlocking.unavailable;
     }

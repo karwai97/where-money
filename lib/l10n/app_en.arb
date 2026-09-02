@@ -333,6 +333,13 @@
     }
   },
 
+  "ledgerPhotosStayedBehindTitle": "The photos stayed behind",
+  "@ledgerPhotosStayedBehindTitle": {
+    "description": "Said once, on a phone that restored somebody's Ledger from their account and so has none of the receipt photos. A dialog over the Ledger, which is the screen it explains."
+  },
+  "ledgerPhotosStayedBehindBody": "Every Expense in your Ledger came back from your account. Receipt photos never leave the phone they were taken on, so this one has none of them. Nothing else is missing.",
+  "ledgerPhotosStayedBehindGotIt": "Got it",
+
   "expenseGone": "That Expense is no longer in your Ledger.",
   "@expenseGone": {
     "description": "One Expense, opened. Money keeps its explicit currency code in every language, and a merchant's name and a line item's description are printed as the paper had them."
@@ -526,5 +533,37 @@
     "description": "The receipt up close is its own screen, reached from a thumbnail on the Review form and on an opened Expense, so these three are prefixed by that screen rather than by either of the two that open it."
   },
   "receiptTitle": "The receipt",
-  "receiptBackToTheFields": "Back to the fields"
+  "receiptBackToTheFields": "Back to the fields",
+
+  "openingWait": "Opening where_money",
+  "@openingWait": {
+    "description": "The first frame, before the app knows whether anybody is signed in. There is nothing on it but a spinner, so this is what a screen reader is given to say. The product keeps its name in every language."
+  },
+
+  "signInTagline": "Photograph a receipt, put the phone away.",
+  "@signInTagline": {
+    "description": "The sign-in screen needs a language before the app knows whose account it is rendering, which is why the Language is a Setting on the phone rather than on the account."
+  },
+  "signInWithGoogle": "Continue with Google",
+  "@signInWithGoogle": {
+    "description": "Google is a proper name and stays as it is."
+  },
+  "signInInFlight": "Signing in",
+  "signInFailed": "Signing in did not work. {detail}",
+  "@signInFailed": {
+    "description": "The detail is whatever the phone said and is not translated — it is transcribed, like a merchant's name.",
+    "placeholders": {
+      "detail": { "type": "String" }
+    }
+  },
+
+  "lockTitle": "where_money is locked",
+  "lockWhy": "Your spending is on this phone. Unlock it to read it.",
+  "lockRefused": "That did not unlock it.",
+  "lockUnlock": "Unlock",
+  "lockSignOutInstead": "Sign out instead",
+  "lockReason": "Unlock where_money to see your spending.",
+  "@lockReason": {
+    "description": "Read out by the phone's own prompt rather than by this app, which is why it is a whole sentence where the rest of this screen is not. The three availability states are named in settingsLock*: this screen shows the same words whichever of them the phone is in."
+  }
 }

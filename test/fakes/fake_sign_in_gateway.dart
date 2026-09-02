@@ -20,6 +20,10 @@ class FakeSignInGateway implements SignInGateway {
   Object? refuse;
   Object? refuseSignOut;
 
+  /// Set this to keep a sign-in in flight, so a test can hold the screen
+  /// still and read what it says while it waits.
+  Completer<void>? holds;
+
   @override
   Stream<SignedInUser?> changes() async* {
     yield _current;
@@ -28,6 +32,7 @@ class FakeSignInGateway implements SignInGateway {
 
   @override
   Future<void> signIn() async {
+    if (holds case final held?) await held.future;
     if (refuse case final failure?) throw failure;
     _current = kai;
     _changes.add(_current);

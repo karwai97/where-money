@@ -38,7 +38,7 @@ void main() {
     store = InMemoryLedgerStore(restored);
   });
 
-  Future<void> open(WidgetTester tester) async {
+  Future<void> open(WidgetTester tester, {String language = 'en'}) async {
     await tester.pumpWidget(
       WhereMoneyApp(
         signIn: FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai),
@@ -46,6 +46,7 @@ void main() {
         model: FakeModelGateway(),
         lock: FakeDeviceLock(),
         preferences: preferences,
+        language: language,
         photograph: (_) async => null,
       ),
     );
@@ -82,5 +83,20 @@ void main() {
     await open(tester);
 
     expect(find.text('The photos stayed behind'), findsNothing);
+  });
+
+  testWidgets('it is said in Chinese, and read away in Chinese', (
+    tester,
+  ) async {
+    await open(tester, language: 'zh');
+
+    expect(find.text('照片留在了原来那台手机上'), findsOneWidget);
+    expect(find.textContaining('收据的照片从不离开拍下它们的那台手机'), findsOneWidget);
+    expect(find.text('The photos stayed behind'), findsNothing);
+
+    await tester.tap(find.text('知道了'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('照片留在了原来那台手机上'), findsNothing);
   });
 }

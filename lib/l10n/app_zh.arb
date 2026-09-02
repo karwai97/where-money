@@ -157,6 +157,10 @@
   "ledgerEmpty": "这里还什么都没有。\n用下面的按钮加一笔。",
   "ledgerNothingInMonth": "{month}没有记录。",
 
+  "ledgerPhotosStayedBehindTitle": "照片留在了原来那台手机上",
+  "ledgerPhotosStayedBehindBody": "你账本里的每一笔支出都从你的账号恢复回来了。收据的照片从不离开拍下它们的那台手机，所以这台手机上没有照片。其他都没有少。",
+  "ledgerPhotosStayedBehindGotIt": "知道了",
+
   "expenseGone": "这笔支出已经不在你的账本里了。",
   "expenseCorrect": "修正这笔支出",
   "expenseDelete": "删除这笔支出",
@@ -230,5 +234,19 @@
 
   "receiptZoom": "放大收据",
   "receiptTitle": "这张收据",
-  "receiptBackToTheFields": "返回各项字段"
+  "receiptBackToTheFields": "返回各项字段",
+
+  "openingWait": "正在打开 where_money",
+
+  "signInTagline": "拍下收据，然后就可以把手机收起来。",
+  "signInWithGoogle": "用 Google 继续",
+  "signInInFlight": "正在登录",
+  "signInFailed": "登录没有成功。{detail}",
+
+  "lockTitle": "where_money 已锁定",
+  "lockWhy": "你的消费记录在这台手机上。解锁之后才能读。",
+  "lockRefused": "这次没有解开。",
+  "lockUnlock": "解锁",
+  "lockSignOutInstead": "改为退出登录",
+  "lockReason": "解锁 where_money 查看你的消费记录。"
 }

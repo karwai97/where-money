@@ -400,20 +400,19 @@ class _SaysThePhotosStayedBehind extends StatelessWidget {
     final notice = context.read<PhotosStayedBehind>();
     await showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('The photos stayed behind'),
-        content: const Text(
-          'Every Expense in your Ledger came back from your account. Receipt '
-          'photos never leave the phone they were taken on, so this one has '
-          'none of them. Nothing else is missing.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Got it'),
-          ),
-        ],
-      ),
+      builder: (context) {
+        final words = AppLocalizations.of(context);
+        return AlertDialog(
+          title: Text(words.ledgerPhotosStayedBehindTitle),
+          content: Text(words.ledgerPhotosStayedBehindBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(words.ledgerPhotosStayedBehindGotIt),
+            ),
+          ],
+        );
+      },
     );
     await notice.acknowledged();
   }

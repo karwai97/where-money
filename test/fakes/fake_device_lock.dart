@@ -15,6 +15,11 @@ class FakeDeviceLock implements DeviceLock {
   /// registered or a platform channel that is not there.
   Object? broken;
 
+  /// What the last prompt was told to say. The platform's own window is the
+  /// one thing on the Lock a widget test cannot read, so this is where its
+  /// words are asserted.
+  String? reason;
+
   @override
   Future<LockAvailability> availability() async {
     if (broken case final failure?) throw failure;
@@ -22,7 +27,8 @@ class FakeDeviceLock implements DeviceLock {
   }
 
   @override
-  Future<Unlocking> unlock() async {
+  Future<Unlocking> unlock(String reason) async {
+    this.reason = reason;
     if (broken case final failure?) throw failure;
     return answer;
   }

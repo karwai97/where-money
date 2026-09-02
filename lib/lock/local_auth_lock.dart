@@ -31,11 +31,9 @@ class LocalAuthLock implements DeviceLock {
   }
 
   @override
-  Future<Unlocking> unlock() async {
+  Future<Unlocking> unlock(String reason) async {
     try {
-      final passed = await _auth.authenticate(
-        localizedReason: 'Unlock where_money to see your spending.',
-      );
+      final passed = await _auth.authenticate(localizedReason: reason);
       return passed ? Unlocking.unlocked : Unlocking.refused;
     } on LocalAuthException catch (refusal) {
       return switch (refusal.code) {

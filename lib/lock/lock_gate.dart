@@ -2,6 +2,7 @@ import 'package:flutter/material.dart' hide LockState;
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../data/device_preferences.dart';
+import '../l10n/app_localizations.dart';
 import 'device_lock.dart';
 import 'lock_bloc.dart';
 import 'lock_screen.dart';
@@ -26,13 +27,28 @@ class LockGate extends StatefulWidget {
 }
 
 class _LockGateState extends State<LockGate> with WidgetsBindingObserver {
-  late final LockBloc _lock = LockBloc(widget.lock, widget.preferences)
-    ..add(const LockOpened());
+  late final LockBloc _lock = LockBloc(
+    widget.lock,
+    widget.preferences,
+    () => _reason,
+  )..add(const LockOpened());
+
+  /// What the phone's own prompt will be told to say. Read here rather than in
+  /// `build` because this is the callback the Language change arrives on, and
+  /// it runs before the first frame — so the bloc, which is not built until
+  /// then, can never read this unset.
+  late String _reason;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reason = AppLocalizations.of(context).lockReason;
   }
 
   @override
