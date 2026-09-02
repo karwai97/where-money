@@ -187,5 +187,48 @@
   "rollupMoreThan": "比{month}多 {percent}%。",
   "rollupLessThan": "比{month}少 {percent}%。",
   "rollupLeftOutThisMonth": "{count, plural, other{这个月有 {count} 笔以 {currencies} 支付的支出，没有计入这些总额。}}",
-  "rollupLeftOutTheseMonths": "{count, plural, other{这几个月有 {count} 笔以 {currencies} 支付的支出，没有计入这些总额。}}"
+  "rollupLeftOutTheseMonths": "{count, plural, other{这几个月有 {count} 笔以 {currencies} 支付的支出，没有计入这些总额。}}",
+
+  "inboxTitle": "待处理",
+  "inboxEmpty": "没有等着处理的收据。",
+  "inboxPhotographed": "拍摄于 {moment}",
+
+  "inboxWaitingToBeRead": "等着读取",
+  "inboxBeingRead": "正在读取",
+  "inboxReadyToReview": "可以复核了",
+  "inboxNotAReceipt": "这看起来不像收据",
+  "inboxCommitted": "已经在你的账本里",
+
+  "inboxCapped": "今天的扫描次数用完了",
+  "inboxMoreScansAt": "{moment} 之后可以再扫描。",
+  "inboxMoreScansTomorrow": "明天可以再扫描。",
+
+  "inboxFailureRefused": "模型不肯读这张照片",
+  "inboxFailureRefusedNext": "重新拍得清楚一些，多半就能读出来。",
+  "inboxFailureSaidNothing": "模型什么都没有答",
+  "inboxFailureSaidNothingNext": "再读一次通常就好了。",
+  "inboxFailureNotLegible": "模型的回答读不通",
+  "inboxFailureNotLegibleNext": "再读一次通常就好了。",
+  "inboxFailureOutOfReach": "读这张的时候没有网络",
+  "inboxFailureOutOfReachNext": "它会自己继续试。",
+  "inboxFailureModelUnavailable": "模型当时用不了",
+  "inboxFailureModelUnavailableNext": "这种情况通常一会儿就过去。过一分钟再读一次。",
+  "inboxFailureTokenRefused": "你的登录没有被接受",
+  "inboxFailureTokenRefusedNext": "重新登录，然后再读一次。",
+  "inboxFailureImageNotAccepted": "这张照片没能发出去",
+  "inboxFailureImageNotAcceptedNext": "把收据重新拍一次。",
+  "inboxFailureUnsaid": "这张读不出来",
+
+  "inboxReview": "复核",
+  "inboxReadAgain": "再读一次",
+  "inboxDiscard": "丢弃",
+  "inboxAbandon": "放弃",
+  "inboxAbandonThisScan": "放弃这次扫描",
+  "inboxKeep": "留着",
+  "inboxDiscardingDeletesThePhoto": "丢弃这张照片会把它从手机里删掉。",
+  "inboxAbandoningDeletesThePhoto": "放弃这次扫描会把它的照片从手机里删掉。",
+
+  "receiptZoom": "放大收据",
+  "receiptTitle": "这张收据",
+  "receiptBackToTheFields": "返回各项字段"
 }

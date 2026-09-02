@@ -457,5 +457,74 @@
       "count": { "type": "int" },
       "currencies": { "type": "String" }
     }
-  }
+  },
+
+  "inboxTitle": "Inbox",
+  "@inboxTitle": {
+    "description": "The Inbox screen names itself. The Ledger's button that opens it keeps its own key, because that one has a second form carrying the count."
+  },
+  "inboxEmpty": "No receipts waiting.",
+  "inboxPhotographed": "Photographed {moment}",
+  "@inboxPhotographed": {
+    "description": "When the photo was taken. The moment arrives already formatted for the locale — dates are not in these files.",
+    "placeholders": {
+      "moment": { "type": "String" }
+    }
+  },
+
+  "inboxWaitingToBeRead": "Waiting to be read",
+  "inboxBeingRead": "Being read",
+  "inboxReadyToReview": "Ready to Review",
+  "inboxNotAReceipt": "This does not look like a receipt",
+  "inboxCommitted": "In your Ledger",
+
+  "inboxCapped": "Today's Scans are used up",
+  "@inboxCapped": {
+    "description": "The daily allowance, which is a state of its own rather than a failure."
+  },
+  "inboxMoreScansAt": "More Scans at {moment}.",
+  "@inboxMoreScansAt": {
+    "placeholders": {
+      "moment": { "type": "String" }
+    }
+  },
+  "inboxMoreScansTomorrow": "More Scans tomorrow.",
+
+  "inboxFailureRefused": "The Model would not read this photo",
+  "@inboxFailureRefused": {
+    "description": "Every way a Scan can fail gets its own sentence and its own next step. The next step is a separate key rather than a placeholder because two failures fixed the same way in English need not be fixed the same way in another language."
+  },
+  "inboxFailureRefusedNext": "A clearer photograph is the likeliest fix.",
+  "inboxFailureSaidNothing": "The Model answered with nothing at all",
+  "inboxFailureSaidNothingNext": "Reading it again usually works.",
+  "inboxFailureNotLegible": "The Model's answer was not readable",
+  "inboxFailureNotLegibleNext": "Reading it again usually works.",
+  "inboxFailureOutOfReach": "No connection when this was read",
+  "inboxFailureOutOfReachNext": "It will keep trying on its own.",
+  "inboxFailureModelUnavailable": "The Model was not available",
+  "inboxFailureModelUnavailableNext": "This usually passes. Read it again in a minute.",
+  "inboxFailureTokenRefused": "Your sign-in was not accepted",
+  "inboxFailureTokenRefusedNext": "Sign in again, then read it again.",
+  "inboxFailureImageNotAccepted": "This photo could not be sent",
+  "inboxFailureImageNotAcceptedNext": "Photograph the receipt again.",
+  "inboxFailureUnsaid": "This could not be read",
+  "@inboxFailureUnsaid": {
+    "description": "A Scan written by a version of the app that could not yet say why it failed."
+  },
+
+  "inboxReview": "Review",
+  "inboxReadAgain": "Read again",
+  "inboxDiscard": "Discard",
+  "inboxAbandon": "Abandon",
+  "inboxAbandonThisScan": "Abandon this Scan",
+  "inboxKeep": "Keep",
+  "inboxDiscardingDeletesThePhoto": "Discarding this photo deletes it from the phone.",
+  "inboxAbandoningDeletesThePhoto": "Abandoning this Scan deletes its photo from the phone.",
+
+  "receiptZoom": "Zoom into the receipt",
+  "@receiptZoom": {
+    "description": "The receipt up close is its own screen, reached from a thumbnail on the Review form and on an opened Expense, so these three are prefixed by that screen rather than by either of the two that open it."
+  },
+  "receiptTitle": "The receipt",
+  "receiptBackToTheFields": "Back to the fields"
 }

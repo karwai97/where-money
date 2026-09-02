@@ -7,6 +7,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
+
 class ReceiptOnScreen extends StatelessWidget {
   const ReceiptOnScreen(this.bytes, {super.key});
 
@@ -14,7 +16,7 @@ class ReceiptOnScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Tooltip(
-    message: 'Zoom into the receipt',
+    message: AppLocalizations.of(context).receiptZoom,
     child: InkWell(
       onTap: () => Navigator.of(
         context,
@@ -35,19 +37,23 @@ class _UpClose extends StatelessWidget {
   final Uint8List bytes;
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('The receipt'),
-      leading: IconButton(
-        tooltip: 'Back to the fields',
-        icon: const Icon(Icons.arrow_back),
-        onPressed: Navigator.of(context).pop,
+  Widget build(BuildContext context) {
+    final words = AppLocalizations.of(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(words.receiptTitle),
+        leading: IconButton(
+          tooltip: words.receiptBackToTheFields,
+          icon: const Icon(Icons.arrow_back),
+          onPressed: Navigator.of(context).pop,
+        ),
       ),
-    ),
-    backgroundColor: Colors.black,
-    body: InteractiveViewer(
-      maxScale: 8,
-      child: Center(child: Image.memory(bytes, fit: BoxFit.contain)),
-    ),
-  );
+      backgroundColor: Colors.black,
+      body: InteractiveViewer(
+        maxScale: 8,
+        child: Center(child: Image.memory(bytes, fit: BoxFit.contain)),
+      ),
+    );
+  }
 }
