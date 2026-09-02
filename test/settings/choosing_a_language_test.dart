@@ -9,9 +9,9 @@ import '../fakes/fake_sign_in_gateway.dart';
 import '../fakes/in_memory_device_preferences.dart';
 import '../fakes/in_memory_ledger_store.dart';
 
-/// The Settings screen in both languages. Only this screen has moved over yet;
-/// everything above it is still English, and that is what the expand half of
-/// the migration is supposed to look like.
+/// The Settings screen in both languages. What the Ledger behind it reads as
+/// is the_ledger_speaks_chinese_test.dart's; this file is about the Setting
+/// itself, so the way in is the icon rather than its tooltip.
 void main() {
   late InMemoryDevicePreferences preferences;
 
@@ -33,7 +33,7 @@ void main() {
 
   Future<void> openSettings(WidgetTester tester) async {
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Settings'));
+    await tester.tap(find.byIcon(Icons.settings));
     await tester.pumpAndSettle();
   }
 
@@ -178,17 +178,5 @@ void main() {
       Theme.of(tester.element(find.byType(Scaffold).first)).brightness,
       Brightness.dark,
     );
-  });
-
-  testWidgets('a screen that has not moved yet still renders its English', (
-    tester,
-  ) async {
-    await tester.pumpWidget(app(language: 'zh'));
-    await tester.pumpAndSettle();
-
-    // The Ledger is tickets 06 onwards. Under a Chinese Settings it is still
-    // English, and still there — which is what makes this migration one screen
-    // at a time.
-    expect(find.byTooltip('Settings'), findsOne);
   });
 }

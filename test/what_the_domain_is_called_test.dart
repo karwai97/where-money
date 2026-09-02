@@ -1,3 +1,5 @@
+import 'package:flutter/widgets.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:where_money/l10n/app_localizations.dart';
 import 'package:where_money/l10n/app_localizations_en.dart';
@@ -14,6 +16,15 @@ import 'package:where_money_core/where_money_core.dart';
 /// Every set is checked in both languages. A slug can only be missing from one
 /// of them, and the fallback that keeps it readable is also what hides it.
 void main() {
+  // Dates and month names are the one set of words this app does not write:
+  // they come out of the CLDR data `flutter_localizations` loads per locale,
+  // which a MaterialApp does for itself and a unit test has to ask for.
+  setUpAll(() async {
+    for (final locale in const [Locale('en'), Locale('zh')]) {
+      await GlobalMaterialLocalizations.delegate.load(locale);
+    }
+  });
+
   final languages = <String, AppLocalizations>{
     'English': AppLocalizationsEn(),
     '中文': AppLocalizationsZh(),
@@ -50,7 +61,7 @@ void main() {
     expect(reviewFieldLabel(words, 'vatNumber'), 'vatNumber');
   });
 
-  test('a month is named from the year and month the Rollup exposes', () {
+  test('a month is named the way the language names months', () {
     final august = Rollup.forMonth(
       const [],
       year: 2026,
@@ -58,9 +69,13 @@ void main() {
       homeCurrency: 'MYR',
     );
 
-    expect(august.monthLabel, 'August 2026');
-    expect(august.shortMonthLabel, 'Aug');
-    expect(august.previousMonthLabel, 'July 2026');
+    expect(august.monthLabel(AppLocalizationsEn()), 'August 2026');
+    expect(august.shortMonthLabel(AppLocalizationsEn()), 'Aug');
+    expect(august.previousMonthLabel(AppLocalizationsEn()), 'July 2026');
+
+    expect(august.monthLabel(AppLocalizationsZh()), '2026年8月');
+    expect(august.shortMonthLabel(AppLocalizationsZh()), '8月');
+    expect(august.previousMonthLabel(AppLocalizationsZh()), '2026年7月');
 
     final january = Rollup.forMonth(
       const [],
@@ -69,6 +84,34 @@ void main() {
       homeCurrency: 'MYR',
     );
 
-    expect(january.previousMonthLabel, 'December 2025');
+    expect(january.previousMonthLabel(AppLocalizationsEn()), 'December 2025');
+    expect(january.previousMonthLabel(AppLocalizationsZh()), '2025年12月');
+  });
+
+  test('a day is written the way the language writes dates', () {
+    final at = DateTime(2026, 8, 27);
+
+    expect(asDay(AppLocalizationsEn(), at), 'Aug 27, 2026');
+    expect(asDay(AppLocalizationsZh(), at), '2026年8月27日');
+  });
+
+  test('a moment carries the time as well, in the same house style', () {
+    final at = DateTime(2026, 8, 27, 14, 5);
+
+    expect(asMoment(AppLocalizationsEn(), at), startsWith('Aug 27, 2026'));
+    expect(asMoment(AppLocalizationsZh(), at), startsWith('2026年8月27日'));
+    // English reads the clock in halves of a day and Chinese reads it whole.
+    expect(asMoment(AppLocalizationsEn(), at), contains('2:05'));
+    expect(asMoment(AppLocalizationsZh(), at), contains('14:05'));
+  });
+
+  test('a day and a Category read as one line in either language', () {
+    final at = DateTime(2026, 8, 27);
+
+    expect(
+      dayAndCategory(AppLocalizationsEn(), at, 'home'),
+      'Aug 27, 2026 · Home',
+    );
+    expect(dayAndCategory(AppLocalizationsZh(), at, 'home'), '2026年8月27日 · 居家');
   });
 }

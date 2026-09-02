@@ -31,6 +31,8 @@ class ExpenseScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final words = AppLocalizations.of(context);
+
     return BlocBuilder<LedgerBloc, LedgerState>(
       builder: (context, state) {
         final expense = switch (state) {
@@ -42,10 +44,10 @@ class ExpenseScreen extends StatelessWidget {
         if (expense == null) {
           return Scaffold(
             appBar: AppBar(),
-            body: const Center(
+            body: Center(
               child: Padding(
-                padding: EdgeInsets.all(32),
-                child: Text('That Expense is no longer in your Ledger.'),
+                padding: const EdgeInsets.all(32),
+                child: Text(words.expenseGone),
               ),
             ),
           );
@@ -56,12 +58,12 @@ class ExpenseScreen extends StatelessWidget {
             title: Text(expense.merchant),
             actions: [
               IconButton(
-                tooltip: 'Correct this Expense',
+                tooltip: words.expenseCorrect,
                 icon: const Icon(Icons.edit),
                 onPressed: () => _correct(context, expense),
               ),
               IconButton(
-                tooltip: 'Delete this Expense',
+                tooltip: words.expenseDelete,
                 icon: const Icon(Icons.delete_outline),
                 onPressed: () => _delete(context, expense),
               ),
@@ -93,29 +95,31 @@ class ExpenseScreen extends StatelessWidget {
   }
 
   Future<void> _delete(BuildContext context, Expense expense) async {
+    final words = AppLocalizations.of(context);
     final ledger = context.read<LedgerBloc>();
     final navigator = Navigator.of(context);
+    final amount = asMoney(expense.currency, expense.total);
 
     final agreed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete this Expense?'),
+        title: Text(words.expenseDeleteTitle),
         content: Text(
-          '${expense.merchant}, ${asMoney(expense.currency, expense.total)}, '
-          'will go from your Ledger and out of your totals.'
-          // Only worth saying where there is a photo to keep. An Expense typed
-          // by hand never had one, and promising to keep it is a promise about
-          // nothing.
-          '${expense.receiptPath == null ? '' : ' The receipt photo stays on this phone.'}',
+          // The photo is only worth mentioning where there is one to keep. An
+          // Expense typed by hand never had one, and promising to keep it is a
+          // promise about nothing.
+          expense.receiptPath == null
+              ? words.expenseDeleteBody(expense.merchant, amount)
+              : words.expenseDeleteBodyKeepsReceipt(expense.merchant, amount),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Keep it'),
+            child: Text(words.expenseDeleteKeep),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete'),
+            child: Text(words.expenseDeleteConfirm),
           ),
         ],
       ),
@@ -146,16 +150,14 @@ class _Headline extends StatelessWidget {
           style: text.headlineMedium,
         ),
         const SizedBox(height: 4),
-        Text(
-          '${asDay(expense.date)} · ${categoryLabel(words, expense.category)}',
-        ),
+        Text(dayAndCategory(words, expense.date, expense.category)),
         const SizedBox(height: 8),
         Row(
           children: [
             HowItGotHere(expense.source, size: 20),
             const SizedBox(width: 8),
             Text(
-              scanned ? 'Read from a photographed receipt' : 'Typed in by hand',
+              scanned ? words.expenseFromReceipt : words.expenseTypedByHand,
               style: text.bodySmall,
             ),
           ],
@@ -165,8 +167,7 @@ class _Headline extends StatelessWidget {
         if (expense.currency != homeCurrency) ...[
           const SizedBox(height: 8),
           Text(
-            'Paid in ${expense.currency}, so it is not in your monthly '
-            'totals.',
+            words.expenseForeignCurrency(expense.currency),
             style: text.bodySmall,
           ),
         ],
@@ -188,7 +189,7 @@ class _LineItems extends StatelessWidget {
 
     if (expense.lineItems.isEmpty) {
       return Text(
-        'No Line Items — just the total.',
+        words.expenseNoLineItems,
         style: Theme.of(context).textTheme.bodySmall,
       );
     }
@@ -196,7 +197,12 @@ class _LineItems extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Line Items', style: Theme.of(context).textTheme.titleMedium),
+        // The same words Review's own Line Items section uses: one field of an
+        // Extraction, named once.
+        Text(
+          words.fieldLineItems,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         for (final item in expense.lineItems)
           ListTile(
             contentPadding: EdgeInsets.zero,
@@ -214,9 +220,17 @@ class _LineItems extends StatelessWidget {
     final quantity = item.quantity;
     final unitPrice = item.unitPrice;
     if (quantity == null || unitPrice == null) return null;
-    return '${categoryLabel(words, item.category)} · $quantity × '
-        '${unitPrice.toStringAsFixed(2)}';
+    return words.expenseLineItemCount(
+      categoryLabel(words, item.category),
+      _quantity(quantity),
+      unitPrice.toStringAsFixed(2),
+    );
   }
+
+  /// Two of something is `2`, not `2.0`. A weighed item really is fractional,
+  /// so the decimals only go where the receipt had them.
+  static String _quantity(double of) =>
+      of == of.roundToDouble() ? '${of.toInt()}' : '$of';
 }
 
 /// The receipt, read once. An Expense restored onto a new phone has a path and
@@ -261,9 +275,7 @@ class _ReceiptState extends State<_Receipt> {
         // Never here, or unreadable: either way it is not on this phone, and
         // which of the two it is is not something the user can act on.
         _ => Text(
-          'The receipt photo is not on this device. Photos stay on the phone '
-          'that took them, so a Ledger restored elsewhere arrives without '
-          'them.',
+          AppLocalizations.of(context).expenseReceiptNotOnThisDevice,
           style: Theme.of(context).textTheme.bodySmall,
         ),
       },

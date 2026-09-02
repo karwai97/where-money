@@ -36,10 +36,14 @@ class CategoryBreakdown extends StatelessWidget {
       children: [
         for (final category in rollup.byCategory)
           Semantics(
-            label:
-                '${category.labelIn(words)}, '
-                '${asMoney(rollup.homeCurrency, category.amount)}, '
-                '${asExpenses(category.count)}',
+            label: words.chartsCategoryTotal(
+              category.labelIn(words),
+              asMoney(rollup.homeCurrency, category.amount),
+              category.count,
+            ),
+            // Its own node, or the rows merge and a screen reader reads the
+            // whole column as one utterance with no way to step through it.
+            container: true,
             excludeSemantics: true,
             child: Padding(
               padding: const EdgeInsets.only(bottom: 16),
@@ -150,6 +154,7 @@ class _Columns extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final words = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final tallest = months.map((r) => r.total).reduce((a, b) => a > b ? a : b);
 
@@ -159,9 +164,11 @@ class _Columns extends StatelessWidget {
         for (final month in months)
           Expanded(
             child: Semantics(
-              label:
-                  '${month.monthLabel}, '
-                  '${asMoney(month.homeCurrency, month.total)}',
+              label: words.chartsMonthTotal(
+                month.monthLabel(words),
+                asMoney(month.homeCurrency, month.total),
+              ),
+              container: true,
               excludeSemantics: true,
               child: Column(
                 children: [
@@ -191,7 +198,7 @@ class _Columns extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    month.shortMonthLabel,
+                    month.shortMonthLabel(words),
                     style: theme.textTheme.labelSmall,
                   ),
                 ],

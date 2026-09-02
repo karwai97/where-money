@@ -7,21 +7,34 @@
 /// the slug is the same everywhere. See ADR-0007.
 library;
 
+import 'package:intl/intl.dart';
 import 'package:where_money_core/where_money_core.dart';
 
 import 'l10n/app_localizations.dart';
 
-String asDay(DateTime at) => '${at.year}-${_two(at.month)}-${_two(at.day)}';
+/// Dates are the one set of words this app does not write. The names of the
+/// months and the order the parts go in come out of the CLDR data
+/// `flutter_localizations` loads for the locale on the `MaterialApp`, which is
+/// why every one of these takes the words rather than a language code.
+String asDay(AppLocalizations words, DateTime at) =>
+    DateFormat.yMMMd(words.localeName).format(at);
 
-String asMoment(DateTime at) =>
-    '${asDay(at)} ${_two(at.hour)}:${_two(at.minute)}';
+String asMoment(AppLocalizations words, DateTime at) =>
+    DateFormat.yMMMd(words.localeName).add_jm().format(at);
 
-String _two(int value) => value.toString().padLeft(2, '0');
-
+/// Money is deliberately not locale-formatted. A locale renders whichever
+/// currency symbol it is used to whatever the amount is actually in, and the
+/// Home Currency rule (ADR-0006) depends on a foreign-currency Expense looking
+/// foreign. So an amount keeps its explicit ISO code in every language.
 String asMoney(String currency, double amount) =>
     '$currency ${amount.toStringAsFixed(2)}';
 
-String asExpenses(int count) => count == 1 ? '1 Expense' : '$count Expenses';
+/// When an Expense happened and what it was for, on one line. The Ledger and
+/// an opened Expense both print it, and the separator is punctuation rather
+/// than a word, so it is one definition here instead of the same message
+/// copied under two screen prefixes.
+String dayAndCategory(AppLocalizations words, DateTime at, String category) =>
+    '${asDay(words, at)} · ${categoryLabel(words, category)}';
 
 /// A slug this app has no words for reads as itself rather than disappearing.
 /// `what_the_domain_is_called_test.dart` is what stops that fallback from
@@ -93,26 +106,16 @@ extension CategoryTotalLabel on CategoryTotal {
 
 /// The Rollup carries a year and a month; naming the month is the screen's job.
 extension RollupLabels on Rollup {
-  String get monthLabel => '${_monthNames[month - 1]} $year';
+  String monthLabel(AppLocalizations words) =>
+      DateFormat.yMMMM(words.localeName).format(DateTime(year, month));
 
-  /// Short enough for an axis on a phone.
-  String get shortMonthLabel => _monthNames[month - 1].substring(0, 3);
+  /// Short enough for an axis on a phone. Not the first three letters of the
+  /// long name: that is an English coincidence, and in Chinese it cuts a
+  /// character off the middle of `8月`.
+  String shortMonthLabel(AppLocalizations words) =>
+      DateFormat.MMM(words.localeName).format(DateTime(year, month));
 
-  String get previousMonthLabel =>
-      '${_monthNames[previousMonth - 1]} $previousYear';
+  String previousMonthLabel(AppLocalizations words) => DateFormat.yMMMM(
+    words.localeName,
+  ).format(DateTime(previousYear, previousMonth));
 }
-
-const _monthNames = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];

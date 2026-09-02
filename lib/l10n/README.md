@@ -45,6 +45,16 @@ missing to `l10n-untranslated.json`, and that file should stay empty — a key
 that silently falls back to English is a screen that is half migrated and
 looks finished.
 
+## Dates are not in here
+
+The names of the months, and the order the parts of a date go in, come out of
+the CLDR data `flutter_localizations` loads for the locale on the `MaterialApp`.
+`asDay`, `asMoment` and the month labels in `on_screen.dart` are the only
+callers, and they read the locale off `AppLocalizations.localeName` so there is
+still one place a date's house style is decided. Nothing to add here when a
+screen starts printing one; a message that *contains* a date takes it as an
+already-formatted `String` placeholder.
+
 ## What does not get translated
 
 - **Money.** An amount keeps its explicit currency code. A locale would render

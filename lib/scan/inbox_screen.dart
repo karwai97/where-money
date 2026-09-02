@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import '../l10n/app_localizations.dart';
 import '../on_screen.dart';
 import '../review/review_bloc.dart';
 import '../review/review_screen.dart';
@@ -45,7 +46,8 @@ class _ScanTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (saying, next) = _saying(scan);
+    final words = AppLocalizations.of(context);
+    final (saying, next) = _saying(words, scan);
     return ListTile(
       isThreeLine: next != null,
       leading: const Icon(Icons.receipt_long),
@@ -53,7 +55,7 @@ class _ScanTile extends StatelessWidget {
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Photographed ${asMoment(scan.capturedAt)}'),
+          Text('Photographed ${asMoment(words, scan.capturedAt)}'),
           if (next != null) Text(next),
         ],
       ),
@@ -137,49 +139,52 @@ class _ScanTile extends StatelessWidget {
 /// every way a Scan can fail means something different to the user and wants
 /// something different done about it — so they are read off one switch rather
 /// than two that could drift apart.
-(String, String?) _saying(Scan scan) => switch (scan.state) {
-  ScanState.captured => ('Waiting to be read', null),
-  ScanState.extracting => ('Being read', null),
-  ScanState.extracted => ('Ready to Review', null),
-  ScanState.notReceipt => ('This does not look like a receipt', null),
-  ScanState.committed => ('In your Ledger', null),
-  ScanState.capped => (
-    "Today's Scans are used up",
-    switch (scan.allowanceResetsAt) {
-      final resetsAt? => 'More Scans at ${asMoment(resetsAt)}.',
-      null => 'More Scans tomorrow.',
-    },
-  ),
-  ScanState.failed => switch (scan.failure) {
-    ScanFailure.refused => (
-      'The Model would not read this photo',
-      'A clearer photograph is the likeliest fix.',
-    ),
-    ScanFailure.saidNothing => (
-      'The Model answered with nothing at all',
-      'Reading it again usually works.',
-    ),
-    ScanFailure.notLegible => (
-      "The Model's answer was not readable",
-      'Reading it again usually works.',
-    ),
-    ScanFailure.outOfReach => (
-      'No connection when this was read',
-      'It will keep trying on its own.',
-    ),
-    ScanFailure.modelUnavailable => (
-      'The Model was not available',
-      'This usually passes. Read it again in a minute.',
-    ),
-    ScanFailure.tokenRefused => (
-      'Your sign-in was not accepted',
-      'Sign in again, then read it again.',
-    ),
-    ScanFailure.imageNotAccepted => (
-      'This photo could not be sent',
-      'Photograph the receipt again.',
-    ),
-    // A record written by a version of the app that could not yet say why.
-    null => ('This could not be read', null),
-  },
-};
+/// Still English, and ticket 07's. It takes the words only because the
+/// moment a Scan was photographed reads the way the language reads dates.
+(String, String?) _saying(AppLocalizations words, Scan scan) =>
+    switch (scan.state) {
+      ScanState.captured => ('Waiting to be read', null),
+      ScanState.extracting => ('Being read', null),
+      ScanState.extracted => ('Ready to Review', null),
+      ScanState.notReceipt => ('This does not look like a receipt', null),
+      ScanState.committed => ('In your Ledger', null),
+      ScanState.capped => (
+        "Today's Scans are used up",
+        switch (scan.allowanceResetsAt) {
+          final resetsAt? => 'More Scans at ${asMoment(words, resetsAt)}.',
+          null => 'More Scans tomorrow.',
+        },
+      ),
+      ScanState.failed => switch (scan.failure) {
+        ScanFailure.refused => (
+          'The Model would not read this photo',
+          'A clearer photograph is the likeliest fix.',
+        ),
+        ScanFailure.saidNothing => (
+          'The Model answered with nothing at all',
+          'Reading it again usually works.',
+        ),
+        ScanFailure.notLegible => (
+          "The Model's answer was not readable",
+          'Reading it again usually works.',
+        ),
+        ScanFailure.outOfReach => (
+          'No connection when this was read',
+          'It will keep trying on its own.',
+        ),
+        ScanFailure.modelUnavailable => (
+          'The Model was not available',
+          'This usually passes. Read it again in a minute.',
+        ),
+        ScanFailure.tokenRefused => (
+          'Your sign-in was not accepted',
+          'Sign in again, then read it again.',
+        ),
+        ScanFailure.imageNotAccepted => (
+          'This photo could not be sent',
+          'Photograph the receipt again.',
+        ),
+        // A record written by a version of the app that could not yet say why.
+        null => ('This could not be read', null),
+      },
+    };

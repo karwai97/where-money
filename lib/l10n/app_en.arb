@@ -303,5 +303,159 @@
   "reviewFindingReasonSeparator": "; ",
   "@reviewFindingReasonSeparator": {
     "description": "What goes between the Model’s reasons when it gave more than one. The reasons are the Model’s own words and cannot be a whole message here; a list of unknown length has no sentence form, so the punctuation between them is the one thing this file can get right. Chinese uses its own full-width semicolon."
+  },
+  "ledgerTitle": "Ledger",
+  "@ledgerTitle": {
+    "description": "The Ledger: the screen the app opens on, and the one a user spends the most time reading."
+  },
+  "ledgerAddByHand": "Add an Expense by hand",
+  "ledgerPhotograph": "Photograph a receipt",
+  "ledgerTakeAPhoto": "Take a photo",
+  "ledgerChooseFromGallery": "Choose from gallery",
+  "ledgerCharts": "Charts",
+  "ledgerInbox": "Inbox",
+  "ledgerInboxWaiting": "{count, plural, =1{Inbox, 1 waiting} other{Inbox, {count} waiting}}",
+  "@ledgerInboxWaiting": {
+    "description": "The Inbox button when Scans are queued. Read aloud rather than seen — the count itself is on the badge.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "ledgerPreviousMonth": "Previous month",
+  "ledgerNextMonth": "Next month",
+  "ledgerUnreadable": "Your Ledger could not be read.",
+  "ledgerEmpty": "Nothing here yet.\nAdd one with the button below.",
+  "ledgerNothingInMonth": "Nothing in {month}.",
+  "@ledgerNothingInMonth": {
+    "description": "The month arrives already named in the locale's own calendar words, so it is a String here rather than a date to format.",
+    "placeholders": {
+      "month": { "type": "String" }
+    }
+  },
+
+  "expenseGone": "That Expense is no longer in your Ledger.",
+  "@expenseGone": {
+    "description": "One Expense, opened. Money keeps its explicit currency code in every language, and a merchant's name and a line item's description are printed as the paper had them."
+  },
+  "expenseCorrect": "Correct this Expense",
+  "expenseDelete": "Delete this Expense",
+  "expenseDeleteTitle": "Delete this Expense?",
+  "expenseDeleteBody": "{merchant}, {amount}, will go from your Ledger and out of your totals.",
+  "@expenseDeleteBody": {
+    "placeholders": {
+      "merchant": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+  "expenseDeleteBodyKeepsReceipt": "{merchant}, {amount}, will go from your Ledger and out of your totals. The receipt photo stays on this phone.",
+  "@expenseDeleteBodyKeepsReceipt": {
+    "description": "The whole sentence twice rather than one sentence with a clause appended, because a clause glued onto the end of a sentence lands somewhere else in another language. Only said where there is a photo to keep: an Expense typed by hand never had one.",
+    "placeholders": {
+      "merchant": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+  "expenseDeleteKeep": "Keep it",
+  "expenseDeleteConfirm": "Delete",
+  "expenseFromReceipt": "Read from a photographed receipt",
+  "expenseTypedByHand": "Typed in by hand",
+  "expenseForeignCurrency": "Paid in {currency}, so it is not in your monthly totals.",
+  "@expenseForeignCurrency": {
+    "description": "ADR-0006: the Rollup counts one currency and says how many it left out. This is where the user finds out which one theirs was. The code itself is never translated.",
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "expenseNoLineItems": "No Line Items — just the total.",
+  "expenseLineItemCount": "{category} · {quantity} × {unitPrice}",
+  "@expenseLineItemCount": {
+    "description": "How many of a Line Item, and what each one cost. The unit price is already formatted to two decimal places.",
+    "placeholders": {
+      "category": { "type": "String" },
+      "quantity": { "type": "String" },
+      "unitPrice": { "type": "String" }
+    }
+  },
+  "expenseReceiptNotOnThisDevice": "The receipt photo is not on this device. Photos stay on the phone that took them, so a Ledger restored elsewhere arrives without them.",
+
+  "chartsCategoryTotal": "{count, plural, =1{{category}, {amount}, 1 Expense} other{{category}, {amount}, {count} Expenses}}",
+  "@chartsCategoryTotal": {
+    "description": "One row of the breakdown, for a screen reader. One whole message rather than three fragments: the count pluralises by the language's own rule, and the amount does not go in the same place in every language.",
+    "placeholders": {
+      "category": { "type": "String" },
+      "amount": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "chartsMonthTotal": "{month}, {amount}",
+  "@chartsMonthTotal": {
+    "description": "One bar of the trend, for a screen reader. The numbers are read out because nothing on either chart is said in colour alone.",
+    "placeholders": {
+      "month": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+
+  "rollupByCategory": "By category",
+  "@rollupByCategory": {
+    "description": "The Rollup screen: a month as two charts and a few sentences about it."
+  },
+  "rollupMonthByMonth": "Month by month",
+  "rollupNothingSpent": "Nothing spent in {month}.",
+  "@rollupNothingSpent": {
+    "placeholders": {
+      "month": { "type": "String" }
+    }
+  },
+  "rollupRecapHeading": "Where your money went",
+  "rollupRecapPending": "Reading the month.",
+  "rollupRecapTooFew": "{needed, plural, =1{A month needs 1 Expense before there is anything worth writing up. The charts work either way.} other{A month needs {needed} Expenses before there is anything worth writing up. The charts work either way.}}",
+  "@rollupRecapTooFew": {
+    "placeholders": {
+      "needed": { "type": "int" }
+    }
+  },
+  "rollupRecapAskAgain": "Ask again",
+  "rollupNothingToCompare": "Nothing was spent in {month} to compare against.",
+  "@rollupNothingToCompare": {
+    "description": "How this month compares to the one before it. Three separate messages rather than one with a translated \"more\" or \"less\" dropped into the middle of it.",
+    "placeholders": {
+      "month": { "type": "String" }
+    }
+  },
+  "rollupAboutTheSame": "About the same as {month}.",
+  "@rollupAboutTheSame": {
+    "placeholders": {
+      "month": { "type": "String" }
+    }
+  },
+  "rollupMoreThan": "{percent}% more than {month}.",
+  "@rollupMoreThan": {
+    "placeholders": {
+      "percent": { "type": "int" },
+      "month": { "type": "String" }
+    }
+  },
+  "rollupLessThan": "{percent}% less than {month}.",
+  "@rollupLessThan": {
+    "placeholders": {
+      "percent": { "type": "int" },
+      "month": { "type": "String" }
+    }
+  },
+  "rollupLeftOutThisMonth": "{count, plural, =1{1 Expense in {currencies}, spent this month, is not in these totals.} other{{count} Expenses in {currencies}, spent this month, are not in these totals.}}",
+  "@rollupLeftOutThisMonth": {
+    "description": "ADR-0006 again, said under the charts. Two messages rather than one with \"this month\" or \"these months\" as a placeholder, and the plural carries the verb English insists on agreeing.",
+    "placeholders": {
+      "count": { "type": "int" },
+      "currencies": { "type": "String" }
+    }
+  },
+  "rollupLeftOutTheseMonths": "{count, plural, =1{1 Expense in {currencies}, spent these months, is not in these totals.} other{{count} Expenses in {currencies}, spent these months, are not in these totals.}}",
+  "@rollupLeftOutTheseMonths": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "currencies": { "type": "String" }
+    }
   }
 }

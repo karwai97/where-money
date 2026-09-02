@@ -122,7 +122,12 @@ void main() {
 
     await photographInto(tester, 'Today\'s Scans are used up');
 
-    expect(find.text('More Scans at 2026-08-26 16:30.'), findsOneWidget);
+    // The gap before the meridiem is a narrow no-break space, which is what
+    // CLDR puts there and not something this app chose.
+    expect(
+      find.text('More Scans at Aug 26, 2026 4:30\u202fPM.'),
+      findsOneWidget,
+    );
     await shut(tester);
   });
 

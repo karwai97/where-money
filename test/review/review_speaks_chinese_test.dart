@@ -9,9 +9,8 @@ import '../fakes/in_memory_device_preferences.dart';
 import '../fakes/in_memory_ledger_store.dart';
 
 /// The Review screen read in Chinese, on a real widget tree rather than
-/// through [sayingFor]. The Ledger behind it is still English — that is ticket
-/// 06 — so the way in is still an English tooltip, which is what a migration
-/// one screen at a time looks like from a test.
+/// through [sayingFor]. The Ledger it is reached from speaks Chinese too since
+/// ticket 06, so the way in is a Chinese tooltip.
 void main() {
   late InMemoryLedgerStore store;
   final model = FakeModelGateway();
@@ -45,7 +44,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Add an Expense by hand'));
+    await tester.tap(find.byTooltip('手动添加一笔支出'));
     await tester.pumpAndSettle();
   }
 

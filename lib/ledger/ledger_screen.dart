@@ -41,6 +41,8 @@ class LedgerScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final words = AppLocalizations.of(context);
+
     return MultiBlocProvider(
       providers: [
         // The Receipt is a file on this phone rather than anything the
@@ -72,7 +74,7 @@ class LedgerScreen extends StatelessWidget {
       child: _SaysThePhotosStayedBehind(
         child: Scaffold(
           appBar: AppBar(
-            title: const Text('Ledger'),
+            title: Text(words.ledgerTitle),
             actions: [
               Builder(builder: _chartsAction),
               Builder(builder: _inboxAction),
@@ -86,14 +88,14 @@ class LedgerScreen extends StatelessWidget {
               children: [
                 FloatingActionButton.small(
                   heroTag: 'manual',
-                  tooltip: 'Add an Expense by hand',
+                  tooltip: words.ledgerAddByHand,
                   onPressed: () => _addByHand(context),
                   child: const Icon(Icons.add),
                 ),
                 const SizedBox(height: 12),
                 FloatingActionButton(
                   heroTag: 'photograph',
-                  tooltip: 'Photograph a receipt',
+                  tooltip: words.ledgerPhotograph,
                   onPressed: () => _photographAReceipt(context),
                   child: const Icon(Icons.photo_camera),
                 ),
@@ -106,7 +108,7 @@ class LedgerScreen extends StatelessWidget {
                 child: CircularProgressIndicator(),
               ),
               LedgerUnavailable(:final reason) => _Message(
-                'Your Ledger could not be read.',
+                words.ledgerUnreadable,
                 detail: reason,
               ),
               LedgerReady() => Column(
@@ -114,11 +116,11 @@ class LedgerScreen extends StatelessWidget {
                   _MonthBar(state),
                   Expanded(
                     child: switch (state) {
-                      LedgerReady(expenses: []) => const _Message(
-                        'Nothing here yet.\nAdd one with the button below.',
-                      ),
+                      LedgerReady(expenses: []) => _Message(words.ledgerEmpty),
                       LedgerReady(inMonth: []) => _Message(
-                        'Nothing in ${state.rollup.monthLabel}.',
+                        words.ledgerNothingInMonth(
+                          state.rollup.monthLabel(words),
+                        ),
                       ),
                       LedgerReady(:final inMonth) => _Expenses(inMonth),
                     },
@@ -138,7 +140,8 @@ class LedgerScreen extends StatelessWidget {
     final ledger = context.read<LedgerBloc>();
 
     return IconButton(
-      tooltip: 'Settings',
+      // The screen it opens names itself the same thing, so it is one message.
+      tooltip: AppLocalizations.of(context).settingsTitle,
       icon: const Icon(Icons.settings),
       onPressed: () => Navigator.of(context).push(
         MaterialPageRoute<void>(
@@ -166,7 +169,7 @@ class LedgerScreen extends StatelessWidget {
     final ledger = context.read<LedgerBloc>();
 
     return IconButton(
-      tooltip: 'Charts',
+      tooltip: AppLocalizations.of(context).ledgerCharts,
       icon: const Icon(Icons.bar_chart),
       onPressed: () => Navigator.of(context).push(
         MaterialPageRoute<void>(
@@ -180,11 +183,14 @@ class LedgerScreen extends StatelessWidget {
   /// The count belongs where the user already is, so Scans cannot quietly pile
   /// up in a screen nobody opens.
   Widget _inboxAction(BuildContext context) {
+    final words = AppLocalizations.of(context);
     final state = context.watch<InboxBloc>().state;
     final waiting = state is InboxReady ? state.scans.length : 0;
 
     return IconButton(
-      tooltip: waiting == 0 ? 'Inbox' : 'Inbox, $waiting waiting',
+      tooltip: waiting == 0
+          ? words.ledgerInbox
+          : words.ledgerInboxWaiting(waiting),
       icon: Badge(
         isLabelVisible: waiting > 0,
         label: Text('$waiting'),
@@ -208,6 +214,7 @@ class LedgerScreen extends StatelessWidget {
 
   Future<void> _photographAReceipt(BuildContext context) async {
     final inbox = context.read<InboxBloc>();
+    final words = AppLocalizations.of(context);
     final from = await showModalBottomSheet<PhotoSource>(
       context: context,
       builder: (context) => SafeArea(
@@ -216,12 +223,12 @@ class LedgerScreen extends StatelessWidget {
           children: [
             ListTile(
               leading: const Icon(Icons.photo_camera),
-              title: const Text('Take a photo'),
+              title: Text(words.ledgerTakeAPhoto),
               onTap: () => Navigator.of(context).pop(PhotoSource.camera),
             ),
             ListTile(
               leading: const Icon(Icons.photo_library),
-              title: const Text('Choose from gallery'),
+              title: Text(words.ledgerChooseFromGallery),
               onTap: () => Navigator.of(context).pop(PhotoSource.gallery),
             ),
           ],
@@ -245,6 +252,7 @@ class _MonthBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final words = AppLocalizations.of(context);
     final ledger = context.read<LedgerBloc>();
 
     return Padding(
@@ -252,19 +260,19 @@ class _MonthBar extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
-            tooltip: 'Previous month',
+            tooltip: words.ledgerPreviousMonth,
             icon: const Icon(Icons.chevron_left),
             onPressed: () => ledger.add(const MonthStepped(-1)),
           ),
           Expanded(
             child: Text(
-              state.rollup.monthLabel,
+              state.rollup.monthLabel(words),
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleMedium,
             ),
           ),
           IconButton(
-            tooltip: 'Next month',
+            tooltip: words.ledgerNextMonth,
             icon: const Icon(Icons.chevron_right),
             onPressed: state.hasLaterMonth
                 ? () => ledger.add(const MonthStepped(1))
@@ -303,9 +311,7 @@ class _ExpenseTile extends StatelessWidget {
       // rather than one Expense at a time.
       leading: HowItGotHere(expense.source),
       title: Text(expense.merchant),
-      subtitle: Text(
-        '${asDay(expense.date)} · ${categoryLabel(words, expense.category)}',
-      ),
+      subtitle: Text(dayAndCategory(words, expense.date, expense.category)),
       trailing: Text(
         asMoney(expense.currency, expense.total),
         style: Theme.of(context).textTheme.titleMedium,

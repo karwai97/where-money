@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import '../l10n/app_localizations.dart';
 import '../on_screen.dart';
 import 'charts.dart';
 import 'ledger_bloc.dart';
@@ -15,6 +16,8 @@ class RollupScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final words = AppLocalizations.of(context);
+
     return BlocBuilder<LedgerBloc, LedgerState>(
       builder: (context, state) {
         if (state is! LedgerReady) {
@@ -27,7 +30,7 @@ class RollupScreen extends StatelessWidget {
         final trend = state.trend;
 
         return Scaffold(
-          appBar: AppBar(title: Text(rollup.monthLabel)),
+          appBar: AppBar(title: Text(rollup.monthLabel(words))),
           body: ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
             children: [
@@ -36,18 +39,18 @@ class RollupScreen extends StatelessWidget {
               const SizedBox(height: 24),
               _TheRecap(state.recap),
               const SizedBox(height: 24),
-              const _Heading('By category'),
+              _Heading(words.rollupByCategory),
               if (rollup.hasSpending)
                 CategoryBreakdown(rollup)
               else
-                Text('Nothing spent in ${rollup.monthLabel}.'),
+                Text(words.rollupNothingSpent(rollup.monthLabel(words))),
               if (trend.any((month) => month.hasSpending)) ...[
                 const SizedBox(height: 32),
-                const _Heading('Month by month'),
+                _Heading(words.rollupMonthByMonth),
                 MonthTrend(trend),
                 // Every bar leaves out the same kind of spending the month
                 // above does, so every bar has to say so too.
-                _LeftOut(trend, across: 'these months'),
+                _LeftOut(trend, acrossTheTrend: true),
               ],
             ],
           ),
@@ -67,6 +70,7 @@ class _TheRecap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final words = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
     return Container(
@@ -79,7 +83,7 @@ class _TheRecap extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Where your money went', style: theme.textTheme.titleMedium),
+          Text(words.rollupRecapHeading, style: theme.textTheme.titleMedium),
           const SizedBox(height: 8),
           switch (recap) {
             RecapOnScreen(:final text) => Text(
@@ -94,14 +98,18 @@ class _TheRecap extends StatelessWidget {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
                 const SizedBox(width: 12),
-                Text('Reading the month.', style: theme.textTheme.bodyMedium),
+                Text(
+                  words.rollupRecapPending,
+                  style: theme.textTheme.bodyMedium,
+                ),
               ],
             ),
             RecapTooFewExpenses(:final needed) => Text(
-              'A month needs $needed Expenses before there is anything worth '
-              'writing up. The charts work either way.',
+              words.rollupRecapTooFew(needed),
               style: theme.textTheme.bodyMedium,
             ),
+            // [why] is still English in either language: the Recap and the
+            // reasons there is not one are ticket 10's.
             RecapUnavailable(:final why) => Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -111,7 +119,7 @@ class _TheRecap extends StatelessWidget {
                   child: TextButton(
                     onPressed: () =>
                         context.read<LedgerBloc>().add(const RecapAskedAgain()),
-                    child: const Text('Ask again'),
+                    child: Text(words.rollupRecapAskAgain),
                   ),
                 ),
               ],
@@ -140,23 +148,25 @@ class _Headline extends StatelessWidget {
           style: theme.textTheme.headlineMedium,
         ),
         const SizedBox(height: 4),
-        Text(_comparison, style: theme.textTheme.bodyMedium),
+        Text(
+          _comparison(AppLocalizations.of(context)),
+          style: theme.textTheme.bodyMedium,
+        ),
       ],
     );
   }
 
-  String get _comparison {
+  String _comparison(AppLocalizations words) {
+    final previous = rollup.previousMonthLabel(words);
     final change = rollup.percentChange;
-    if (change == null) {
-      return 'Nothing was spent in ${rollup.previousMonthLabel} to compare '
-          'against.';
-    }
-    if (change.abs() < 0.5) {
-      return 'About the same as ${rollup.previousMonthLabel}.';
-    }
-    final direction = change > 0 ? 'more' : 'less';
-    return '${change.abs().round()}% $direction than '
-        '${rollup.previousMonthLabel}.';
+
+    if (change == null) return words.rollupNothingToCompare(previous);
+    if (change.abs() < 0.5) return words.rollupAboutTheSame(previous);
+
+    final percent = change.abs().round();
+    return change > 0
+        ? words.rollupMoreThan(percent, previous)
+        : words.rollupLessThan(percent, previous);
   }
 }
 
@@ -164,16 +174,22 @@ class _Headline extends StatelessWidget {
 /// of the totals. Saying how many is what stops a total the user cannot
 /// reconcile from looking like the whole month.
 class _LeftOut extends StatelessWidget {
-  const _LeftOut(this.months, {this.across = 'this month'});
+  const _LeftOut(this.months, {this.acrossTheTrend = false});
 
   final List<Rollup> months;
-  final String across;
+
+  /// Whether this is speaking for the trend rather than the month on screen.
+  /// A flag rather than the words themselves: "this month" and "these months"
+  /// sit in different places in different languages, so each is a whole
+  /// message of its own.
+  final bool acrossTheTrend;
 
   @override
   Widget build(BuildContext context) {
     final count = months.fold<int>(0, (sum, m) => sum + m.excludedCount);
     if (count == 0) return const SizedBox.shrink();
 
+    final words = AppLocalizations.of(context);
     final currencies =
         (months.expand((m) => m.excludedCurrencies).toSet().toList()..sort())
             .join(', ');
@@ -181,8 +197,9 @@ class _LeftOut extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 12),
       child: Text(
-        '${asExpenses(count)} in $currencies, spent $across, '
-        '${count == 1 ? 'is' : 'are'} not in these totals.',
+        acrossTheTrend
+            ? words.rollupLeftOutTheseMonths(count, currencies)
+            : words.rollupLeftOutThisMonth(count, currencies),
         style: Theme.of(context).textTheme.bodySmall,
       ),
     );
