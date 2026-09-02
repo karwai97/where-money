@@ -33,7 +33,7 @@ void main() {
       ..devicePixelRatio = 1;
   }
 
-  Future<void> openLedger(WidgetTester tester) async {
+  Future<void> openLedger(WidgetTester tester, {DateTime? on}) async {
     useATallScreen(tester);
     await tester.pumpWidget(
       WhereMoneyApp(
@@ -44,13 +44,17 @@ void main() {
         storesFor: (_) => store.stores,
         model: model,
         photograph: (_) async => null,
+        // Pinned, and matching the date typed into Review below: an Expense
+        // committed from it has to land in the month the Ledger is showing,
+        // and the Check has to agree that the date has happened.
+        clock: () => on ?? DateTime(2026, 8, 22),
       ),
     );
     await tester.pumpAndSettle();
   }
 
-  Future<void> openReview(WidgetTester tester) async {
-    await openLedger(tester);
+  Future<void> openReview(WidgetTester tester, {DateTime? on}) async {
+    await openLedger(tester, on: on);
     await tester.tap(find.byTooltip('Add an Expense by hand'));
     await tester.pumpAndSettle();
   }
@@ -151,6 +155,27 @@ void main() {
     expect(find.text('Ledger'), findsOneWidget);
     expect(store.contents, hasLength(1));
     expect(find.text('Kopitiam SS2'), findsOneWidget);
+  });
+
+  // The Check asks what day it is too, and asks it below Review rather than
+  // above, so a clock the app was handed has to reach it. Without that, a
+  // purchase dated today is called a date in the future the moment the fixed
+  // date these tests type falls behind the machine's calendar — the same rot,
+  // one seam over.
+  testWidgets('a purchase dated the day it was bought is not called a date in '
+      'the future', (tester) async {
+    await openReview(tester, on: DateTime(2028, 3, 1));
+    await type(tester, 'Merchant', 'Kopitiam SS2');
+    await type(tester, 'Date', '2028-03-01');
+    await type(tester, 'Currency', 'MYR');
+    await type(tester, 'Total', '26.00');
+
+    expect(find.text('Date in the future'), findsNothing);
+
+    await tester.tap(find.text('Add to Ledger'));
+    await tester.pumpAndSettle();
+
+    expect(store.contents, hasLength(1));
   });
 
   testWidgets('leaving Review and going back in keeps the typing', (

@@ -29,6 +29,9 @@ void main() {
         lock: lock,
         preferences: preferences,
         photograph: (_) async => null,
+        // Fixed alongside the seeded Ledger, so the Expenses these tests look
+        // for are in the month the screen opens on whatever day it is run.
+        clock: () => DateTime(2026, 8, 23),
       ),
     );
     await tester.pumpAndSettle();
@@ -100,6 +103,9 @@ void main() {
         lock: lock,
         preferences: preferences,
         photograph: (_) async => null,
+        // Fixed alongside the seeded Ledger, so the Expenses these tests look
+        // for are in the month the screen opens on whatever day it is run.
+        clock: () => DateTime(2026, 8, 23),
       ),
     );
     await tester.pumpAndSettle();

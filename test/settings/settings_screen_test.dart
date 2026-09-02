@@ -33,6 +33,7 @@ void main() {
         preferences: preferences,
         knobs: knobs,
         photograph: (_) async => null,
+        clock: () => DateTime(2026, 8, 23),
       ),
     );
     await tester.pumpAndSettle();

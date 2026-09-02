@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import '../clock.dart';
 import '../data/ledger_store.dart';
 import '../data/receipt_store.dart';
 import '../data/scan_store.dart';
@@ -183,12 +184,8 @@ final class ReviewInProgress extends ReviewState {
 }
 
 class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
-  ReviewBloc(
-    this._ledger,
-    this._scans,
-    this._receipts, {
-    DateTime Function()? clock,
-  }) : _now = clock ?? DateTime.now,
+  ReviewBloc(this._ledger, this._scans, this._receipts, {Clock? clock})
+    : _now = clock ?? DateTime.now,
       super(const ReviewIdle()) {
     on<ManualExpenseStarted>(_onManualExpenseStarted);
     on<ScanReviewStarted>(_onScanReviewStarted);
@@ -208,7 +205,7 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
   final ScanStore _scans;
   final ReceiptStore _receipts;
 
-  final DateTime Function() _now;
+  final Clock _now;
   var _committed = 0;
 
   /// One half-finished Review per Scan, plus one for the manual lane. Leaving

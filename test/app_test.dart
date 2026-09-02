@@ -28,6 +28,10 @@ void main() {
         storesFor: (_) => store.stores,
         model: model,
         photograph: (_) async => null,
+        // The seeded Ledger hangs off a fixed date, so the month the screen
+        // opens on has to be fixed too — otherwise these pass until the
+        // calendar moves on and then fail on an empty month.
+        clock: () => DateTime(2026, 8, 23),
       ),
     );
     await tester.pumpAndSettle();

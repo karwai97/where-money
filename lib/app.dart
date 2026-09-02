@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import 'clock.dart';
 import 'data/device_preferences.dart';
 import 'data/stores.dart';
 import 'l10n/app_localizations.dart';
@@ -32,6 +33,7 @@ class WhereMoneyApp extends StatelessWidget {
     this.knobs = const Knobs(),
     this.theme = ThemeMode.system,
     this.language = defaultLanguage,
+    this.clock = DateTime.now,
     this.photograph,
   });
 
@@ -64,6 +66,12 @@ class WhereMoneyApp extends StatelessWidget {
   /// handed down: nothing below here asks anything for them.
   final Knobs knobs;
 
+  /// Which month the Ledger opens on. Injected for the same reason as
+  /// [photograph]: a widget test that seeds a Ledger at a fixed date has to be
+  /// able to say when "now" is, or it passes until the calendar moves and then
+  /// fails for a reason that has nothing to do with the code.
+  final Clock clock;
+
   /// Injected so tests can hand down bytes: the camera is the one thing above
   /// the tested surface, and this is the line it sits on. The device's own
   /// camera is built from [knobs] rather than defaulted to, so the size a
@@ -87,6 +95,7 @@ class WhereMoneyApp extends StatelessWidget {
           stores: storesFor(user.uid),
           model: model,
           knobs: knobs,
+          clock: clock,
           photograph:
               photograph ??
               (from) => photographWithDevice(from, longEdge: knobs.longEdge),

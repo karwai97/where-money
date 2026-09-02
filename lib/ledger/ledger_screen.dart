@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import '../clock.dart';
 import '../data/device_preferences.dart';
 import '../data/receipt_store.dart';
 import '../data/stores.dart';
@@ -29,6 +30,7 @@ class LedgerScreen extends StatelessWidget {
     required this.model,
     required this.knobs,
     required this.photograph,
+    this.clock = DateTime.now,
   });
 
   /// Whose Ledger this is. Only the once-per-account notice needs it; the
@@ -39,6 +41,12 @@ class LedgerScreen extends StatelessWidget {
   final ModelGateway model;
   final Knobs knobs;
   final Photographer photograph;
+
+  /// What day it is, for the two blocs below that care: the Ledger opens on
+  /// the month it names, and the Check asks it whether a purchase date has
+  /// happened yet. This is the only place above them with anything to say
+  /// about the time.
+  final Clock clock;
 
   @override
   Widget build(BuildContext context) {
@@ -55,14 +63,19 @@ class LedgerScreen extends StatelessWidget {
         // Expense a user opens.
         RepositoryProvider<ReceiptStore>.value(value: stores.receipts),
         BlocProvider(
-          create: (_) => LedgerBloc(stores.ledger, model, language: language)
-            ..add(const LedgerOpened()),
+          create: (_) =>
+              LedgerBloc(stores.ledger, model, language: language, now: clock())
+                ..add(const LedgerOpened()),
         ),
         // Held here rather than on the Review route, so leaving Review and
         // coming back finds the work still there.
         BlocProvider(
-          create: (_) =>
-              ReviewBloc(stores.ledger, stores.scans, stores.receipts),
+          create: (_) => ReviewBloc(
+            stores.ledger,
+            stores.scans,
+            stores.receipts,
+            clock: clock,
+          ),
         ),
         BlocProvider(
           create: (_) =>

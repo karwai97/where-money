@@ -45,7 +45,7 @@ void main() {
         .clearPlatformBrightnessTestValue();
   });
 
-  Future<void> openLedger(WidgetTester tester) async {
+  Future<void> openLedger(WidgetTester tester, {DateTime? on}) async {
     tester.view
       ..physicalSize = const Size(1200, 3000)
       ..devicePixelRatio = 1;
@@ -58,6 +58,7 @@ void main() {
         storesFor: (_) => store.stores,
         model: model,
         photograph: (_) async => null,
+        clock: on == null ? DateTime.now : () => on,
       ),
     );
     await tester.pumpAndSettle();
@@ -74,6 +75,23 @@ void main() {
 
     expect(find.textContaining(thisMonth), findsWidgets);
     expect(find.text('Ikea Damansara'), findsWidgets);
+    expect(find.text('AirAsia'), findsNothing);
+  });
+
+  // The one test here that does not hang off today. Every other test in this
+  // file works around an unreachable clock by seeding the Ledger relative to
+  // `DateTime.now()`; this one names both ends, so that removing the seam
+  // fails a test rather than quietly making six others rot with the calendar.
+  testWidgets('the Ledger opens on the month its clock names, not the month '
+      'the machine is in', (tester) async {
+    store = InMemoryLedgerStore(seedLedger(around: DateTime(2026, 8, 23)));
+
+    await openLedger(tester, on: DateTime(2026, 8, 23));
+
+    expect(find.textContaining('Aug'), findsWidgets);
+    expect(find.text('Ikea Damansara'), findsWidgets);
+    // Seeded into July, so it is there to be found and should not be: the
+    // clock picked a month, and the month is filtering.
     expect(find.text('AirAsia'), findsNothing);
   });
 
