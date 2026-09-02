@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:where_money/l10n/app_localizations_en.dart';
 import 'package:where_money/review/finding_copy.dart';
 import 'package:where_money_core/where_money_core.dart';
 
@@ -6,9 +7,15 @@ import 'package:where_money_core/where_money_core.dart';
 /// switch in [sayingFor] is exhaustive, so a kind added to the Check without
 /// copy does not compile; this pins what the copy actually says, including
 /// where the numbers land in the sentence.
+///
+/// The sentences moved into the message files without changing, which is what
+/// this file is now also for: every assertion below is the one that was here
+/// before the move, so a translation that quietly reworded the English fails.
 void main() {
+  final words = AppLocalizationsEn();
+
   ({String label, String detail}) said(Finding finding) {
-    final (label, detail) = sayingFor(finding);
+    final (label, detail) = sayingFor(words, finding);
     return (label: label, detail: detail);
   }
 

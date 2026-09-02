@@ -5,6 +5,7 @@ import 'package:where_money_core/where_money_core.dart';
 import '../data/device_preferences.dart';
 import '../data/receipt_store.dart';
 import '../data/stores.dart';
+import '../l10n/app_localizations.dart';
 import '../on_screen.dart';
 import '../review/review_bloc.dart';
 import '../review/review_screen.dart';
@@ -295,13 +296,15 @@ class _ExpenseTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final words = AppLocalizations.of(context);
+
     return ListTile(
       // How much of this Ledger the app produced, readable down the column
       // rather than one Expense at a time.
       leading: HowItGotHere(expense.source),
       title: Text(expense.merchant),
       subtitle: Text(
-        '${asDay(expense.date)} · ${categoryLabel(expense.category)}',
+        '${asDay(expense.date)} · ${categoryLabel(words, expense.category)}',
       ),
       trailing: Text(
         asMoney(expense.currency, expense.total),

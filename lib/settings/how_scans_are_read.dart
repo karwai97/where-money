@@ -58,12 +58,9 @@ class WhatReviewHadToCorrect extends StatelessWidget {
         else ...[
           _Line(words.settingsCorrectedTally(tally.scanned, tally.clean)),
           for (final MapEntry(:key, :value) in tally.byField.entries)
-            // The field's own name is still English: it is the Review form's
-            // vocabulary as much as this panel's, and it moves when that screen
-            // does.
             _Line(
               words.settingsCorrectedField(
-                reviewFieldLabel(key),
+                reviewFieldLabel(words, key),
                 value,
                 tally.scanned,
               ),

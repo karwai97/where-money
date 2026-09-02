@@ -1,94 +1,128 @@
 import 'package:where_money_core/where_money_core.dart';
 
+import '../l10n/app_localizations.dart';
+
 /// What a Finding says on screen: a short subject and the sentence under it.
 /// The Check reports kinds carrying values and no words at all, so this switch
-/// is the only place the words exist. It is exhaustive on purpose — a kind
+/// is the only place the words are chosen. It is exhaustive on purpose — a kind
 /// added without copy is a compile error rather than a blank line on somebody's
 /// receipt.
-(String, String) sayingFor(Finding finding) => switch (finding) {
+///
+/// Takes the words rather than a `BuildContext`, so the whole set stays
+/// readable in both languages from a unit test.
+(String, String) sayingFor(
+  AppLocalizations words,
+  Finding finding,
+) => switch (finding) {
   NotAReceipt() => (
-    'Not a receipt',
-    'The model says this image is not a receipt.',
+    words.reviewFindingNotAReceiptTitle,
+    words.reviewFindingNotAReceiptDetail,
   ),
   NoTotal() => (
-    'No total',
-    'Total is zero or negative — nothing usable was read.',
+    words.reviewFindingNoTotalTitle,
+    words.reviewFindingNoTotalDetail,
   ),
   NoMerchant() => (
-    'No merchant',
-    'Merchant name was not legible. The expense is unattributable.',
+    words.reviewFindingNoMerchantTitle,
+    words.reviewFindingNoMerchantDetail,
   ),
-  NoDate() => (
-    'No date',
-    'The date on the receipt was not legible — it will default to today.',
-  ),
+  NoDate() => (words.reviewFindingNoDateTitle, words.reviewFindingNoDateDetail),
   UnparseableDate(:final read) => (
-    'Unparseable date',
-    'Got "$read", which is not an ISO date.',
+    words.reviewFindingUnparseableDateTitle,
+    words.reviewFindingUnparseableDateDetail(read),
   ),
   DateInTheFuture(:final read) => (
-    'Date in the future',
-    'Read $read, which has not happened yet — probably a card expiry or a '
-        'best-before date rather than the purchase.',
+    words.reviewFindingDateInTheFutureTitle,
+    words.reviewFindingDateInTheFutureDetail(read),
   ),
   YearLooksMisread(:final read, :final likelyYear) => (
-    'Year looks misread',
-    'Read $read, almost exactly a year ago. On a freshly photographed receipt '
-        'that usually means the year was misread — $likelyYear is the likely '
-        'value.',
+    words.reviewFindingYearLooksMisreadTitle,
+    words.reviewFindingYearLooksMisreadDetail(read, likelyYear),
   ),
   DateIsUnusuallyOld(:final read, :final daysAgo) => (
-    'Date is unusually old',
-    'Read $read, $daysAgo days ago. Fine for an old receipt, but worth '
-        'checking if this was just photographed.',
+    words.reviewFindingDateIsUnusuallyOldTitle,
+    words.reviewFindingDateIsUnusuallyOldDetail(read, daysAgo),
   ),
   NoCurrency() => (
-    'Currency unclear',
-    'No currency identified, so the amount has no unit.',
+    words.reviewFindingCurrencyUnclearTitle,
+    words.reviewFindingNoCurrencyDetail,
   ),
   CurrencyNotAnIsoCode(:final read) => (
-    'Currency unclear',
-    'Got "$read", which is not an ISO 4217 code.',
+    words.reviewFindingCurrencyUnclearTitle,
+    words.reviewFindingCurrencyNotAnIsoCodeDetail(read),
   ),
   TotalDoesNotAddUp() => (
-    'Total does not add up',
-    'subtotal ${_money(finding.subtotal)} + tax ${_money(finding.tax)} + tip '
-        '${_money(finding.tip)} = ${_money(finding.composed)}, but total reads '
-        '${_money(finding.total)} (off by ${_money(finding.difference)}).',
+    words.reviewFindingTotalDoesNotAddUpTitle,
+    words.reviewFindingTotalDoesNotAddUpDetail(
+      _money(finding.subtotal),
+      _money(finding.tax),
+      _money(finding.tip),
+      _money(finding.composed),
+      _money(finding.total),
+      _money(finding.difference),
+    ),
   ),
+  // Four whole sentences rather than one with the target named by a
+  // placeholder: "subtotal" glued into a translated sentence is the
+  // fragment concatenation the message files exist to prevent.
   LineItemsDoNotMatch(:final sum, :final target, :final over) => (
-    'Line items do not match ${_targetName(finding)}',
-    'Items sum to ${_money(sum)} against a ${_targetName(finding)} of '
-        '${_money(target)}'
-        '${over ? ' — items exceed the receipt, so something was double-read.' : ' — an item may have been missed, or a discount was not itemised.'}',
+    finding.againstSubtotal
+        ? words.reviewFindingLineItemsDoNotMatchSubtotalTitle
+        : words.reviewFindingLineItemsDoNotMatchTotalTitle,
+    switch ((finding.againstSubtotal, over)) {
+      (true, false) => words.reviewFindingLineItemsUnderSubtotalDetail(
+        _money(sum),
+        _money(target),
+      ),
+      (true, true) => words.reviewFindingLineItemsOverSubtotalDetail(
+        _money(sum),
+        _money(target),
+      ),
+      (false, false) => words.reviewFindingLineItemsUnderTotalDetail(
+        _money(sum),
+        _money(target),
+      ),
+      (false, true) => words.reviewFindingLineItemsOverTotalDetail(
+        _money(sum),
+        _money(target),
+      ),
+    },
   ),
   LineArithmeticOff(:final description, :final quantity, :final unitPrice) => (
-    'Line arithmetic off',
-    '"$description": ${_money(quantity)} x ${_money(unitPrice)} = '
-        '${_money(finding.expected)}, but the line reads '
-        '${_money(finding.amount)}.',
+    words.reviewFindingLineArithmeticOffTitle,
+    words.reviewFindingLineArithmeticOffDetail(
+      description,
+      _money(quantity),
+      _money(unitPrice),
+      _money(finding.expected),
+      _money(finding.amount),
+    ),
   ),
   UnknownItemCategory(:final description, :final read) => (
-    'Unknown item category',
-    '"$description" came back as "$read", which is not in the taxonomy.',
+    words.reviewFindingUnknownItemCategoryTitle,
+    words.reviewFindingUnknownItemCategoryDetail(description, read),
   ),
   UnknownCategory(:final read) => (
-    'Unknown category',
-    'Got "$read", which is outside the enum the schema declared.',
+    words.reviewFindingUnknownCategoryTitle,
+    words.reviewFindingUnknownCategoryDetail(read),
   ),
   UnknownPaymentMethod(:final read) => (
-    'Unknown payment method',
-    'Got "$read".',
+    words.reviewFindingUnknownPaymentMethodTitle,
+    words.reviewFindingUnknownPaymentMethodDetail(read),
   ),
+  // The reasons are the Model's own words, so there is no sentence here to
+  // translate — only the punctuation between them, and only when it gave
+  // more than one.
   ModelAskedForReview(:final reasons) => (
-    'Model asked for review',
+    words.reviewFindingModelAskedForReviewTitle,
     reasons.isEmpty
-        ? 'It flagged the image but gave no reason.'
-        : reasons.join('; '),
+        ? words.reviewFindingModelAskedNoReasonDetail
+        : reasons.join(words.reviewFindingReasonSeparator),
   ),
 };
 
-String _targetName(LineItemsDoNotMatch finding) =>
-    finding.againstSubtotal ? 'subtotal' : 'total';
-
+/// Two decimal places and no locale, the same rule money follows everywhere
+/// else in the app: a familiar decimal separator on an amount whose currency is
+/// stated explicitly would be a guess about which currency it is. See
+/// `asMoney` in `on_screen.dart`.
 String _money(double value) => value.toStringAsFixed(2);

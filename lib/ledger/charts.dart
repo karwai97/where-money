@@ -10,6 +10,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import '../l10n/app_localizations.dart';
 import '../on_screen.dart';
 
 const double _barThickness = 10;
@@ -26,6 +27,7 @@ class CategoryBreakdown extends StatelessWidget {
   Widget build(BuildContext context) {
     if (rollup.byCategory.isEmpty) return const SizedBox.shrink();
 
+    final words = AppLocalizations.of(context);
     final colours = Theme.of(context).colorScheme;
     final largest = rollup.byCategory.first.amount;
 
@@ -35,7 +37,7 @@ class CategoryBreakdown extends StatelessWidget {
         for (final category in rollup.byCategory)
           Semantics(
             label:
-                '${category.label}, '
+                '${category.labelIn(words)}, '
                 '${asMoney(rollup.homeCurrency, category.amount)}, '
                 '${asExpenses(category.count)}',
             excludeSemantics: true,
@@ -46,13 +48,13 @@ class CategoryBreakdown extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Expanded(child: Text(category.label)),
+                      Expanded(child: Text(category.labelIn(words))),
                       Text(asMoney(rollup.homeCurrency, category.amount)),
                     ],
                   ),
                   const SizedBox(height: 6),
                   _Track(
-                    label: category.label,
+                    label: category.labelIn(words),
                     fraction: category.amount / largest,
                     fill: colours.primary,
                     track: colours.surfaceContainerHighest,

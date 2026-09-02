@@ -75,5 +75,233 @@
       "total": { "type": "int" }
     }
   },
-  "settingsCorrectedManualExcluded": "Expenses typed by hand are not counted: those record a change to every field, against an Extraction that never existed."
+  "settingsCorrectedManualExcluded": "Expenses typed by hand are not counted: those record a change to every field, against an Extraction that never existed.",
+
+  "fieldMerchant": "Merchant",
+  "@fieldMerchant": {
+    "description": "The fields of an Extraction, named for a user. Not prefixed by a screen because they are read on two: the Review form and the Corrected Fields tally in Settings. One definition, so the two cannot end up calling the same field different things."
+  },
+  "fieldPurchasedAt": "Date",
+  "fieldCurrency": "Currency",
+  "fieldSubtotal": "Subtotal",
+  "fieldTax": "Tax",
+  "fieldTip": "Tip",
+  "fieldTotal": "Total",
+  "fieldPaymentMethod": "Paid with",
+  "fieldCategory": "Category",
+  "fieldLineItems": "Line Items",
+
+  "categoryGroceries": "Groceries",
+  "@categoryGroceries": {
+    "description": "The Category taxonomy, named for a user. The domain holds the slugs and knows no words at all (ADR-0007); these are the other end of that rule, and they are read on the Ledger, both charts, an Expense and the Review dropdown."
+  },
+  "categoryDining": "Dining out",
+  "categoryTransport": "Transport",
+  "categoryFuel": "Fuel",
+  "categoryUtilities": "Utilities",
+  "categoryHealthcare": "Healthcare",
+  "categoryPharmacy": "Pharmacy",
+  "categoryEntertainment": "Entertainment",
+  "categoryShopping": "Shopping",
+  "categoryApparel": "Apparel",
+  "categoryHome": "Home",
+  "categoryElectronics": "Electronics",
+  "categoryTravel": "Travel",
+  "categoryEducation": "Education",
+  "categoryPersonalCare": "Personal care",
+  "categorySubscriptions": "Subscriptions",
+  "categoryFeesCharges": "Fees & charges",
+  "categoryOther": "Other",
+
+  "paymentMethodCash": "Cash",
+  "@paymentMethodCash": {
+    "description": "The payment methods, named for a user. Slugs in the domain, words here, as with the Categories above."
+  },
+  "paymentMethodCard": "Card",
+  "paymentMethodEwallet": "E-wallet",
+  "paymentMethodBankTransfer": "Bank transfer",
+  "paymentMethodUnknown": "Not recorded",
+
+  "reviewTitleTyped": "Add an Expense",
+  "@reviewTitleTyped": {
+    "description": "Which of the three things the Review screen is doing. All three edit an Extraction against a Check; only the words differ."
+  },
+  "reviewTitlePhotographed": "Review this receipt",
+  "reviewTitleCorrecting": "Correct this Expense",
+
+  "reviewClean": "Everything on this receipt adds up. Check it against the photo, then add it.",
+  "reviewRefused": "That Expense was not saved. Your typing is still here.",
+
+  "reviewPickDate": "Pick a date",
+  "reviewCategoryReason": "The Model chose that because: {reason}",
+  "@reviewCategoryReason": {
+    "description": "The Model’s own words for why it chose a Category. The reason itself arrives in whatever language the Extraction was read in, and ticket 10 is what makes that the user’s.",
+    "placeholders": {
+      "reason": { "type": "String" }
+    }
+  },
+
+  "reviewLineDescription": "Description",
+  "reviewLineQuantity": "Qty",
+  "reviewLineUnitPrice": "Unit price",
+  "reviewLineAmount": "Amount",
+  "reviewAddLineItem": "Add a Line Item",
+  "reviewRemoveLineItem": "Remove this Line Item",
+
+  "reviewAddToLedger": "Add to Ledger",
+  "reviewSave": "Save",
+
+  "reviewFindingNotAReceiptTitle": "Not a receipt",
+  "@reviewFindingNotAReceiptTitle": {
+    "description": "Each of the seventeen kinds of Finding the Check can raise gets two messages: a short title, and the sentence under it. Both halves matter — in a list of Findings the bold title above an explanation is doing real work, and a two-to-four-word title translates far more reliably than the sentence beneath it. Every number and every value read off the receipt is a placeholder, so each language puts it where that language puts it. Money placeholders are Strings, already formatted to two decimal places, because an amount is deliberately not locale-formatted."
+  },
+  "reviewFindingNotAReceiptDetail": "The model says this image is not a receipt.",
+
+  "reviewFindingNoTotalTitle": "No total",
+  "reviewFindingNoTotalDetail": "Total is zero or negative — nothing usable was read.",
+
+  "reviewFindingNoMerchantTitle": "No merchant",
+  "reviewFindingNoMerchantDetail": "Merchant name was not legible. The expense is unattributable.",
+
+  "reviewFindingNoDateTitle": "No date",
+  "reviewFindingNoDateDetail": "The date on the receipt was not legible — it will default to today.",
+
+  "reviewFindingUnparseableDateTitle": "Unparseable date",
+  "reviewFindingUnparseableDateDetail": "Got \"{read}\", which is not an ISO date.",
+  "@reviewFindingUnparseableDateDetail": {
+    "placeholders": {
+      "read": { "type": "String" }
+    }
+  },
+
+  "reviewFindingDateInTheFutureTitle": "Date in the future",
+  "reviewFindingDateInTheFutureDetail": "Read {read}, which has not happened yet — probably a card expiry or a best-before date rather than the purchase.",
+  "@reviewFindingDateInTheFutureDetail": {
+    "placeholders": {
+      "read": { "type": "String" }
+    }
+  },
+
+  "reviewFindingYearLooksMisreadTitle": "Year looks misread",
+  "reviewFindingYearLooksMisreadDetail": "Read {read}, almost exactly a year ago. On a freshly photographed receipt that usually means the year was misread — {likelyYear} is the likely value.",
+  "@reviewFindingYearLooksMisreadDetail": {
+    "description": "A year is a label, not a quantity, so it carries no grouping separator in any language.",
+    "placeholders": {
+      "read": { "type": "String" },
+      "likelyYear": { "type": "int" }
+    }
+  },
+
+  "reviewFindingDateIsUnusuallyOldTitle": "Date is unusually old",
+  "reviewFindingDateIsUnusuallyOldDetail": "Read {read}, {daysAgo} days ago. Fine for an old receipt, but worth checking if this was just photographed.",
+  "@reviewFindingDateIsUnusuallyOldDetail": {
+    "placeholders": {
+      "read": { "type": "String" },
+      "daysAgo": { "type": "int" }
+    }
+  },
+
+  "reviewFindingCurrencyUnclearTitle": "Currency unclear",
+  "@reviewFindingCurrencyUnclearTitle": {
+    "description": "Two kinds share this title — nothing read where a currency belonged, and something read that is not an ISO 4217 code. They differ in what went wrong and not in what the user has to do about it, so they say the same thing above two different sentences."
+  },
+  "reviewFindingNoCurrencyDetail": "No currency identified, so the amount has no unit.",
+  "reviewFindingCurrencyNotAnIsoCodeDetail": "Got \"{read}\", which is not an ISO 4217 code.",
+  "@reviewFindingCurrencyNotAnIsoCodeDetail": {
+    "placeholders": {
+      "read": { "type": "String" }
+    }
+  },
+
+  "reviewFindingTotalDoesNotAddUpTitle": "Total does not add up",
+  "reviewFindingTotalDoesNotAddUpDetail": "subtotal {subtotal} + tax {tax} + tip {tip} = {composed}, but total reads {total} (off by {difference}).",
+  "@reviewFindingTotalDoesNotAddUpDetail": {
+    "placeholders": {
+      "subtotal": { "type": "String" },
+      "tax": { "type": "String" },
+      "tip": { "type": "String" },
+      "composed": { "type": "String" },
+      "total": { "type": "String" },
+      "difference": { "type": "String" }
+    }
+  },
+
+  "reviewFindingLineItemsDoNotMatchSubtotalTitle": "Line items do not match subtotal",
+  "@reviewFindingLineItemsDoNotMatchSubtotalTitle": {
+    "description": "One kind, four whole messages: the sum can fall short of the target or exceed it, and the target can be the subtotal or the total. Naming the target with a placeholder would be a translated fragment glued into a sentence, which is the thing the message files exist to stop."
+  },
+  "reviewFindingLineItemsDoNotMatchTotalTitle": "Line items do not match total",
+  "reviewFindingLineItemsUnderSubtotalDetail": "Items sum to {sum} against a subtotal of {target} — an item may have been missed, or a discount was not itemised.",
+  "@reviewFindingLineItemsUnderSubtotalDetail": {
+    "placeholders": {
+      "sum": { "type": "String" },
+      "target": { "type": "String" }
+    }
+  },
+  "reviewFindingLineItemsOverSubtotalDetail": "Items sum to {sum} against a subtotal of {target} — items exceed the receipt, so something was double-read.",
+  "@reviewFindingLineItemsOverSubtotalDetail": {
+    "placeholders": {
+      "sum": { "type": "String" },
+      "target": { "type": "String" }
+    }
+  },
+  "reviewFindingLineItemsUnderTotalDetail": "Items sum to {sum} against a total of {target} — an item may have been missed, or a discount was not itemised.",
+  "@reviewFindingLineItemsUnderTotalDetail": {
+    "placeholders": {
+      "sum": { "type": "String" },
+      "target": { "type": "String" }
+    }
+  },
+  "reviewFindingLineItemsOverTotalDetail": "Items sum to {sum} against a total of {target} — items exceed the receipt, so something was double-read.",
+  "@reviewFindingLineItemsOverTotalDetail": {
+    "placeholders": {
+      "sum": { "type": "String" },
+      "target": { "type": "String" }
+    }
+  },
+
+  "reviewFindingLineArithmeticOffTitle": "Line arithmetic off",
+  "reviewFindingLineArithmeticOffDetail": "\"{description}\": {quantity} x {unitPrice} = {expected}, but the line reads {amount}.",
+  "@reviewFindingLineArithmeticOffDetail": {
+    "description": "The description is a line as printed on the receipt and is never translated.",
+    "placeholders": {
+      "description": { "type": "String" },
+      "quantity": { "type": "String" },
+      "unitPrice": { "type": "String" },
+      "expected": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+
+  "reviewFindingUnknownItemCategoryTitle": "Unknown item category",
+  "reviewFindingUnknownItemCategoryDetail": "\"{description}\" came back as \"{read}\", which is not in the taxonomy.",
+  "@reviewFindingUnknownItemCategoryDetail": {
+    "placeholders": {
+      "description": { "type": "String" },
+      "read": { "type": "String" }
+    }
+  },
+
+  "reviewFindingUnknownCategoryTitle": "Unknown category",
+  "reviewFindingUnknownCategoryDetail": "Got \"{read}\", which is outside the enum the schema declared.",
+  "@reviewFindingUnknownCategoryDetail": {
+    "placeholders": {
+      "read": { "type": "String" }
+    }
+  },
+
+  "reviewFindingUnknownPaymentMethodTitle": "Unknown payment method",
+  "reviewFindingUnknownPaymentMethodDetail": "Got \"{read}\".",
+  "@reviewFindingUnknownPaymentMethodDetail": {
+    "placeholders": {
+      "read": { "type": "String" }
+    }
+  },
+
+  "reviewFindingModelAskedForReviewTitle": "Model asked for review",
+  "reviewFindingModelAskedNoReasonDetail": "It flagged the image but gave no reason.",
+  "reviewFindingReasonSeparator": "; ",
+  "@reviewFindingReasonSeparator": {
+    "description": "What goes between the Model’s reasons when it gave more than one. The reasons are the Model’s own words and cannot be a whole message here; a list of unknown length has no sentence form, so the punctuation between them is the one thing this file can get right. Chinese uses its own full-width semicolon."
+  }
 }

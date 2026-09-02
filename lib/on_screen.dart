@@ -9,6 +9,8 @@ library;
 
 import 'package:where_money_core/where_money_core.dart';
 
+import 'l10n/app_localizations.dart';
+
 String asDay(DateTime at) => '${at.year}-${_two(at.month)}-${_two(at.day)}';
 
 String asMoment(DateTime at) =>
@@ -21,71 +23,72 @@ String asMoney(String currency, double amount) =>
 
 String asExpenses(int count) => count == 1 ? '1 Expense' : '$count Expenses';
 
-const Map<String, String> categoryLabels = {
-  'groceries': 'Groceries',
-  'dining': 'Dining out',
-  'transport': 'Transport',
-  'fuel': 'Fuel',
-  'utilities': 'Utilities',
-  'healthcare': 'Healthcare',
-  'pharmacy': 'Pharmacy',
-  'entertainment': 'Entertainment',
-  'shopping': 'Shopping',
-  'apparel': 'Apparel',
-  'home': 'Home',
-  'electronics': 'Electronics',
-  'travel': 'Travel',
-  'education': 'Education',
-  'personal_care': 'Personal care',
-  'subscriptions': 'Subscriptions',
-  'fees_charges': 'Fees & charges',
-  'other': 'Other',
-};
+/// A slug this app has no words for reads as itself rather than disappearing.
+/// `what_the_domain_is_called_test.dart` is what stops that fallback from
+/// quietly covering a Category the message files forgot.
+String categoryLabel(AppLocalizations words, String category) =>
+    switch (category) {
+      'groceries' => words.categoryGroceries,
+      'dining' => words.categoryDining,
+      'transport' => words.categoryTransport,
+      'fuel' => words.categoryFuel,
+      'utilities' => words.categoryUtilities,
+      'healthcare' => words.categoryHealthcare,
+      'pharmacy' => words.categoryPharmacy,
+      'entertainment' => words.categoryEntertainment,
+      'shopping' => words.categoryShopping,
+      'apparel' => words.categoryApparel,
+      'home' => words.categoryHome,
+      'electronics' => words.categoryElectronics,
+      'travel' => words.categoryTravel,
+      'education' => words.categoryEducation,
+      'personal_care' => words.categoryPersonalCare,
+      'subscriptions' => words.categorySubscriptions,
+      'fees_charges' => words.categoryFeesCharges,
+      'other' => words.categoryOther,
+      _ => category,
+    };
 
-/// A slug this app has no label for reads as itself rather than disappearing.
-String categoryLabel(String category) => categoryLabels[category] ?? category;
-
-const Map<String, String> paymentMethodLabels = {
-  'cash': 'Cash',
-  'card': 'Card',
-  'ewallet': 'E-wallet',
-  'bank_transfer': 'Bank transfer',
-  'unknown': 'Not recorded',
-};
-
-String paymentMethodLabel(String method) =>
-    paymentMethodLabels[method] ?? method;
+String paymentMethodLabel(AppLocalizations words, String method) =>
+    switch (method) {
+      'cash' => words.paymentMethodCash,
+      'card' => words.paymentMethodCard,
+      'ewallet' => words.paymentMethodEwallet,
+      'bank_transfer' => words.paymentMethodBankTransfer,
+      'unknown' => words.paymentMethodUnknown,
+      _ => method,
+    };
 
 extension ReviewFieldLabel on ReviewField {
   /// What this field is called in front of the user. One definition, so the
   /// Review form and the Corrected Fields tally cannot end up calling the same
   /// field two things.
-  String get label => switch (this) {
-    ReviewField.merchant => 'Merchant',
-    ReviewField.purchasedAt => 'Date',
-    ReviewField.currency => 'Currency',
-    ReviewField.subtotal => 'Subtotal',
-    ReviewField.tax => 'Tax',
-    ReviewField.tip => 'Tip',
-    ReviewField.total => 'Total',
-    ReviewField.paymentMethod => 'Paid with',
-    ReviewField.category => 'Category',
-    ReviewField.lineItems => 'Line Items',
+  String labelIn(AppLocalizations words) => switch (this) {
+    ReviewField.merchant => words.fieldMerchant,
+    ReviewField.purchasedAt => words.fieldPurchasedAt,
+    ReviewField.currency => words.fieldCurrency,
+    ReviewField.subtotal => words.fieldSubtotal,
+    ReviewField.tax => words.fieldTax,
+    ReviewField.tip => words.fieldTip,
+    ReviewField.total => words.fieldTotal,
+    ReviewField.paymentMethod => words.fieldPaymentMethod,
+    ReviewField.category => words.fieldCategory,
+    ReviewField.lineItems => words.fieldLineItems,
   };
 }
 
 /// A Corrected Field as an Expense recorded it, which is a bare name by the
 /// time it has been through Firestore. A name this app no longer has a field
 /// for reads as itself rather than disappearing.
-String reviewFieldLabel(String name) =>
+String reviewFieldLabel(AppLocalizations words, String name) =>
     ReviewField.values
         .where((field) => field.name == name)
         .firstOrNull
-        ?.label ??
+        ?.labelIn(words) ??
     name;
 
 extension CategoryTotalLabel on CategoryTotal {
-  String get label => categoryLabel(category);
+  String labelIn(AppLocalizations words) => categoryLabel(words, category);
 }
 
 /// The Rollup carries a year and a month; naming the month is the screen's job.

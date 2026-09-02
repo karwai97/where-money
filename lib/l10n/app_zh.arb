@@ -31,5 +31,115 @@
   "settingsCorrectedNothingYet": "还没有读过任何收据，暂时无话可说。",
   "settingsCorrectedTally": "{count, plural, other{读取了 {count} 张收据，其中 {clean} 张没有改动。}}",
   "settingsCorrectedField": "{field}：{total} 张里修正了 {count} 张",
-  "settingsCorrectedManualExcluded": "手动录入的支出不计在内：它们会把每个字段都记成改动，而对应的提取从来没有存在过。"
+  "settingsCorrectedManualExcluded": "手动录入的支出不计在内：它们会把每个字段都记成改动，而对应的提取从来没有存在过。",
+
+  "fieldMerchant": "商家",
+  "fieldPurchasedAt": "日期",
+  "fieldCurrency": "货币",
+  "fieldSubtotal": "小计",
+  "fieldTax": "税",
+  "fieldTip": "小费",
+  "fieldTotal": "总额",
+  "fieldPaymentMethod": "支付方式",
+  "fieldCategory": "分类",
+  "fieldLineItems": "明细",
+
+  "categoryGroceries": "食品杂货",
+  "categoryDining": "外食",
+  "categoryTransport": "交通",
+  "categoryFuel": "油费",
+  "categoryUtilities": "水电煤",
+  "categoryHealthcare": "医疗",
+  "categoryPharmacy": "药品",
+  "categoryEntertainment": "娱乐",
+  "categoryShopping": "购物",
+  "categoryApparel": "服饰",
+  "categoryHome": "居家",
+  "categoryElectronics": "电子产品",
+  "categoryTravel": "旅行",
+  "categoryEducation": "教育",
+  "categoryPersonalCare": "个人护理",
+  "categorySubscriptions": "订阅",
+  "categoryFeesCharges": "手续费",
+  "categoryOther": "其他",
+
+  "paymentMethodCash": "现金",
+  "paymentMethodCard": "银行卡",
+  "paymentMethodEwallet": "电子钱包",
+  "paymentMethodBankTransfer": "银行转账",
+  "paymentMethodUnknown": "未记录",
+
+  "reviewTitleTyped": "添加一笔支出",
+  "reviewTitlePhotographed": "复核这张收据",
+  "reviewTitleCorrecting": "修正这笔支出",
+
+  "reviewClean": "这张收据上的数字都对得上。对照照片核实一遍，然后加进账本。",
+  "reviewRefused": "这笔支出没有保存。你刚才输入的内容还在。",
+
+  "reviewPickDate": "选择日期",
+  "reviewCategoryReason": "模型这样归类的理由：{reason}",
+
+  "reviewLineDescription": "说明",
+  "reviewLineQuantity": "数量",
+  "reviewLineUnitPrice": "单价",
+  "reviewLineAmount": "金额",
+  "reviewAddLineItem": "添加一项明细",
+  "reviewRemoveLineItem": "删除这项明细",
+
+  "reviewAddToLedger": "加入账本",
+  "reviewSave": "保存",
+
+  "reviewFindingNotAReceiptTitle": "不是收据",
+  "reviewFindingNotAReceiptDetail": "模型认为这张图不是收据。",
+
+  "reviewFindingNoTotalTitle": "没有总额",
+  "reviewFindingNoTotalDetail": "总额是零或负数——没有读到可用的金额。",
+
+  "reviewFindingNoMerchantTitle": "没有商家",
+  "reviewFindingNoMerchantDetail": "商家名称无法辨认，这笔支出没有归属。",
+
+  "reviewFindingNoDateTitle": "没有日期",
+  "reviewFindingNoDateDetail": "收据上的日期无法辨认——将默认记为今天。",
+
+  "reviewFindingUnparseableDateTitle": "日期读不通",
+  "reviewFindingUnparseableDateDetail": "读到「{read}」，不是 ISO 格式的日期。",
+
+  "reviewFindingDateInTheFutureTitle": "日期在未来",
+  "reviewFindingDateInTheFutureDetail": "读到 {read}，这一天还没到——多半是卡片有效期或保质期，而不是消费的日子。",
+
+  "reviewFindingYearLooksMisreadTitle": "年份像是读错了",
+  "reviewFindingYearLooksMisreadDetail": "读到 {read}，几乎正好是一年前。刚拍的收据出现这种日期，通常是年份读错了——{likelyYear} 才是可能的值。",
+
+  "reviewFindingDateIsUnusuallyOldTitle": "日期久得反常",
+  "reviewFindingDateIsUnusuallyOldDetail": "读到 {read}，是 {daysAgo} 天前。旧收据本来如此，但如果这是刚拍的，就值得核对一下。",
+
+  "reviewFindingCurrencyUnclearTitle": "货币不清楚",
+  "reviewFindingNoCurrencyDetail": "没有识别出货币，金额也就没有单位。",
+  "reviewFindingCurrencyNotAnIsoCodeDetail": "读到「{read}」，不是 ISO 4217 货币代码。",
+
+  "reviewFindingTotalDoesNotAddUpTitle": "总额对不上",
+  "reviewFindingTotalDoesNotAddUpDetail": "小计 {subtotal} + 税 {tax} + 小费 {tip} = {composed}，但总额写的是 {total}（差 {difference}）。",
+
+  "reviewFindingLineItemsDoNotMatchSubtotalTitle": "明细与小计不符",
+  "reviewFindingLineItemsDoNotMatchTotalTitle": "明细与总额不符",
+  "reviewFindingLineItemsUnderSubtotalDetail": "明细合计 {sum}，小计是 {target}——可能漏了一项，或者有折扣没有单独列出。",
+  "reviewFindingLineItemsOverSubtotalDetail": "明细合计 {sum}，小计是 {target}——明细超过了收据本身，应该是有东西读了两次。",
+  "reviewFindingLineItemsUnderTotalDetail": "明细合计 {sum}，总额是 {target}——可能漏了一项，或者有折扣没有单独列出。",
+  "reviewFindingLineItemsOverTotalDetail": "明细合计 {sum}，总额是 {target}——明细超过了收据本身，应该是有东西读了两次。",
+
+  "reviewFindingLineArithmeticOffTitle": "这一行算不对",
+  "reviewFindingLineArithmeticOffDetail": "「{description}」：{quantity} × {unitPrice} = {expected}，但这一行写的是 {amount}。",
+
+  "reviewFindingUnknownItemCategoryTitle": "明细的分类不认识",
+  "reviewFindingUnknownItemCategoryDetail": "「{description}」返回的分类是「{read}」，不在分类表里。",
+
+  "reviewFindingUnknownCategoryTitle": "分类不认识",
+  "reviewFindingUnknownCategoryDetail": "读到「{read}」，超出了 schema 声明的取值范围。",
+
+  "reviewFindingUnknownPaymentMethodTitle": "支付方式不认识",
+  "reviewFindingUnknownPaymentMethodDetail": "读到「{read}」。",
+
+  "reviewFindingModelAskedForReviewTitle": "模型要求人工复核",
+  "reviewFindingModelAskedNoReasonDetail": "模型标记了这张图，却没有说明理由。",
+  "reviewFindingReasonSeparator": "；"
 }

@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
 import '../data/receipt_store.dart';
+import '../l10n/app_localizations.dart';
 import '../on_screen.dart';
 import '../review/review_bloc.dart';
 import '../review/review_screen.dart';
@@ -133,6 +134,7 @@ class _Headline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final words = AppLocalizations.of(context);
     final text = Theme.of(context).textTheme;
     final scanned = expense.source == ExpenseSource.scanned;
 
@@ -144,7 +146,9 @@ class _Headline extends StatelessWidget {
           style: text.headlineMedium,
         ),
         const SizedBox(height: 4),
-        Text('${asDay(expense.date)} · ${categoryLabel(expense.category)}'),
+        Text(
+          '${asDay(expense.date)} · ${categoryLabel(words, expense.category)}',
+        ),
         const SizedBox(height: 8),
         Row(
           children: [
@@ -180,6 +184,8 @@ class _LineItems extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final words = AppLocalizations.of(context);
+
     if (expense.lineItems.isEmpty) {
       return Text(
         'No Line Items — just the total.',
@@ -195,18 +201,20 @@ class _LineItems extends StatelessWidget {
           ListTile(
             contentPadding: EdgeInsets.zero,
             title: Text(item.description),
-            subtitle: Text(_countOf(item) ?? categoryLabel(item.category)),
+            subtitle: Text(
+              _countOf(words, item) ?? categoryLabel(words, item.category),
+            ),
             trailing: Text(asMoney(expense.currency, item.amount)),
           ),
       ],
     );
   }
 
-  static String? _countOf(LineItem item) {
+  static String? _countOf(AppLocalizations words, LineItem item) {
     final quantity = item.quantity;
     final unitPrice = item.unitPrice;
     if (quantity == null || unitPrice == null) return null;
-    return '${categoryLabel(item.category)} · $quantity × '
+    return '${categoryLabel(words, item.category)} · $quantity × '
         '${unitPrice.toStringAsFixed(2)}';
   }
 }

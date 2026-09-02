@@ -18,6 +18,13 @@ screen" answerable by reading down the file.
 The prefix is the screen, not the widget: a string that moves between two
 widgets on the same screen should not have to be renamed to stay honest.
 
+**A closed set the domain owns is prefixed by the set instead** — `category*`,
+`paymentMethod*`, `field*`. Those are read on more than one screen, so a screen
+prefix would be a lie about where they appear, and the honest alternative is one
+copy per screen, which is the drift the single definition exists to prevent.
+Nothing else earns the exception: a set here means a slug in `packages/core` and
+a coverage test naming every member.
+
 ## Messages, not fragments
 
 A sentence is one key, placeholders included. Concatenating a translated

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import '../l10n/app_localizations.dart';
 import '../on_screen.dart';
 import '../scan/receipt_on_screen.dart';
 import 'finding_copy.dart';
@@ -17,6 +18,8 @@ class ReviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final words = AppLocalizations.of(context);
+
     return BlocConsumer<ReviewBloc, ReviewState>(
       // Only a transition into idle means the Expense was committed. The very
       // first frame is idle too, because the route is pushed before the event
@@ -25,27 +28,33 @@ class ReviewScreen extends StatelessWidget {
           previous is ReviewInProgress && current is ReviewIdle,
       listener: (context, state) => Navigator.of(context).pop(),
       builder: (context, state) => switch (state) {
-        ReviewIdle() => Scaffold(appBar: AppBar(title: const Text(_typed))),
+        ReviewIdle() => Scaffold(
+          appBar: AppBar(title: Text(words.reviewTitleTyped)),
+        ),
         final ReviewInProgress reviewing => _Form(
           reviewing,
-          key: ValueKey(reviewing.editing?.id ?? reviewing.scan?.id ?? _typed),
+          key: ValueKey(
+            reviewing.editing?.id ?? reviewing.scan?.id ?? _typedByHand,
+          ),
         ),
       },
     );
   }
 }
 
-const _typed = 'Add an Expense';
-const _photographed = 'Review this receipt';
-const _correcting = 'Correct this Expense';
+/// Stands for "no Scan and no Expense" in the key that decides when the form is
+/// rebuilt from scratch. A key, not a word — a title would change with the
+/// language and throw away what the user was halfway through typing.
+const _typedByHand = 'typed-by-hand';
 
 /// Which of the three things this screen is doing. All three edit an
 /// Extraction against a Check; only the words differ.
-String _titleOf(ReviewInProgress state) => switch (state) {
-  ReviewInProgress(editing: final Expense _) => _correcting,
-  ReviewInProgress(scan: final Scan _) => _photographed,
-  _ => _typed,
-};
+String _titleOf(ReviewInProgress state, AppLocalizations words) =>
+    switch (state) {
+      ReviewInProgress(editing: final Expense _) => words.reviewTitleCorrecting,
+      ReviewInProgress(scan: final Scan _) => words.reviewTitlePhotographed,
+      _ => words.reviewTitleTyped,
+    };
 
 class _Form extends StatefulWidget {
   const _Form(this.state, {super.key});
@@ -125,12 +134,13 @@ class _FormState extends State<_Form> {
 
   @override
   Widget build(BuildContext context) {
+    final words = AppLocalizations.of(context);
     final state = widget.state;
     final items = state.extraction.lineItems;
     _matchRowsTo(items);
 
     return Scaffold(
-      appBar: AppBar(title: Text(_titleOf(state))),
+      appBar: AppBar(title: Text(_titleOf(state, words))),
       body: Column(
         children: [
           if (state.refusal != null) _Refused(state.refusal!),
@@ -146,23 +156,24 @@ class _FormState extends State<_Form> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
                 children: [
-                  _text(ReviewField.merchant),
+                  _text(words, ReviewField.merchant),
                   Row(
                     children: [
-                      Expanded(child: _text(ReviewField.purchasedAt)),
+                      Expanded(child: _text(words, ReviewField.purchasedAt)),
                       IconButton(
-                        tooltip: 'Pick a date',
+                        tooltip: words.reviewPickDate,
                         icon: const Icon(Icons.calendar_today),
                         onPressed: _pickDate,
                       ),
                     ],
                   ),
-                  _text(ReviewField.currency),
+                  _text(words, ReviewField.currency),
                   _Closed(
-                    label: ReviewField.category.label,
+                    name: ReviewField.category.name,
+                    label: ReviewField.category.labelIn(words),
                     value: state.extraction.category,
                     options: categories,
-                    copy: categoryLabel,
+                    copy: (slug) => categoryLabel(words, slug),
                     onChosen: (value) =>
                         _bloc.add(FieldCorrected(ReviewField.category, value)),
                   ),
@@ -170,27 +181,29 @@ class _FormState extends State<_Form> {
                     Padding(
                       padding: const EdgeInsets.only(left: 12, bottom: 6),
                       child: Text(
-                        'The Model chose that because: '
-                        '${state.extraction.categoryReason}',
+                        words.reviewCategoryReason(
+                          state.extraction.categoryReason,
+                        ),
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ),
                   _Closed(
-                    label: ReviewField.paymentMethod.label,
+                    name: ReviewField.paymentMethod.name,
+                    label: ReviewField.paymentMethod.labelIn(words),
                     value: state.extraction.paymentMethod,
                     options: paymentMethods,
-                    copy: paymentMethodLabel,
+                    copy: (slug) => paymentMethodLabel(words, slug),
                     onChosen: (value) => _bloc.add(
                       FieldCorrected(ReviewField.paymentMethod, value),
                     ),
                   ),
-                  _text(ReviewField.subtotal, number: true),
-                  _text(ReviewField.tax, number: true),
-                  _text(ReviewField.tip, number: true),
-                  _text(ReviewField.total, number: true),
+                  _text(words, ReviewField.subtotal, number: true),
+                  _text(words, ReviewField.tax, number: true),
+                  _text(words, ReviewField.tip, number: true),
+                  _text(words, ReviewField.total, number: true),
                   const SizedBox(height: 24),
                   Text(
-                    ReviewField.lineItems.label,
+                    ReviewField.lineItems.labelIn(words),
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   for (var index = 0; index < items.length; index++)
@@ -206,7 +219,7 @@ class _FormState extends State<_Form> {
                     child: TextButton.icon(
                       onPressed: () => _bloc.add(const LineItemAdded()),
                       icon: const Icon(Icons.add),
-                      label: const Text('Add a Line Item'),
+                      label: Text(words.reviewAddLineItem),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -215,7 +228,9 @@ class _FormState extends State<_Form> {
                         ? null
                         : () => _bloc.add(const ReviewCommitted()),
                     child: Text(
-                      state.editing == null ? 'Add to Ledger' : 'Save',
+                      state.editing == null
+                          ? words.reviewAddToLedger
+                          : words.reviewSave,
                     ),
                   ),
                 ],
@@ -236,12 +251,16 @@ class _FormState extends State<_Form> {
     }
   }
 
-  Widget _text(ReviewField field, {bool number = false}) => Padding(
+  Widget _text(
+    AppLocalizations words,
+    ReviewField field, {
+    bool number = false,
+  }) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 6),
     child: TextField(
       controller: _fields[field],
       decoration: InputDecoration(
-        labelText: field.label,
+        labelText: field.labelIn(words),
         border: const OutlineInputBorder(),
       ),
       keyboardType: number
@@ -303,8 +322,7 @@ class _Clean extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
       child: Text(
-        'Everything on this receipt adds up. Check it against the photo, then '
-        'add it.',
+        AppLocalizations.of(context).reviewClean,
         style: Theme.of(context).textTheme.bodySmall,
       ),
     );
@@ -323,6 +341,7 @@ class _Findings extends StatelessWidget {
   Widget build(BuildContext context) {
     if (findings.isEmpty) return const SizedBox.shrink();
 
+    final words = AppLocalizations.of(context);
     final colours = Theme.of(context).colorScheme;
 
     return Card(
@@ -334,7 +353,7 @@ class _Findings extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             for (final (finding, (label, detail)) in findings.map(
-              (finding) => (finding, sayingFor(finding)),
+              (finding) => (finding, sayingFor(words, finding)),
             ))
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
@@ -387,7 +406,7 @@ class _Refused extends StatelessWidget {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('That Expense was not saved. Your typing is still here.'),
+        Text(AppLocalizations.of(context).reviewRefused),
         Text(reason, style: Theme.of(context).textTheme.bodySmall),
       ],
     ),
@@ -398,6 +417,7 @@ class _Refused extends StatelessWidget {
 /// free-text path into a Category by design — see ADR-0005.
 class _Closed extends StatelessWidget {
   const _Closed({
+    required this.name,
     required this.label,
     required this.value,
     required this.options,
@@ -405,6 +425,9 @@ class _Closed extends StatelessWidget {
     required this.onChosen,
   });
 
+  /// The field's wire name, which is what the key is built from. The label
+  /// would do the same job until somebody changed language mid-form.
+  final String name;
   final String label;
   final String value;
   final List<String> options;
@@ -417,7 +440,7 @@ class _Closed extends StatelessWidget {
     child: DropdownButtonFormField<String>(
       // Seeded rather than driven, so the key is what keeps what is shown in
       // step with the Extraction after a Line Item above it is removed.
-      key: ValueKey('$label:$value'),
+      key: ValueKey('$name:$value'),
       initialValue: options.contains(value) ? value : options.last,
       decoration: InputDecoration(
         labelText: label,
@@ -446,67 +469,74 @@ class _Row extends StatelessWidget {
   final VoidCallback onRemoved;
 
   @override
-  Widget build(BuildContext context) => Card(
-    margin: const EdgeInsets.symmetric(vertical: 6),
-    child: Padding(
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: controllers.description,
-                  decoration: const InputDecoration(labelText: 'Description'),
-                  onChanged: (value) =>
-                      onCorrected(LineItemField.description, value),
+  Widget build(BuildContext context) {
+    final words = AppLocalizations.of(context);
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: controllers.description,
+                    decoration: InputDecoration(
+                      labelText: words.reviewLineDescription,
+                    ),
+                    onChanged: (value) =>
+                        onCorrected(LineItemField.description, value),
+                  ),
                 ),
-              ),
-              IconButton(
-                tooltip: 'Remove this Line Item',
-                icon: const Icon(Icons.close),
-                onPressed: onRemoved,
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: _number(
-                  controllers.quantity,
-                  'Qty',
-                  LineItemField.quantity,
+                IconButton(
+                  tooltip: words.reviewRemoveLineItem,
+                  icon: const Icon(Icons.close),
+                  onPressed: onRemoved,
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _number(
-                  controllers.unitPrice,
-                  'Unit price',
-                  LineItemField.unitPrice,
+              ],
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: _number(
+                    controllers.quantity,
+                    words.reviewLineQuantity,
+                    LineItemField.quantity,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _number(
-                  controllers.amount,
-                  'Amount',
-                  LineItemField.amount,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _number(
+                    controllers.unitPrice,
+                    words.reviewLineUnitPrice,
+                    LineItemField.unitPrice,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          _Closed(
-            label: ReviewField.category.label,
-            value: category,
-            options: categories,
-            copy: categoryLabel,
-            onChosen: (value) => onCorrected(LineItemField.category, value),
-          ),
-        ],
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _number(
+                    controllers.amount,
+                    words.reviewLineAmount,
+                    LineItemField.amount,
+                  ),
+                ),
+              ],
+            ),
+            _Closed(
+              name: ReviewField.category.name,
+              label: ReviewField.category.labelIn(words),
+              value: category,
+              options: categories,
+              copy: (slug) => categoryLabel(words, slug),
+              onChosen: (value) => onCorrected(LineItemField.category, value),
+            ),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 
   Widget _number(
     TextEditingController controller,
