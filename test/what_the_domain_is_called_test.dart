@@ -44,6 +44,17 @@ void main() {
         }
       });
 
+      test('both ways an Expense can have got here have copy', () {
+        for (final source in ExpenseSource.values) {
+          expect(source.labelIn(words), isNot(source.name));
+        }
+      });
+
+      test('an Expense with no merchant is called something', () {
+        expect(merchantLabel(words, null), isNotEmpty);
+        expect(merchantLabel(words, 'Kopitiam SS2'), 'Kopitiam SS2');
+      });
+
       test('every field Review can change has copy to show the user', () {
         for (final field in ReviewField.values) {
           expect(field.labelIn(words), isNot(field.name));

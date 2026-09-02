@@ -19,11 +19,20 @@ The prefix is the screen, not the widget: a string that moves between two
 widgets on the same screen should not have to be renamed to stay honest.
 
 **A closed set the domain owns is prefixed by the set instead** — `category*`,
-`paymentMethod*`, `field*`. Those are read on more than one screen, so a screen
-prefix would be a lie about where they appear, and the honest alternative is one
-copy per screen, which is the drift the single definition exists to prevent.
-Nothing else earns the exception: a set here means a slug in `packages/core` and
-a coverage test naming every member.
+`paymentMethod*`, `field*`, `expenseSource*`. Those are read on more than one
+screen, so a screen prefix would be a lie about where they appear, and the
+honest alternative is one copy per screen, which is the drift the single
+definition exists to prevent. Nothing else earns the exception: a set here
+means a slug in `packages/core` and a coverage test naming every member.
+
+`merchantUnknown` is the same argument about a field rather than a set. A
+merchant's name is transcribed and never translated; *not having one* is a word
+this app chooses, and it is read on three screens. One key, prefixed by the
+thing it names.
+
+Every one of these is reached through a function in `on_screen.dart` rather
+than by a screen calling `words.` directly, which is what makes "one
+definition" true rather than intended.
 
 ## Messages, not fragments
 
@@ -44,6 +53,23 @@ Every key exists in every ARB file, in real prose. `l10n.yaml` writes anything
 missing to `l10n-untranslated.json`, and that file should stay empty — a key
 that silently falls back to English is a screen that is half migrated and
 looks finished.
+
+`test/l10n/both_languages_say_everything_test.dart` is what enforces that, and
+it exists because the two failure modes are not symmetric. A key missing from
+**both** files fails codegen, loudly, because `nullable-getter: false` means the
+getter has to be there. A key missing from **zh alone** falls back and nothing
+breaks. Ten keys have no other assertion anywhere — each of them needs a state
+a widget test cannot hold still — and parity is what covers them.
+
+The other half of the rule is `test/no_english_left_test.dart`, which walks
+`lib/` for sentences written outside these files. It says in its own doc comment
+how it tells a sentence a user reads from one a user never sees, because the
+alternative is an allow list nobody maintains.
+
+**Append only, never reorder.** A new prefix goes at the end of the file; a new
+key in an existing prefix goes in that prefix's block, which is not a reorder.
+Run `flutter pub get` after either, and check `l10n-untranslated.json` is still
+`{}`.
 
 ## Dates are not in here
 

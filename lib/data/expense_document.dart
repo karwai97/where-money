@@ -51,7 +51,12 @@ Expense expenseFromDocument(String id, Map<String, Object?> document) {
 
   return Expense(
     id: id,
-    merchant: _string(document['merchant']) ?? 'Unknown merchant',
+    // A blank reads as no merchant rather than as a merchant called nothing,
+    // which is the same normalisation Expense.fromExtraction does.
+    merchant: switch (_string(document['merchant'])?.trim()) {
+      null || '' => null,
+      final merchant => merchant,
+    },
     date:
         DateTime.tryParse(_string(document['date']) ?? '') ??
         (throw FormatException('Expense $id has no legible date.')),

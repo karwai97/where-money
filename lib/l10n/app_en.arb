@@ -575,5 +575,16 @@
   "lockReason": "Unlock where_money to see your spending.",
   "@lockReason": {
     "description": "Read out by the phone's own prompt rather than by this app, which is why it is a whole sentence where the rest of this screen is not. The three availability states are named in settingsLock*: this screen shows the same words whichever of them the phone is in."
-  }
+  },
+
+  "merchantUnknown": "Unknown merchant",
+  "@merchantUnknown": {
+    "description": "What an Expense is called when the receipt did not say who it was from and nobody typed it in. A merchant's name is transcribed off the paper and is never translated; not having one is this app's own word for it. Read on the Ledger, on an opened Expense and in the dialog that deletes one, so the prefix is the thing named rather than a screen, as with category* and field*."
+  },
+
+  "expenseSourceScanned": "Read from a receipt",
+  "@expenseSourceScanned": {
+    "description": "The two members of ExpenseSource, worded for a tooltip on an icon. expenseFromReceipt and expenseTypedByHand say the same two things at length, on the one screen that has room for a line of body text. Read on every row of the Ledger and on an opened Expense, which is why these are prefixed by the set and not by a screen."
+  },
+  "expenseSourceManual": "Typed by hand"
 }

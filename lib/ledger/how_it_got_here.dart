@@ -6,6 +6,9 @@ library;
 import 'package:flutter/material.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import '../l10n/app_localizations.dart';
+import '../on_screen.dart';
+
 class HowItGotHere extends StatelessWidget {
   const HowItGotHere(this.source, {super.key, this.size});
 
@@ -17,7 +20,7 @@ class HowItGotHere extends StatelessWidget {
     final scanned = source == ExpenseSource.scanned;
 
     return Tooltip(
-      message: scanned ? 'Read from a receipt' : 'Typed by hand',
+      message: source.labelIn(AppLocalizations.of(context)),
       child: Icon(scanned ? Icons.receipt_long : Icons.edit_note, size: size),
     );
   }

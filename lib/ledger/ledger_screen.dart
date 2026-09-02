@@ -318,7 +318,7 @@ class _ExpenseTile extends StatelessWidget {
       // How much of this Ledger the app produced, readable down the column
       // rather than one Expense at a time.
       leading: HowItGotHere(expense.source),
-      title: Text(expense.merchant),
+      title: Text(merchantLabel(words, expense.merchant)),
       subtitle: Text(dayAndCategory(words, expense.date, expense.category)),
       trailing: Text(
         asMoney(expense.currency, expense.total),

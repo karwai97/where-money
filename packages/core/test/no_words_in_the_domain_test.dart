@@ -34,10 +34,6 @@ void main() {
 const _sampleData = 'fixtures.dart';
 
 const _allowed = {
-  // A stored value, not a rendered label: this is written into Firestore as an
-  // Expense's merchant and read back as itself. A nullable merchant is the
-  // real fix and belongs with the sweep for the last English in the app.
-  'Unknown merchant',
   // Developer-facing. Neither of these ever reaches a screen.
   r'Expected a JSON object, got ${decoded.runtimeType}.',
   r'Knobs(model: $model, effort: $effort, longEdge: $longEdge, ',

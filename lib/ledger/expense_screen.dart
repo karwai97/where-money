@@ -55,7 +55,7 @@ class ExpenseScreen extends StatelessWidget {
 
         return Scaffold(
           appBar: AppBar(
-            title: Text(expense.merchant),
+            title: Text(merchantLabel(words, expense.merchant)),
             actions: [
               IconButton(
                 tooltip: words.expenseCorrect,
@@ -99,6 +99,7 @@ class ExpenseScreen extends StatelessWidget {
     final ledger = context.read<LedgerBloc>();
     final navigator = Navigator.of(context);
     final amount = asMoney(expense.currency, expense.total);
+    final merchant = merchantLabel(words, expense.merchant);
 
     final agreed = await showDialog<bool>(
       context: context,
@@ -109,8 +110,8 @@ class ExpenseScreen extends StatelessWidget {
           // Expense typed by hand never had one, and promising to keep it is a
           // promise about nothing.
           expense.receiptPath == null
-              ? words.expenseDeleteBody(expense.merchant, amount)
-              : words.expenseDeleteBodyKeepsReceipt(expense.merchant, amount),
+              ? words.expenseDeleteBody(merchant, amount)
+              : words.expenseDeleteBodyKeepsReceipt(merchant, amount),
         ),
         actions: [
           TextButton(

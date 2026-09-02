@@ -47,7 +47,9 @@ Map<String, dynamic> rollupPrompt(Rollup rollup) {
     'largest': [
       for (final expense in rollup.largest)
         {
-          'merchant': expense.merchant,
+          // Omitted rather than named: the Model is writing in the user's
+          // language and has no use for this app's word for an absence.
+          if (expense.merchant != null) 'merchant': expense.merchant,
           'amount': _money(expense.total),
           'category': expense.category,
           'day': expense.date.day,

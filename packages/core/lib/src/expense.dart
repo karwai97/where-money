@@ -11,7 +11,13 @@ enum ExpenseSource { scanned, manual }
 
 class Expense {
   final String id;
-  final String merchant;
+
+  /// The merchant, as printed on the paper. Null when the receipt did not say
+  /// legibly and nobody typed it in — an absence rather than a placeholder,
+  /// because a placeholder is words, and words in the domain end up quoted
+  /// into a Recap in the wrong language (ADR-0007). What the app calls an
+  /// Expense with no merchant is `merchantLabel`'s in `on_screen.dart`.
+  final String? merchant;
   final DateTime date;
   final String currency;
   final double total;
@@ -71,7 +77,7 @@ class Expense {
 
     return Expense(
       id: id,
-      merchant: merchant.isEmpty ? 'Unknown merchant' : merchant,
+      merchant: merchant.isEmpty ? null : merchant,
       date: DateTime.tryParse(extraction.purchasedAt ?? '') ?? fallbackDate,
       currency: currency.isEmpty ? '???' : currency.toUpperCase(),
       total: extraction.total,
@@ -101,7 +107,10 @@ class Expense {
   /// `Check.of(..., alreadyReviewed: true)`.
   Extraction asExtraction() => Extraction(
     isReceipt: true,
-    merchant: merchant,
+    // An Extraction says "not read" with a blank rather than a null, which is
+    // also what `NoMerchant` looks for — so reopening an Expense with no
+    // merchant raises the same Finding it was committed past.
+    merchant: merchant ?? '',
     purchasedAt: date.toIso8601String().split('T').first,
     currency: currency,
     subtotal: subtotal,

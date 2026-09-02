@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:test/test.dart';
 import 'package:where_money_core/where_money_core.dart';
 
@@ -17,6 +19,37 @@ void main() {
     expect(expense.date, DateTime.parse(cleanExtraction.purchasedAt!));
     expect(expense.source, ExpenseSource.scanned);
     expect(expense.needsReview, isFalse);
+  });
+
+  test('an unread merchant leaves the Expense without one', () {
+    final expense = Expense.fromExtraction(
+      cleanExtraction.copyWith(merchant: '   '),
+      id: 'exp-nameless',
+      now: now,
+    );
+
+    // Not a placeholder. A placeholder is words, and the Recap prompt forwards
+    // a merchant verbatim — so an English one would be quoted into a Chinese
+    // Recap. What the screens call this is merchantLabel's in the app.
+    expect(expense.merchant, isNull);
+    expect(
+      jsonEncode(rollupPrompt(_monthOf(expense))),
+      isNot(contains('merchant')),
+    );
+  });
+
+  test('and reopening it raises the same Finding it was committed past', () {
+    final expense = Expense.fromExtraction(
+      cleanExtraction.copyWith(merchant: ''),
+      id: 'exp-nameless',
+      now: now,
+    );
+
+    expect(expense.asExtraction().merchant, '');
+    expect(
+      Check.of(expense.asExtraction(), now: now).findings,
+      contains(isA<NoMerchant>()),
+    );
   });
 
   test('an unread date falls back to the day it was reviewed', () {
@@ -196,3 +229,10 @@ void main() {
     expect(expense.asExtraction().merchant, cleanExtraction.merchant);
   });
 }
+
+Rollup _monthOf(Expense expense) => Rollup.forMonth(
+  [expense],
+  year: expense.date.year,
+  month: expense.date.month,
+  homeCurrency: expense.currency,
+);

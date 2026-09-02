@@ -62,6 +62,23 @@ String categoryLabel(AppLocalizations words, String category) =>
       _ => category,
     };
 
+/// A merchant is transcribed off the paper and is never translated; its
+/// absence is. Read on the Ledger, on an opened Expense and in the dialog that
+/// deletes one, so it sits here with the domain's other vocabulary rather than
+/// under a screen prefix.
+String merchantLabel(AppLocalizations words, String? merchant) =>
+    merchant ?? words.merchantUnknown;
+
+extension ExpenseSourceLabel on ExpenseSource {
+  /// How much of the Ledger the app produced, in as few words as a tooltip on
+  /// an icon can carry. `HowItGotHere` is the only caller and it is read from
+  /// two screens, which is why this is not `expense*` or `ledger*`.
+  String labelIn(AppLocalizations words) => switch (this) {
+    ExpenseSource.scanned => words.expenseSourceScanned,
+    ExpenseSource.manual => words.expenseSourceManual,
+  };
+}
+
 String paymentMethodLabel(AppLocalizations words, String method) =>
     switch (method) {
       'cash' => words.paymentMethodCash,

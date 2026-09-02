@@ -255,5 +255,10 @@
   "lockRefused": "这次没有解开。",
   "lockUnlock": "解锁",
   "lockSignOutInstead": "改为退出登录",
-  "lockReason": "解锁 where_money 查看你的消费记录。"
+  "lockReason": "解锁 where_money 查看你的消费记录。",
+
+  "merchantUnknown": "商家不明",
+
+  "expenseSourceScanned": "从收据读出来的",
+  "expenseSourceManual": "手动输入的"
 }
