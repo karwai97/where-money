@@ -7,6 +7,7 @@ import 'package:where_money_core/where_money_core.dart';
 
 import '../data/ledger_store.dart';
 import '../scan/model_gateway.dart';
+import 'recaps.dart';
 
 sealed class LedgerEvent extends Equatable {
   const LedgerEvent();
@@ -228,7 +229,7 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
     on<_RecapWanted>(_onRecapWanted);
     on<_LedgerChanged>((event, emit) {
       _expenses = event.expenses;
-      emit(_ready());
+      _show(emit);
     });
     on<_LedgerFailed>((event, emit) => emit(LedgerUnavailable(event.reason)));
   }
@@ -251,18 +252,21 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
   List<Expense> _expenses = const [];
   StreamSubscription<List<Expense>>? _watching;
 
-  /// Answers, kept against the hash of the Rollup that produced them. An
-  /// unchanged hash is an unchanged Recap, which is what makes reopening a
-  /// month free and the still-changing current month correct. A Recap that
-  /// could not be written is kept here too, so a refusal is not paid for again
-  /// on every rebuild.
-  final Map<String, RecapState> _recaps = {};
-  final Set<String> _asking = {};
+  final Recaps _recaps = Recaps();
 
   void _onStepped(MonthStepped event, Emitter<LedgerState> emit) {
     _month = DateTime(_month.year, _month.month + event.by);
     if (_month.isAfter(_opened)) _month = _opened;
-    if (state is LedgerReady) emit(_ready());
+    if (state is LedgerReady) _show(emit);
+  }
+
+  /// The month on screen, and then whatever it still needs. The two halves are
+  /// two statements on purpose: building a [LedgerReady] costs nothing and
+  /// starts nothing, and this is the only place a month gets paid for.
+  void _show(Emitter<LedgerState> emit) {
+    final ready = _ready();
+    emit(ready);
+    _wantRecap(ready.rollup);
   }
 
   LedgerReady _ready() {
@@ -288,32 +292,63 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
     );
   }
 
+  /// What the month has to say for itself, asking nothing. A month nobody has
+  /// asked about yet reads as pending because [_wantRecap] is about to ask —
+  /// which is true of every path here, because [_show] is the only way a
+  /// [LedgerReady] reaches the screen.
   RecapState _recapFor(Rollup rollup) {
     if (rollup.expenseCount < minimumExpensesForRecap) {
       return const RecapTooFewExpenses(minimumExpensesForRecap);
     }
 
+    return _recaps.held(rollupHash(rollup, language: _language)) ??
+        const RecapPending();
+  }
+
+  /// Asks for anything the month on screen still needs. Cheap and idempotent:
+  /// the event is only the request, and [Recaps.claim] is what decides whether
+  /// a Model is actually called.
+  void _wantRecap(Rollup rollup) {
+    if (rollup.expenseCount < minimumExpensesForRecap) return;
+
     final hash = rollupHash(rollup, language: _language);
-    final held = _recaps[hash];
-    if (held != null) return held;
+    if (_recaps.held(hash) != null) return;
 
     add(_RecapWanted(hash, jsonEncode(rollupPrompt(rollup)), _language));
-    return const RecapPending();
   }
 
   Future<void> _onRecapWanted(
     _RecapWanted event,
     Emitter<LedgerState> emit,
   ) async {
-    if (_recaps.containsKey(event.hash) || !_asking.add(event.hash)) return;
+    if (!_recaps.claim(event.hash)) return;
 
-    final answer = await _model.recap(event.prompt, language: event.language);
-    _asking.remove(event.hash);
-    _recaps[event.hash] = _recapFrom(answer);
+    _recaps.keep(event.hash, await _answerTo(event));
     // The user can leave the screen while the Model is still writing, and a
     // Recap that arrives after that has nowhere to go.
     if (emit.isDone || state is! LedgerReady) return;
-    emit(_ready());
+    _show(emit);
+  }
+
+  /// What the Model had to say, including when it says it by throwing. The
+  /// gateway promises a typed answer for every failure it knows about, and a
+  /// caller that trusts that absolutely is a caller that hangs: the real one
+  /// fetches an ID token before its own `try`, and Firebase throws there on a
+  /// dead connection or a revoked token. A month claimed and never answered
+  /// sits on a spinner nothing can clear, because [RecapAskedAgain] only acts
+  /// on a month that failed out loud.
+  Future<RecapState> _answerTo(_RecapWanted event) async {
+    final RecapAnswer answer;
+    try {
+      answer = await _model.recap(event.prompt, language: event.language);
+    } on Object catch (_) {
+      return const RecapUnavailable(WhyNoRecap.modelUnavailable);
+    }
+
+    // Outside the `try` on purpose. Reading an answer wrong is this app's
+    // mistake, and dressing it up as the far end's would hand the user a
+    // retry that fails the same way every time.
+    return _recapFrom(answer);
   }
 
   /// A refused delete needs no words of its own: the list is a live stream, so
@@ -330,20 +365,20 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
     }
   }
 
-  /// Nothing here touches the Ledger stream. The hash misses, `_ready()` asks
-  /// for one Recap in the new language, and the old one stays in `_recaps`
-  /// under the key it was paid for.
+  /// Nothing here touches the Ledger stream. The hash misses, `_show` asks for
+  /// one Recap in the new language, and the old one stays in [_recaps] under
+  /// the key it was paid for.
   void _onLanguageChanged(LanguageChanged event, Emitter<LedgerState> emit) {
     if (event.language == _language) return;
     _language = event.language;
-    if (state is LedgerReady) emit(_ready());
+    if (state is LedgerReady) _show(emit);
   }
 
   void _onAskedAgain(RecapAskedAgain event, Emitter<LedgerState> emit) {
     if (state case final LedgerReady ready
         when ready.recap is RecapUnavailable) {
-      _recaps.remove(rollupHash(ready.rollup, language: _language));
-      emit(_ready());
+      _recaps.forget(rollupHash(ready.rollup, language: _language));
+      _show(emit);
     }
   }
 

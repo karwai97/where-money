@@ -262,6 +262,43 @@ void main() {
     await bloc.close();
   });
 
+  /// The gateway promises a typed answer for every failure it knows about, and
+  /// keeps that promise for everything it reaches over the wire. It fetches an
+  /// ID token first, though, outside its own `try`, and Firebase throws there
+  /// on a dead connection or a revoked token. A month that hits that used to
+  /// sit on a spinner nothing could clear: the hash stayed claimed, no answer
+  /// was ever kept, and the retry below does nothing while the state is
+  /// pending.
+  test(
+    'a Model call that throws leaves the month somewhere it can leave',
+    () async {
+      final model = FakeModelGateway()..throws = StateError('no token');
+      final (:bloc, model: _) = opened(
+        seedLedger(around: august),
+        model: model,
+      );
+
+      final state = await settled(bloc);
+
+      expect(state.recap, const RecapUnavailable(WhyNoRecap.modelUnavailable));
+      await bloc.close();
+    },
+  );
+
+  test('a month whose Model call threw can be asked about again', () async {
+    final model = FakeModelGateway()..throws = StateError('no token');
+    final (:bloc, model: _) = opened(seedLedger(around: august), model: model);
+    expect((await settled(bloc)).recap, isA<RecapUnavailable>());
+
+    model.throws = null;
+    model.recapAnswer = FakeModelGateway.wrote('August came to MYR 1806.75.');
+    bloc.add(const RecapAskedAgain());
+    final state = await settled(bloc);
+
+    expect((state.recap as RecapOnScreen).text, 'August came to MYR 1806.75.');
+    await bloc.close();
+  });
+
   test('asking again is something the user can do', () async {
     final model = FakeModelGateway(
       recapAnswer: const ModelOutOfReach('no signal'),

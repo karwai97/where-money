@@ -31,6 +31,14 @@ class FakeModelGateway implements ModelGateway {
   final List<String> extractedIn = [];
   final List<String> recappedIn = [];
 
+  /// Thrown instead of answering. `ModelGateway` promises a typed answer for
+  /// every way a call can fail, and the real one keeps that promise for
+  /// everything it reaches over the wire — but it fetches an ID token first,
+  /// outside its own `try`, and Firebase throws there on a dead connection or
+  /// a revoked token. So a caller that trusts the promise absolutely is a
+  /// caller that hangs, and this is how a test says so.
+  Object? throws;
+
   Completer<void>? _held;
 
   /// Holds every call open until [release], so a Scan can be watched sitting at
@@ -50,6 +58,7 @@ class FakeModelGateway implements ModelGateway {
     sent = receipt;
     extractedIn.add(language);
     await _held?.future;
+    if (throws case final Object failure) throw failure;
     return answer;
   }
 
@@ -61,6 +70,7 @@ class FakeModelGateway implements ModelGateway {
     rollupsAsked.add(rollupJson);
     recappedIn.add(language);
     await _held?.future;
+    if (throws case final Object failure) throw failure;
     return recapAnswer;
   }
 
