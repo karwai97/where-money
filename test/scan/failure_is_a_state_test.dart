@@ -267,4 +267,93 @@ void main() {
       await bloc.close();
     });
   });
+
+  /// The gateway promises a typed answer for every failure it knows about, so
+  /// `_extract` has no `try` of its own. It is a seam, though, and a caller
+  /// that depends on an implementation keeping a promise is a caller that
+  /// hangs: a throw used to leave the Scan claimed and at `extracting`, where
+  /// the sweep skips it, `canBeReadAgain` refuses it and `_waitingToBeRead`
+  /// excludes it. A spinner with no way out until the app restarts.
+  group('a read that throws is a state too', () {
+    test(
+      'it lands somewhere the user can see rather than at extracting',
+      () async {
+        model.throws = StateError('no token');
+        final bloc = opened();
+
+        final scan = await readOne(bloc);
+
+        expect(scan.state, ScanState.failed);
+        expect(scan.failure, ScanFailure.modelUnavailable);
+        expect(await store.receiptFor(scan.id), isNotNull);
+        await bloc.close();
+      },
+    );
+
+    /// The reading queue is one chain of futures, and `then` on a future that
+    /// completed with an error skips its callback. So an unguarded throw did
+    /// not strand one Scan — it stopped every Scan behind it, silently and for
+    /// the life of the bloc.
+    test('the Scan behind it is still read', () async {
+      model.throws = StateError('no token');
+      final bloc = opened();
+
+      bloc.add(ScanCaptured(photograph(width: 600, height: 800)));
+      bloc.add(ScanCaptured(photograph(width: 640, height: 480)));
+
+      final ready = await bloc.stream.firstWhere(
+        (state) =>
+            state is InboxReady &&
+            state.scans.length == 2 &&
+            state.scans.every((scan) => scan.state == ScanState.failed),
+      );
+
+      expect((ready as InboxReady).scans, hasLength(2));
+      await bloc.close();
+    });
+
+    /// Belt and braces on the same chain: the failure above is written to the
+    /// store, and if even that cannot be written the queue must still survive.
+    test(
+      'and it survives a store that cannot write the failure down',
+      () async {
+        model.throws = StateError('no token');
+        store.putThrows = StateError('the disk is full');
+        final bloc = opened();
+
+        bloc.add(ScanCaptured(photograph(width: 600, height: 800)));
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+
+        store.putThrows = null;
+        model.throws = null;
+        model.answer = FakeModelGateway.reading(cleanExtraction);
+        bloc.add(ScanCaptured(photograph(width: 640, height: 480)));
+
+        final read = await scanIn(
+          bloc,
+          (scan) => scan.state == ScanState.extracted,
+        );
+        expect(read.extraction?.merchant, cleanExtraction.merchant);
+        await bloc.close();
+      },
+    );
+
+    test('and the user can read it again', () async {
+      model.throws = StateError('no token');
+      final bloc = opened();
+      final failed = await readOne(bloc);
+      expect(failed.state, ScanState.failed);
+
+      model.throws = null;
+      model.answer = FakeModelGateway.reading(cleanExtraction);
+      bloc.add(ScanReadAgain(failed.id));
+
+      final read = await scanIn(
+        bloc,
+        (scan) => scan.id == failed.id && scan.state == ScanState.extracted,
+      );
+      expect(read.extraction?.merchant, cleanExtraction.merchant);
+      await bloc.close();
+    });
+  });
 }

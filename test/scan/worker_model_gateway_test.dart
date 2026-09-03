@@ -19,10 +19,14 @@ void main() {
   WorkerModelGateway gateway(
     Future<http.Response> Function(http.Request) answer, {
     String? token = 'an-id-token',
+    Object? tokenThrows,
     Knobs knobs = const Knobs(),
   }) => WorkerModelGateway(
     endpoint: Uri.parse('https://where-money.example.workers.dev'),
-    idToken: () async => token,
+    idToken: () async {
+      if (tokenThrows case final Object failure) throw failure;
+      return token;
+    },
     client: MockClient(answer),
     knobs: knobs,
   );
@@ -156,6 +160,29 @@ void main() {
     ).extract(receipt, language: 'en');
 
     expect(answer, isA<TokenRefused>());
+  });
+
+  /// The taxonomy exists so that no caller has to catch anything, and this was
+  /// the one call in the gateway outside its own `try`. In production the
+  /// callback is Firebase's `getIdToken`, which throws on a dead connection
+  /// and on a revoked token — so a receipt photographed on a bad signal was
+  /// the way an exception reached a bloc.
+  test('a token that will not come is news, not an exception', () async {
+    final answer = await gateway(
+      (_) async => fail('the Worker should not have been called'),
+      tokenThrows: StateError('network-request-failed'),
+    ).extract(receipt, language: 'en');
+
+    expect(answer, isA<ModelOutOfReach>());
+  });
+
+  test('a Recap asked for with no token to be had is news too', () async {
+    final answer = await gateway(
+      (_) async => fail('the Worker should not have been called'),
+      tokenThrows: StateError('network-request-failed'),
+    ).recap('{}', language: 'en');
+
+    expect(answer, isA<ModelOutOfReach>());
   });
 
   test('a dead network is not a refusal', () async {

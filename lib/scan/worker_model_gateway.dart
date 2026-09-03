@@ -95,7 +95,21 @@ class WorkerModelGateway implements ModelGateway {
     required String contentType,
     required String body,
   }) async {
-    final token = await idToken();
+    // Guarded on its own, because it is the one call here that is not this
+    // file's. In production it is Firebase's `getIdToken`, which throws on a
+    // dead connection and on a revoked token, and this file promises the
+    // taxonomy rather than an exception so that every failure becomes a state
+    // a Scan can sit in. `ModelOutOfReach` because no signal is much the
+    // commonest reason a token does not come, and it is the one failure that
+    // goes round again by itself; a revoked token retrying on that schedule
+    // costs nothing, because it never reaches the Worker.
+    final String? token;
+    try {
+      token = await idToken();
+    } on Object catch (error) {
+      return (null, ModelOutOfReach('$error'));
+    }
+
     if (token == null) {
       return (null, const TokenRefused('nobody is signed in on this device'));
     }

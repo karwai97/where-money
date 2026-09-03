@@ -217,32 +217,56 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
 
   void _read(Scan scan) {
     if (!_claimed.add(scan.id)) return;
-    _reading = _reading.then((_) => _extract(scan));
+    // One Scan's trouble must not become the queue's. `then` on a future that
+    // completed with an error skips its callback and passes the error on, so
+    // an unguarded throw here would stop every Scan behind this one from ever
+    // being read — for the life of the bloc, and silently. `_extract` records
+    // what went wrong itself; this only keeps the chain alive when even that
+    // could not be written down.
+    _reading = _reading.then((_) => _extract(scan)).catchError((Object _) {});
   }
 
   /// The background job. It emits nothing itself: every step is written to the
   /// store, and the Inbox learns about it the same way the user does.
   Future<void> _extract(Scan scan) async {
-    await _scans.put(scan.movedTo(ScanState.extracting));
+    try {
+      await _scans.put(scan.movedTo(ScanState.extracting));
 
-    final receipt = await _scans.receiptFor(scan.id);
-    if (receipt == null) return;
+      final receipt = await _scans.receiptFor(scan.id);
+      // The Scan is gone: `abandon` takes the record and the image together,
+      // and `put` will not write one back without an image. Nothing to record
+      // and nothing to leave behind.
+      if (receipt == null) return;
 
-    final answer = await _model.extract(receipt, language: _language);
-    // Something answered, so there is no longer anything to back off from.
-    // The pending sweep goes with it, or the backlog behind this Scan would
-    // keep waiting the long wait that has just been proved unnecessary.
-    if (answer is! ModelOutOfReach) {
-      _wait = _firstWait;
-      _nextSweep?.cancel();
+      final answer = await _model.extract(receipt, language: _language);
+      // Something answered, so there is no longer anything to back off from.
+      // The pending sweep goes with it, or the backlog behind this Scan would
+      // keep waiting the long wait that has just been proved unnecessary.
+      if (answer is! ModelOutOfReach) {
+        _wait = _firstWait;
+        _nextSweep?.cancel();
+      }
+
+      // Abandoning is the user's, and they may have done it while the Model
+      // was reading. `put` is what keeps that decision.
+      await _scans.put(_after(scan, answer));
+    } on Object catch (_) {
+      // The gateway promises a typed answer for every failure it knows about,
+      // and a caller that depends on that absolutely is a caller that hangs: a
+      // Scan left at `extracting` is skipped by the sweep, refused by
+      // `canBeReadAgain` and excluded from `_waitingToBeRead`, so a spinner
+      // with no way out until the app restarts. Written down as a failure
+      // instead, which is a state the user can read and act on.
+      //
+      // `modelUnavailable` rather than `outOfReach`: a throw is not evidence
+      // that nothing got through, and `outOfReach` is the one kind that goes
+      // round again by itself.
+      await _scans.put(_failed(scan, ScanFailure.modelUnavailable));
+    } finally {
+      // Held only for the flight. A Scan that has landed is protected by the
+      // state it landed in, and letting go is what lets it be read again.
+      _claimed.remove(scan.id);
     }
-
-    // Abandoning is the user's, and they may have done it while the Model was
-    // reading. `put` is what keeps that decision.
-    await _scans.put(_after(scan, answer));
-    // Held only for the flight. A Scan that has landed is protected by the
-    // state it landed in, and letting go is what lets it be read again.
-    _claimed.remove(scan.id);
   }
 
   @override

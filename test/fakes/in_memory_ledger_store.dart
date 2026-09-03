@@ -43,6 +43,10 @@ class InMemoryLedgerStore implements LedgerStore, ScanStore, ReceiptStore {
   Completer<void>? holdInbox;
   Completer<void>? holdReceipts;
 
+  /// Thrown by [put], so a test can take away the one thing the Inbox falls
+  /// back on when a read has already gone wrong.
+  Object? putThrows;
+
   @override
   Stream<List<Expense>> ledger() async* {
     if (refuseReads case final failure?) throw failure;
@@ -108,6 +112,7 @@ class InMemoryLedgerStore implements LedgerStore, ScanStore, ReceiptStore {
   /// abandoned mid-extraction stays abandoned.
   @override
   Future<void> put(Scan scan) async {
+    if (putThrows case final Object failure) throw failure;
     if (!_receipts.containsKey(receiptPathFor(scan.id))) return;
     _scans[scan.id] = scan;
     _inbox.add(_waiting);
