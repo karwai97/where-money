@@ -160,6 +160,7 @@
   "ledgerPhotosStayedBehindTitle": "照片留在了原来那台手机上",
   "ledgerPhotosStayedBehindBody": "你账本里的每一笔支出都从你的账号恢复回来了。收据的照片从不离开拍下它们的那台手机，所以这台手机上没有照片。其他都没有少。",
   "ledgerPhotosStayedBehindGotIt": "知道了",
+  "ledgerLoading": "正在打开你的账本",
 
   "expenseGone": "这笔支出已经不在你的账本里了。",
   "expenseCorrect": "修正这笔支出",
@@ -175,6 +176,7 @@
   "expenseNoLineItems": "没有明细——只有总额。",
   "expenseLineItemCount": "{category} · {quantity} × {unitPrice}",
   "expenseReceiptNotOnThisDevice": "收据的照片不在这台设备上。照片只留在拍下它的那台手机里，所以在别处恢复的账本不会带着它们。",
+  "expenseReceiptLoading": "正在读收据",
 
   "chartsCategoryTotal": "{count, plural, other{{category}，{amount}，{count} 笔支出}}",
   "chartsMonthTotal": "{month}，{amount}",
@@ -199,6 +201,7 @@
   "rollupLessThan": "比{month}少 {percent}%。",
   "rollupLeftOutThisMonth": "{count, plural, other{这个月有 {count} 笔以 {currencies} 支付的支出，没有计入这些总额。}}",
   "rollupLeftOutTheseMonths": "{count, plural, other{这几个月有 {count} 笔以 {currencies} 支付的支出，没有计入这些总额。}}",
+  "rollupLoading": "正在打开这个月",
 
   "inboxTitle": "待处理",
   "inboxEmpty": "没有等着处理的收据。",
@@ -230,6 +233,8 @@
   "inboxFailureImageNotAcceptedNext": "把收据重新拍一次。",
   "inboxFailureUnsaid": "这张读不出来",
 
+  "inboxLoading": "正在打开待处理",
+
   "inboxReview": "复核",
   "inboxReadAgain": "再读一次",
   "inboxDiscard": "丢弃",
@@ -255,6 +260,7 @@
   "lockRefused": "这次没有解开。",
   "lockUnlock": "解锁",
   "lockSignOutInstead": "改为退出登录",
+  "lockWaiting": "正在等手机来问",
   "lockReason": "解锁 where_money 查看你的消费记录。",
 
   "merchantUnknown": "商家不明",

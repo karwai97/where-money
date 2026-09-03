@@ -339,6 +339,10 @@
   },
   "ledgerPhotosStayedBehindBody": "Every Expense in your Ledger came back from your account. Receipt photos never leave the phone they were taken on, so this one has none of them. Nothing else is missing.",
   "ledgerPhotosStayedBehindGotIt": "Got it",
+  "ledgerLoading": "Opening your Ledger",
+  "@ledgerLoading": {
+    "description": "While the month is being read, the body of the Ledger is a spinner and nothing else. A spinner says nothing to a screen reader, so this is what it is given to say instead. Nobody reads it."
+  },
 
   "expenseGone": "That Expense is no longer in your Ledger.",
   "@expenseGone": {
@@ -384,6 +388,10 @@
     }
   },
   "expenseReceiptNotOnThisDevice": "The receipt photo is not on this device. Photos stay on the phone that took them, so a Ledger restored elsewhere arrives without them.",
+  "expenseReceiptLoading": "Loading the receipt",
+  "@expenseReceiptLoading": {
+    "description": "While the photo is read off this phone. For a screen reader only, like the other spinner labels."
+  },
 
   "chartsCategoryTotal": "{count, plural, =1{{category}, {amount}, 1 Expense} other{{category}, {amount}, {count} Expenses}}",
   "@chartsCategoryTotal": {
@@ -475,6 +483,10 @@
       "currencies": { "type": "String" }
     }
   },
+  "rollupLoading": "Opening the month",
+  "@rollupLoading": {
+    "description": "The charts, reached before the Ledger they are drawn from has finished loading. For a screen reader only."
+  },
 
   "inboxTitle": "Inbox",
   "@inboxTitle": {
@@ -529,6 +541,11 @@
     "description": "A Scan written by a version of the app that could not yet say why it failed."
   },
 
+  "inboxLoading": "Opening the Inbox",
+  "@inboxLoading": {
+    "description": "While the Scans are being read. For a screen reader only."
+  },
+
   "inboxReview": "Review",
   "inboxReadAgain": "Read again",
   "inboxDiscard": "Discard",
@@ -572,6 +589,10 @@
   "lockRefused": "That did not unlock it.",
   "lockUnlock": "Unlock",
   "lockSignOutInstead": "Sign out instead",
+  "lockWaiting": "Waiting for the phone to ask",
+  "@lockWaiting": {
+    "description": "The gap between the app asking for a fingerprint and the phone putting its own prompt up. For a screen reader only, and the platform prompt that follows is worded by lockReason."
+  },
   "lockReason": "Unlock where_money to see your spending.",
   "@lockReason": {
     "description": "Read out by the phone's own prompt rather than by this app, which is why it is a whole sentence where the rest of this screen is not. The three availability states are named in settingsLock*: this screen shows the same words whichever of them the phone is in."

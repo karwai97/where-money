@@ -58,7 +58,7 @@ class LockScreen extends StatelessWidget {
                   child: Text(words.lockUnlock),
                 ),
               ] else
-                const CircularProgressIndicator(),
+                CircularProgressIndicator(semanticsLabel: words.lockWaiting),
               const SizedBox(height: 24),
               // The way out for someone whose fingerprint has stopped being
               // recognised. It gives up the session rather than the data,

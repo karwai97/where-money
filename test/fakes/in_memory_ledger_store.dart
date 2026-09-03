@@ -31,9 +31,22 @@ class InMemoryLedgerStore implements LedgerStore, ScanStore, ReceiptStore {
   Object? refuseReads;
   Object? refuseWrites;
 
+  /// Set any of these to hold that read back, so a test can see a screen
+  /// while it is still loading. Complete it to let the read through. One per
+  /// seam because the screens that load are reached through each other: the
+  /// Inbox is behind a Ledger that has to have loaded to be tapped.
+  ///
+  /// [holdReceipts] holds [bytesAt] alone. [hasAt] answers straight away, so
+  /// that holding a photo back does not also hold up the once-per-account
+  /// notice that asks whether any photo is here.
+  Completer<void>? holdLedger;
+  Completer<void>? holdInbox;
+  Completer<void>? holdReceipts;
+
   @override
   Stream<List<Expense>> ledger() async* {
     if (refuseReads case final failure?) throw failure;
+    await holdLedger?.future;
     yield _newestFirst;
     yield* _changes.stream;
   }
@@ -57,7 +70,10 @@ class InMemoryLedgerStore implements LedgerStore, ScanStore, ReceiptStore {
   }
 
   @override
-  Future<Uint8List?> bytesAt(String path) async => _receipts[path];
+  Future<Uint8List?> bytesAt(String path) async {
+    await holdReceipts?.future;
+    return _receipts[path];
+  }
 
   @override
   Future<bool> hasAt(String path) async => _receipts.containsKey(path);
@@ -71,6 +87,7 @@ class InMemoryLedgerStore implements LedgerStore, ScanStore, ReceiptStore {
 
   @override
   Stream<List<Scan>> inbox() async* {
+    await holdInbox?.future;
     yield _waiting;
     yield* _inbox.stream;
   }

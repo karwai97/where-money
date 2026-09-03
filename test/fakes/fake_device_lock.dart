@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:where_money/lock/device_lock.dart';
 
 /// A phone that answers however the test needs it to. Defaults to the ordinary
@@ -15,6 +17,11 @@ class FakeDeviceLock implements DeviceLock {
   /// registered or a platform channel that is not there.
   Object? broken;
 
+  /// Set this to leave the prompt up without an answer, standing in for a
+  /// finger that has not been put on the sensor yet. That wait is the only
+  /// time the Lock's spinner is on screen.
+  Completer<void>? holdsThePrompt;
+
   /// What the last prompt was told to say. The platform's own window is the
   /// one thing on the Lock a widget test cannot read, so this is where its
   /// words are asserted.
@@ -30,6 +37,7 @@ class FakeDeviceLock implements DeviceLock {
   Future<Unlocking> unlock(String reason) async {
     this.reason = reason;
     if (broken case final failure?) throw failure;
+    await holdsThePrompt?.future;
     return answer;
   }
 }

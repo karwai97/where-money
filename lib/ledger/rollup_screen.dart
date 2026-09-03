@@ -21,8 +21,12 @@ class RollupScreen extends StatelessWidget {
     return BlocBuilder<LedgerBloc, LedgerState>(
       builder: (context, state) {
         if (state is! LedgerReady) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+          return Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(
+                semanticsLabel: words.rollupLoading,
+              ),
+            ),
           );
         }
 
@@ -104,6 +108,9 @@ class _TheRecap extends StatelessWidget {
             ),
             RecapPending() => Row(
               children: [
+                // Wordless on purpose, unlike every other spinner in the app:
+                // the sentence beside it already says what it means, and a
+                // label here would have a screen reader read that twice.
                 const SizedBox(
                   height: 14,
                   width: 14,

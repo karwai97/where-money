@@ -21,7 +21,11 @@ class InboxScreen extends StatelessWidget {
       appBar: AppBar(title: Text(words.inboxTitle)),
       body: BlocBuilder<InboxBloc, InboxState>(
         builder: (context, state) => switch (state) {
-          InboxLoading() => const Center(child: CircularProgressIndicator()),
+          InboxLoading() => Center(
+            child: CircularProgressIndicator(
+              semanticsLabel: words.inboxLoading,
+            ),
+          ),
           InboxReady(scans: []) => Center(
             child: Padding(
               padding: const EdgeInsets.all(32),

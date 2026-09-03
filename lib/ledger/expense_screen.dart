@@ -267,8 +267,10 @@ class _ReceiptState extends State<_Receipt> {
     return FutureBuilder<Uint8List?>(
       future: reading,
       builder: (context, read) => switch (read) {
-        AsyncSnapshot(connectionState: ConnectionState.waiting) => const Center(
-          child: CircularProgressIndicator(),
+        AsyncSnapshot(connectionState: ConnectionState.waiting) => Center(
+          child: CircularProgressIndicator(
+            semanticsLabel: AppLocalizations.of(context).expenseReceiptLoading,
+          ),
         ),
         AsyncSnapshot(data: final Uint8List receipt) => ReceiptOnScreen(
           receipt,

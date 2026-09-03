@@ -124,8 +124,10 @@ class LedgerScreen extends StatelessWidget {
             ),
             body: BlocBuilder<LedgerBloc, LedgerState>(
               builder: (context, state) => switch (state) {
-                LedgerLoading() => const Center(
-                  child: CircularProgressIndicator(),
+                LedgerLoading() => Center(
+                  child: CircularProgressIndicator(
+                    semanticsLabel: words.ledgerLoading,
+                  ),
                 ),
                 LedgerUnavailable(:final reason) => _Message(
                   words.ledgerUnreadable,
