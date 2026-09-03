@@ -112,8 +112,14 @@ final class ReviewIdle extends ReviewState {
   const ReviewIdle();
 }
 
+/// The manual lane's key. Empty because no Scan has an empty id and an edit's
+/// key is prefixed, so there is exactly one of it — which is what makes leaving
+/// Review and coming back find the typing where it was.
+const _manualLane = '';
+
 final class ReviewInProgress extends ReviewState {
   const ReviewInProgress({
+    required this.expenseId,
     required this.extraction,
     required this.check,
     required this.correctedFields,
@@ -123,6 +129,15 @@ final class ReviewInProgress extends ReviewState {
     this.committing = false,
     this.refusal,
   });
+
+  /// The document the committed Expense will be written to, decided when the
+  /// Review starts rather than when it is committed. An edit keeps the id it
+  /// already has, so a correction writes over the Expense rather than beside
+  /// it; a Scan uses its own, so a Scan can only ever be one Expense however
+  /// many times Review is reached; and a manual entry is given one here for
+  /// the same reason the other two have one — a commit refused after the write
+  /// has landed has to be able to land in the same place again.
+  final String expenseId;
 
   /// The Scan being Reviewed, or null when the user is typing an Expense that
   /// had no receipt.
@@ -158,7 +173,7 @@ final class ReviewInProgress extends ReviewState {
   String get lane => switch ((editing, scan)) {
     (final Expense expense, _) => 'expense:${expense.id}',
     (_, final Scan scan) => scan.id,
-    _ => '',
+    _ => _manualLane,
   };
 
   /// [committing] and [refusal] are deliberately not carried over: each
@@ -172,6 +187,7 @@ final class ReviewInProgress extends ReviewState {
     bool committing = false,
     String? refusal,
   }) => ReviewInProgress(
+    expenseId: expenseId,
     scan: scan,
     editing: editing,
     receipt: receipt ?? this.receipt,
@@ -212,7 +228,13 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
   /// test that pins those bounds cannot be left reading the machine's clock.
   Clock get clock => _now;
 
-  var _committed = 0;
+  var _typedByHand = 0;
+
+  /// An id for an Expense that has nothing to borrow one from. The counter is
+  /// there because two Expenses typed in the same microsecond are not the same
+  /// Expense.
+  String _anIdFor(DateTime at) =>
+      '${at.microsecondsSinceEpoch}-${++_typedByHand}';
 
   /// One half-finished Review per Scan, plus one for the manual lane. Leaving
   /// Review to look at something else and coming back should find the typing
@@ -228,12 +250,17 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
     ManualExpenseStarted event,
     Emitter<ReviewState> emit,
   ) {
-    final fresh = ReviewInProgress(
-      extraction: Extraction.blank(),
-      check: Check.of(Extraction.blank(), now: _now()),
-      correctedFields: const [],
+    final held = _unfinished[_manualLane];
+    _show(
+      emit,
+      held ??
+          ReviewInProgress(
+            expenseId: _anIdFor(_now()),
+            extraction: Extraction.blank(),
+            check: Check.of(Extraction.blank(), now: _now()),
+            correctedFields: const [],
+          ),
     );
-    _show(emit, _unfinished[fresh.lane] ?? fresh);
   }
 
   void _onScanReviewStarted(
@@ -248,6 +275,7 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
       emit,
       started ??
           ReviewInProgress(
+            expenseId: event.scan.id,
             scan: event.scan,
             extraction: extraction,
             check: Check.of(extraction, now: _now()),
@@ -268,6 +296,7 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
   ) {
     final extraction = event.expense.asExtraction();
     final fresh = ReviewInProgress(
+      expenseId: event.expense.id,
       editing: event.expense,
       extraction: extraction,
       check: Check.of(extraction, now: _now(), alreadyReviewed: true),
@@ -387,6 +416,16 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
     );
   }
 
+  /// Two writes to two stores, and nothing spans them: the Expense goes to
+  /// Firestore and the Scan leaves a directory on this phone. So the middle is
+  /// a state a user can be left in — the Expense saved, the Scan still in the
+  /// Inbox, a refusal on screen — and the way out of it is committing again.
+  ///
+  /// That works only because the second attempt lands on the first.
+  /// `LedgerStore.add` is `doc(expense.id).set(...)`, so an id that does not
+  /// change between attempts is an overwrite and one that does is a second
+  /// Expense for the same receipt. Which is why the id belongs to the Review
+  /// rather than to the attempt.
   Future<void> _onCommitted(
     ReviewCommitted event,
     Emitter<ReviewState> emit,
@@ -403,14 +442,7 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
       await _ledger.add(
         Expense.fromExtraction(
           current.extraction,
-          // An edit keeps the id it already has, so a correction writes over
-          // the Expense rather than beside it. A Scan uses its own id, so a
-          // Scan can only ever be one Expense however many times Review is
-          // reached.
-          id:
-              editing?.id ??
-              scan?.id ??
-              '${at.microsecondsSinceEpoch}-${++_committed}',
+          id: current.expenseId,
           source:
               editing?.source ??
               (scan == null ? ExpenseSource.manual : ExpenseSource.scanned),

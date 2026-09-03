@@ -31,6 +31,13 @@ class InMemoryLedgerStore implements LedgerStore, ScanStore, ReceiptStore {
   Object? refuseReads;
   Object? refuseWrites;
 
+  /// Thrown by [add] *after* the Expense has gone in, which is the one thing
+  /// [refuseWrites] cannot say: Firestore acknowledges over a network, so a
+  /// write that landed and an answer that never came back look identical to
+  /// the caller. Only a retry tells them apart, and only if it asks for the
+  /// same document.
+  Object? refuseAfterWriting;
+
   /// Set any of these to hold that read back, so a test can see a screen
   /// while it is still loading. Complete it to let the read through. One per
   /// seam because the screens that load are reached through each other: the
@@ -63,6 +70,7 @@ class InMemoryLedgerStore implements LedgerStore, ScanStore, ReceiptStore {
     _expenses
       ..removeWhere((held) => held.id == expense.id)
       ..add(expense);
+    if (refuseAfterWriting case final Object failure) throw failure;
     _changes.add(_newestFirst);
   }
 

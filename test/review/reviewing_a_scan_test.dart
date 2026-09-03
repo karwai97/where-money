@@ -167,6 +167,52 @@ void main() {
     },
   );
 
+  /// Committing writes the Expense to Firestore and then moves the Scan out of
+  /// a directory on the phone, and nothing spans those two stores. So the
+  /// middle is a real state a user can end up in, and getting out of it is the
+  /// retry — which only works because the second attempt lands on the same
+  /// document as the first. `add` is `doc(expense.id).set(...)`, so a Scan
+  /// committed twice is one Expense, and would be two the moment that id stops
+  /// being the Scan's.
+  group('a commit that only half landed', () {
+    test(
+      'leaves the Expense written and the Scan still in the Inbox',
+      () async {
+        final bloc = against(store)
+          ..add(ScanReviewStarted(await waiting(cleanExtraction)));
+        await pumpEventQueue();
+
+        store.putThrows = StateError('the disk is full');
+        bloc.add(const ReviewCommitted());
+        await pumpEventQueue();
+
+        expect(store.contents, hasLength(1));
+        expect(store.waiting, hasLength(1));
+        expect((bloc.state as ReviewInProgress).refusal, isNotNull);
+        await bloc.close();
+      },
+    );
+
+    test('and finishing it lands in the same place, not beside it', () async {
+      final bloc = against(store)
+        ..add(ScanReviewStarted(await waiting(cleanExtraction)));
+      await pumpEventQueue();
+
+      store.putThrows = StateError('the disk is full');
+      bloc.add(const ReviewCommitted());
+      await pumpEventQueue();
+
+      store.putThrows = null;
+      bloc.add(const ReviewCommitted());
+      await pumpEventQueue();
+
+      expect(store.contents, hasLength(1));
+      expect(store.waiting, isEmpty);
+      expect(bloc.state, isA<ReviewIdle>());
+      await bloc.close();
+    });
+  });
+
   test('a Scan with nothing read yet has nothing to Review', () async {
     final scan = await store.capture(receipt);
     final bloc = against(store)..add(ScanReviewStarted(scan));

@@ -185,6 +185,60 @@ void main() {
     await bloc.close();
   });
 
+  /// A Scan and an edit commit under an id that belonged to something before
+  /// the Review started, so a second attempt overwrites the first. A manual
+  /// entry has nothing to borrow an id from, and used to make a fresh one on
+  /// every attempt - which meant a write that reached Firestore without its
+  /// acknowledgement coming back left the user tapping again and getting a
+  /// second Expense.
+  group('a manual entry keeps its identity across attempts', () {
+    test('a refusal after the write does not duplicate on the next tap',
+        () async {
+      final store = InMemoryLedgerStore();
+      final bloc = against(store)..add(const ManualExpenseStarted());
+      fillIn(bloc);
+      await pumpEventQueue();
+
+      store.refuseAfterWriting = StateError('the answer never came back');
+      bloc.add(const ReviewCommitted());
+      await pumpEventQueue();
+      expect(store.contents, hasLength(1));
+      expect((bloc.state as ReviewInProgress).refusal, isNotNull);
+
+      store.refuseAfterWriting = null;
+      bloc.add(const ReviewCommitted());
+      await pumpEventQueue();
+
+      expect(store.contents, hasLength(1));
+      await bloc.close();
+    });
+
+    test('leaving Review and coming back is the same Expense', () async {
+      final bloc = against(InMemoryLedgerStore())
+        ..add(const ManualExpenseStarted());
+      final first = (await reviewing(bloc)).expenseId;
+
+      bloc.add(const ManualExpenseStarted());
+
+      expect((await reviewing(bloc)).expenseId, first);
+      await bloc.close();
+    });
+
+    test('the next one typed by hand is a different Expense', () async {
+      final store = InMemoryLedgerStore();
+      final bloc = against(store)..add(const ManualExpenseStarted());
+      final first = (await reviewing(bloc)).expenseId;
+      fillIn(bloc);
+      bloc.add(const ReviewCommitted());
+      await pumpEventQueue();
+
+      bloc.add(const ManualExpenseStarted());
+
+      expect((await reviewing(bloc)).expenseId, isNot(first));
+      await bloc.close();
+    });
+  });
+
   test('leaving Review and coming back keeps the work in progress', () async {
     final bloc = against(InMemoryLedgerStore())
       ..add(const ManualExpenseStarted())
