@@ -7,6 +7,7 @@ import '../on_screen.dart';
 import '../review/review_bloc.dart';
 import '../review/review_screen.dart';
 import 'inbox_bloc.dart';
+import 'inbox_copy.dart';
 
 /// Every Scan the user has not yet Reviewed, with the state it is sitting in.
 /// Nothing here is a dialog: a Scan's whole story is a line in this list.
@@ -55,7 +56,7 @@ class _ScanTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final words = AppLocalizations.of(context);
-    final (saying, next) = _saying(words, scan);
+    final (saying, next) = sayingFor(words, scan);
     return ListTile(
       isThreeLine: next != null,
       leading: const Icon(Icons.receipt_long),
@@ -139,56 +140,3 @@ class _ScanTile extends StatelessWidget {
     if (confirmed ?? false) inbox.add(ScanAbandoned(scan.id));
   }
 }
-
-/// What the Inbox says about a Scan: what happened, and what happens next
-/// where the user would otherwise have to guess. The two travel together —
-/// every way a Scan can fail means something different to the user and wants
-/// something different done about it — so they are read off one switch rather
-/// than two that could drift apart.
-(String, String?) _saying(AppLocalizations words, Scan scan) =>
-    switch (scan.state) {
-      ScanState.captured => (words.inboxWaitingToBeRead, null),
-      ScanState.extracting => (words.inboxBeingRead, null),
-      ScanState.extracted => (words.inboxReadyToReview, null),
-      ScanState.notReceipt => (words.inboxNotAReceipt, null),
-      ScanState.committed => (words.inboxCommitted, null),
-      ScanState.capped => (
-        words.inboxCapped,
-        switch (scan.allowanceResetsAt) {
-          final resetsAt? => words.inboxMoreScansAt(asMoment(words, resetsAt)),
-          null => words.inboxMoreScansTomorrow,
-        },
-      ),
-      ScanState.failed => switch (scan.failure) {
-        ScanFailure.refused => (
-          words.inboxFailureRefused,
-          words.inboxFailureRefusedNext,
-        ),
-        ScanFailure.saidNothing => (
-          words.inboxFailureSaidNothing,
-          words.inboxFailureSaidNothingNext,
-        ),
-        ScanFailure.notLegible => (
-          words.inboxFailureNotLegible,
-          words.inboxFailureNotLegibleNext,
-        ),
-        ScanFailure.outOfReach => (
-          words.inboxFailureOutOfReach,
-          words.inboxFailureOutOfReachNext,
-        ),
-        ScanFailure.modelUnavailable => (
-          words.inboxFailureModelUnavailable,
-          words.inboxFailureModelUnavailableNext,
-        ),
-        ScanFailure.tokenRefused => (
-          words.inboxFailureTokenRefused,
-          words.inboxFailureTokenRefusedNext,
-        ),
-        ScanFailure.imageNotAccepted => (
-          words.inboxFailureImageNotAccepted,
-          words.inboxFailureImageNotAcceptedNext,
-        ),
-        // A record written by a version of the app that could not yet say why.
-        null => (words.inboxFailureUnsaid, null),
-      },
-    };

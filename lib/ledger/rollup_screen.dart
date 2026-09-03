@@ -6,6 +6,7 @@ import '../l10n/app_localizations.dart';
 import '../on_screen.dart';
 import 'charts.dart';
 import 'ledger_bloc.dart';
+import 'recap_copy.dart';
 
 /// A month of the Ledger as two charts: what it went on, and how it compares
 /// to the months before it. Everything here is read from the Rollup the bloc
@@ -64,18 +65,6 @@ class RollupScreen extends StatelessWidget {
   }
 }
 
-/// The one exhaustive switch from a [WhyNoRecap] to words, so adding a reason
-/// without copy is a compile error rather than a blank line on the screen. The
-/// same shape as `finding_copy.dart` and for the same reason (ADR-0007).
-String _why(WhyNoRecap why, AppLocalizations words) => switch (why) {
-  WhyNoRecap.refused => words.rollupRecapRefused,
-  WhyNoRecap.nothingToSay => words.rollupRecapNothingToSay,
-  WhyNoRecap.allowanceSpent => words.rollupRecapAllowanceSpent,
-  WhyNoRecap.tokenRefused => words.rollupRecapTokenRefused,
-  WhyNoRecap.outOfReach => words.rollupRecapOutOfReach,
-  WhyNoRecap.modelUnavailable => words.rollupRecapModelUnavailable,
-};
-
 /// The month in words. It says nothing the charts below do not also say — it
 /// is written from the same Rollup they are drawn from — so a month that could
 /// not be written up costs the reader nothing but the words.
@@ -130,7 +119,10 @@ class _TheRecap extends StatelessWidget {
             RecapUnavailable(:final why) => Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(_why(why, words), style: theme.textTheme.bodyMedium),
+                Text(
+                  whyThereIsNoRecap(words, why),
+                  style: theme.textTheme.bodyMedium,
+                ),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: TextButton(
