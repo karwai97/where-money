@@ -13,8 +13,10 @@
     "FIREBASE_PROJECT_ID": "where-money-72ee2",
     // The ceiling a client-requested cap is clamped to, not the cap itself.
     // Remote Config moves the cap below this without a deploy; nothing moves
-    // it above.
-    "DAILY_MODEL_CEILING": "40",
+    // it above. Held at 20 as a deliberate brake on OpenAI spend: a deploy
+    // overwrites whatever the dashboard says, so lowering it there does not
+    // survive one.
+    "DAILY_MODEL_CEILING": "20",
     "OPENAI_RESPONSES_URL": "https://api.openai.com/v1/responses"
   },
   "kv_namespaces": [
