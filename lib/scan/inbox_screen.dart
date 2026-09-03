@@ -106,13 +106,10 @@ class _ScanTile extends StatelessWidget {
   );
 
   void _review(BuildContext context) {
-    final review = context.read<ReviewBloc>()..add(ScanReviewStarted(scan));
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) =>
-            BlocProvider.value(value: review, child: const ReviewScreen()),
-      ),
-    );
+    context.read<ReviewBloc>().add(ScanReviewStarted(scan));
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const ReviewScreen()));
   }
 
   Future<void> _abandon(BuildContext context) async {

@@ -85,13 +85,10 @@ class ExpenseScreen extends StatelessWidget {
   }
 
   void _correct(BuildContext context, Expense expense) {
-    final review = context.read<ReviewBloc>()..add(ExpenseEditStarted(expense));
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) =>
-            BlocProvider.value(value: review, child: const ReviewScreen()),
-      ),
-    );
+    context.read<ReviewBloc>().add(ExpenseEditStarted(expense));
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const ReviewScreen()));
   }
 
   Future<void> _delete(BuildContext context, Expense expense) async {

@@ -14,6 +14,7 @@ import 'scan/photographer.dart';
 import 'session/session_bloc.dart';
 import 'session/sign_in_gateway.dart';
 import 'session/sign_in_screen.dart';
+import 'session/signed_in_scope.dart';
 import 'settings/settings_cubit.dart';
 import 'settings/themes.dart';
 
@@ -82,20 +83,13 @@ class WhereMoneyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     // Built once and handed to every MaterialApp a Setting rebuilds, so
     // changing the theme or the language is not also a reason to build a second
-    // set of Stores over the top of the ones the blocs are already reading.
+    // screen over the top of the one the user is looking at.
     final home = BlocBuilder<SessionBloc, SessionState>(
       builder: (context, state) => switch (state) {
         SessionUnknown() => const _Opening(),
         SignedOut() || SigningIn() => SignInScreen(state: state),
-        SignedIn(:final user) => LedgerScreen(
-          // Keyed by uid so a second account never inherits the first
-          // account's Ledger bloc.
-          key: ValueKey(user.uid),
-          uid: user.uid,
-          stores: storesFor(user.uid),
-          model: model,
+        SignedIn() => LedgerScreen(
           knobs: knobs,
-          clock: clock,
           photograph:
               photograph ??
               (from) => photographWithDevice(from, longEdge: knobs.longEdge),
@@ -122,26 +116,40 @@ class WhereMoneyApp extends StatelessWidget {
             ),
           ),
         ],
-        child: BlocBuilder<SettingsCubit, Settings>(
-          builder: (context, settings) => MaterialApp(
-            title: 'where_money',
-            locale: Locale(settings.language),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            themeMode: settings.theme,
-            theme: themeFor(Brightness.light),
-            // The charts take their one hue from the scheme, so a phone in dark
-            // mode needs a scheme built for a dark surface. Without this there
-            // is no dark theme to be legible in.
-            darkTheme: themeFor(Brightness.dark),
-            // Above the Navigator rather than inside `home`, so a phone locked
-            // while an Expense was open covers that route too. There is nothing
-            // to lock when nobody is signed in.
-            builder: (context, child) =>
-                context.watch<SessionBloc>().state is SignedIn
-                ? LockGate(lock: lock, preferences: preferences, child: child!)
-                : child!,
-            home: home,
+        // Above the MaterialApp, so every route the Navigator holds is under
+        // one signed-in user's blocs rather than beside them, and so that a
+        // Setting rebuilding the MaterialApp is not also a reason to build a
+        // second set of Stores over the ones those blocs are reading.
+        child: SignedInScope(
+          storesFor: storesFor,
+          model: model,
+          knobs: knobs,
+          clock: clock,
+          child: BlocBuilder<SettingsCubit, Settings>(
+            builder: (context, settings) => MaterialApp(
+              title: 'where_money',
+              locale: Locale(settings.language),
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              themeMode: settings.theme,
+              theme: themeFor(Brightness.light),
+              // The charts take their one hue from the scheme, so a phone in dark
+              // mode needs a scheme built for a dark surface. Without this there
+              // is no dark theme to be legible in.
+              darkTheme: themeFor(Brightness.dark),
+              // Above the Navigator rather than inside `home`, so a phone locked
+              // while an Expense was open covers that route too. There is nothing
+              // to lock when nobody is signed in.
+              builder: (context, child) =>
+                  context.watch<SessionBloc>().state is SignedIn
+                  ? LockGate(
+                      lock: lock,
+                      preferences: preferences,
+                      child: child!,
+                    )
+                  : child!,
+              home: home,
+            ),
           ),
         ),
       ),

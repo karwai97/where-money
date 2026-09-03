@@ -2,19 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
-import '../clock.dart';
-import '../data/device_preferences.dart';
 import '../data/receipt_store.dart';
-import '../data/stores.dart';
 import '../l10n/app_localizations.dart';
 import '../on_screen.dart';
 import '../review/review_bloc.dart';
 import '../review/review_screen.dart';
 import '../scan/inbox_bloc.dart';
 import '../scan/inbox_screen.dart';
-import '../scan/model_gateway.dart';
 import '../scan/photographer.dart';
-import '../settings/settings_cubit.dart';
 import '../settings/settings_screen.dart';
 import 'expense_screen.dart';
 import 'how_it_got_here.dart';
@@ -25,183 +20,106 @@ import 'rollup_screen.dart';
 class LedgerScreen extends StatelessWidget {
   const LedgerScreen({
     super.key,
-    required this.uid,
-    required this.stores,
-    required this.model,
     required this.knobs,
     required this.photograph,
-    this.clock = DateTime.now,
   });
 
-  /// Whose Ledger this is. Only the once-per-account notice needs it; the
-  /// stores already know.
-  final String uid;
-
-  final Stores stores;
-  final ModelGateway model;
+  /// Read by the Settings screen this one opens, not by anything here.
   final Knobs knobs;
-  final Photographer photograph;
 
-  /// What day it is, for the two blocs below that care: the Ledger opens on
-  /// the month it names, and the Check asks it whether a purchase date has
-  /// happened yet. This is the only place above them with anything to say
-  /// about the time.
-  final Clock clock;
+  final Photographer photograph;
 
   @override
   Widget build(BuildContext context) {
     final words = AppLocalizations.of(context);
-    // Read once, for the blocs that are about to be built. After this the
-    // Setting reaches them as events rather than as a rebuild — see
-    // [_FollowsTheLanguage].
-    final language = context.read<SettingsCubit>().state.language;
 
-    return MultiBlocProvider(
-      providers: [
-        // The Receipt is a file on this phone rather than anything the
-        // Ledger's states carry, so its seam has to be reachable from the
-        // Expense a user opens.
-        RepositoryProvider<ReceiptStore>.value(value: stores.receipts),
-        BlocProvider(
-          create: (_) =>
-              LedgerBloc(stores.ledger, model, language: language, now: clock())
-                ..add(const LedgerOpened()),
+    return _SaysThePhotosStayedBehind(
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(words.ledgerTitle),
+          actions: [
+            Builder(builder: _chartsAction),
+            Builder(builder: _inboxAction),
+            Builder(builder: _settingsAction),
+          ],
         ),
-        // Held here rather than on the Review route, so leaving Review and
-        // coming back finds the work still there.
-        BlocProvider(
-          create: (_) => ReviewBloc(
-            stores.ledger,
-            stores.scans,
-            stores.receipts,
-            clock: clock,
+        floatingActionButton: Builder(
+          builder: (context) => Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              FloatingActionButton.small(
+                heroTag: 'manual',
+                tooltip: words.ledgerAddByHand,
+                onPressed: () => _addByHand(context),
+                child: const Icon(Icons.add),
+              ),
+              const SizedBox(height: 12),
+              FloatingActionButton(
+                heroTag: 'photograph',
+                tooltip: words.ledgerPhotograph,
+                onPressed: () => _photographAReceipt(context),
+                child: const Icon(Icons.photo_camera),
+              ),
+            ],
           ),
         ),
-        BlocProvider(
-          create: (_) =>
-              InboxBloc(stores.scans, model, knobs: knobs, language: language)
-                ..add(const InboxOpened()),
-        ),
-        BlocProvider(
-          create: (context) => PhotosStayedBehind(
-            stores.receipts,
-            context.read<DevicePreferences>(),
-            uid,
-          ),
-        ),
-      ],
-      child: _FollowsTheLanguage(
-        child: _SaysThePhotosStayedBehind(
-          child: Scaffold(
-            appBar: AppBar(
-              title: Text(words.ledgerTitle),
-              actions: [
-                Builder(builder: _chartsAction),
-                Builder(builder: _inboxAction),
-                Builder(builder: _settingsAction),
-              ],
-            ),
-            floatingActionButton: Builder(
-              builder: (context) => Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  FloatingActionButton.small(
-                    heroTag: 'manual',
-                    tooltip: words.ledgerAddByHand,
-                    onPressed: () => _addByHand(context),
-                    child: const Icon(Icons.add),
-                  ),
-                  const SizedBox(height: 12),
-                  FloatingActionButton(
-                    heroTag: 'photograph',
-                    tooltip: words.ledgerPhotograph,
-                    onPressed: () => _photographAReceipt(context),
-                    child: const Icon(Icons.photo_camera),
-                  ),
-                ],
+        body: BlocBuilder<LedgerBloc, LedgerState>(
+          builder: (context, state) => switch (state) {
+            LedgerLoading() => Center(
+              child: CircularProgressIndicator(
+                semanticsLabel: words.ledgerLoading,
               ),
             ),
-            body: BlocBuilder<LedgerBloc, LedgerState>(
-              builder: (context, state) => switch (state) {
-                LedgerLoading() => Center(
-                  child: CircularProgressIndicator(
-                    semanticsLabel: words.ledgerLoading,
-                  ),
-                ),
-                LedgerUnavailable(:final reason) => _Message(
-                  words.ledgerUnreadable,
-                  detail: reason,
-                ),
-                LedgerReady() => Column(
-                  children: [
-                    _MonthBar(state),
-                    Expanded(
-                      child: switch (state) {
-                        LedgerReady(expenses: []) => _Message(words.ledgerEmpty),
-                        LedgerReady(inMonth: []) => _Message(
-                          words.ledgerNothingInMonth(
-                            state.rollup.monthLabel(words),
-                          ),
-                        ),
-                        LedgerReady(:final inMonth) => _Expenses(inMonth),
-                      },
-                    ),
-                  ],
-                ),
-              },
+            LedgerUnavailable(:final reason) => _Message(
+              words.ledgerUnreadable,
+              detail: reason,
             ),
-          ),
+            LedgerReady() => Column(
+              children: [
+                _MonthBar(state),
+                Expanded(
+                  child: switch (state) {
+                    LedgerReady(expenses: []) => _Message(words.ledgerEmpty),
+                    LedgerReady(inMonth: []) => _Message(
+                      words.ledgerNothingInMonth(
+                        state.rollup.monthLabel(words),
+                      ),
+                    ),
+                    LedgerReady(:final inMonth) => _Expenses(inMonth),
+                  },
+                ),
+              ],
+            ),
+          },
         ),
       ),
     );
   }
 
-  Widget _settingsAction(BuildContext context) {
-    // The Ledger, because Settings is where the Corrected Fields tally is read
-    // and the route is outside the providers this screen holds.
-    final ledger = context.read<LedgerBloc>();
-
-    return IconButton(
-      // The screen it opens names itself the same thing, so it is one message.
-      tooltip: AppLocalizations.of(context).settingsTitle,
-      icon: const Icon(Icons.settings),
-      onPressed: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => BlocProvider.value(
-            value: ledger,
-            child: SettingsScreen(knobs: knobs),
-          ),
-        ),
-      ),
-    );
-  }
+  Widget _settingsAction(BuildContext context) => IconButton(
+    // The screen it opens names itself the same thing, so it is one message.
+    tooltip: AppLocalizations.of(context).settingsTitle,
+    icon: const Icon(Icons.settings),
+    onPressed: () => Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => SettingsScreen(knobs: knobs)),
+    ),
+  );
 
   void _addByHand(BuildContext context) {
-    final review = context.read<ReviewBloc>()
-      ..add(const ManualExpenseStarted());
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) =>
-            BlocProvider.value(value: review, child: const ReviewScreen()),
-      ),
-    );
+    context.read<ReviewBloc>().add(const ManualExpenseStarted());
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const ReviewScreen()));
   }
 
-  Widget _chartsAction(BuildContext context) {
-    final ledger = context.read<LedgerBloc>();
-
-    return IconButton(
-      tooltip: AppLocalizations.of(context).ledgerCharts,
-      icon: const Icon(Icons.bar_chart),
-      onPressed: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) =>
-              BlocProvider.value(value: ledger, child: const RollupScreen()),
-        ),
-      ),
-    );
-  }
+  Widget _chartsAction(BuildContext context) => IconButton(
+    tooltip: AppLocalizations.of(context).ledgerCharts,
+    icon: const Icon(Icons.bar_chart),
+    onPressed: () => Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const RollupScreen())),
+  );
 
   /// The count belongs where the user already is, so Scans cannot quietly pile
   /// up in a screen nobody opens.
@@ -219,19 +137,9 @@ class LedgerScreen extends StatelessWidget {
         label: Text('$waiting'),
         child: const Icon(Icons.inbox),
       ),
-      onPressed: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => MultiBlocProvider(
-            // Both, because Review is reached from the Inbox and the route is
-            // outside the providers the Ledger holds.
-            providers: [
-              BlocProvider.value(value: context.read<InboxBloc>()),
-              BlocProvider.value(value: context.read<ReviewBloc>()),
-            ],
-            child: const InboxScreen(),
-          ),
-        ),
-      ),
+      onPressed: () => Navigator.of(
+        context,
+      ).push(MaterialPageRoute<void>(builder: (_) => const InboxScreen())),
     );
   }
 
@@ -345,18 +253,12 @@ class _ExpenseTile extends StatelessWidget {
 
   void _open(BuildContext context) => Navigator.of(context).push(
     MaterialPageRoute<void>(
-      builder: (_) => MultiBlocProvider(
-        // The Ledger for the Expense itself and for deleting it, Review for
-        // correcting it. Both because the route is outside the providers the
-        // Ledger screen holds.
-        providers: [
-          BlocProvider.value(value: context.read<LedgerBloc>()),
-          BlocProvider.value(value: context.read<ReviewBloc>()),
-        ],
-        child: ExpenseScreen(
-          expenseId: expense.id,
-          receipts: context.read<ReceiptStore>(),
-        ),
+      // The route's own context, not this tile's. The Ledger is a live stream,
+      // so the row can be gone while the Expense it opened is still on top,
+      // and a rebuild of the route would then be reading a dead element.
+      builder: (context) => ExpenseScreen(
+        expenseId: expense.id,
+        receipts: context.read<ReceiptStore>(),
       ),
     ),
   );
@@ -395,27 +297,6 @@ class _Message extends StatelessWidget {
 
 /// Watches the Ledger arrive and, on a phone it was restored onto rather than
 /// photographed on, says once that the photos did not come with it.
-/// Hands a Language change to the two blocs that ask the Model for words. They
-/// are keyed by the user rather than by the language on purpose: re-keying
-/// would drop a loaded Ledger and an Inbox mid-Scan because somebody changed a
-/// UI preference. So the Setting arrives as an event, and each bloc decides
-/// what a new language costs it.
-class _FollowsTheLanguage extends StatelessWidget {
-  const _FollowsTheLanguage({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) => BlocListener<SettingsCubit, Settings>(
-    listenWhen: (before, after) => before.language != after.language,
-    listener: (context, settings) {
-      context.read<LedgerBloc>().add(LanguageChanged(settings.language));
-      context.read<InboxBloc>().add(InboxLanguageChanged(settings.language));
-    },
-    child: child,
-  );
-}
-
 class _SaysThePhotosStayedBehind extends StatelessWidget {
   const _SaysThePhotosStayedBehind({required this.child});
 
