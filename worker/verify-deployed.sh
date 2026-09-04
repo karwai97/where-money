@@ -91,6 +91,8 @@ else:
     read = json.loads(text)
     print('merchant:', read['merchant'])
     print('total:', read['total'], read['currency'])
+    if read['currency'] and len(read['currency']) != 3:
+        print('  ^ not a code — the schema enum is not reaching the model')
     print('date:', read['purchased_at'])
     print('line items:', len(read['line_items']))
 PY

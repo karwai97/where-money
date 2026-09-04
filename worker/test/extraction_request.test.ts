@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import currenciesSource from '../../packages/core/lib/src/currencies.dart?raw';
 import taxonomySource from '../../packages/core/lib/src/taxonomy.dart?raw';
 import { extractionBody, looksLikeBase64 } from '../src/extraction_request';
 import { readKnobs } from '../src/knobs';
@@ -14,22 +15,29 @@ const bodyFor = (query: string, image = 'aGVsbG8=', language = 'en') =>
     any
   >;
 
-const dartList = (name: string): string[] => {
+const dartList = (
+  name: string,
+  source = taxonomySource,
+  file = 'taxonomy.dart',
+): string[] => {
   const body = new RegExp(
     'const List<String> ' + name + ' = \\[([^\\]]*)\\]',
-  ).exec(taxonomySource);
-  if (!body?.[1]) throw new Error(`No ${name} list in taxonomy.dart`);
+  ).exec(source);
+  if (!body?.[1]) throw new Error(`No ${name} list in ${file}`);
   return [...body[1].matchAll(/'([^']+)'/g)].map((m) => m[1]!);
 };
 
 describe('the receipt schema', () => {
-  const objects = (node: any): any[] =>
+  const nodesOf = (node: any): any[] =>
     node === null || typeof node !== 'object'
       ? []
-      : [
-          ...(node.type === 'object' ? [node] : []),
-          ...Object.values(node).flatMap(objects),
-        ];
+      : [node, ...Object.values(node).flatMap(nodesOf)];
+
+  const objects = (node: any): any[] =>
+    nodesOf(node).filter((each) => each.type === 'object');
+
+  const enumValues = (node: any): string[] =>
+    nodesOf(node).flatMap((each) => (Array.isArray(each.enum) ? each.enum : []));
 
   it('closes every object, because strict mode requires it', () => {
     for (const object of objects(receiptSchema)) {
@@ -69,6 +77,30 @@ describe('the receipt schema', () => {
     expect(receiptSchema.properties.payment_method.enum).toEqual(
       dartList('paymentMethods'),
     );
+  });
+
+  it('offers the Model exactly the currencies the app knows, and no code at all for when it cannot tell', () => {
+    expect(receiptSchema.properties.currency.enum).toEqual([
+      ...dartList('isoCurrencies', currenciesSource, 'currencies.dart'),
+      '',
+    ]);
+  });
+
+  it('offers nothing a receipt prints in place of a code, which is what the enum is for', () => {
+    for (const printed of ['RM', '$', 'S$', 'HK$', '£', '€', '¥', '???']) {
+      expect(receiptSchema.properties.currency.enum).not.toContain(printed);
+    }
+  });
+
+  // Strict mode allows 1,000 enum values across the whole schema, and once a
+  // schema passes 250 of them their string lengths must total under 15,000.
+  // Three letters apiece leaves plenty of room, but the currency enum is the
+  // only thing here big enough to ever reach either limit.
+  it('stays inside the enum budget strict mode allows a schema', () => {
+    const values = enumValues(receiptSchema);
+
+    expect(values.length).toBeLessThan(1000);
+    expect(values.join('').length).toBeLessThan(15000);
   });
 
   it('asks for every field the app reads back', () => {

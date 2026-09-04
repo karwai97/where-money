@@ -35,9 +35,45 @@ void main() {
     expect(outcome.usage.reasoningTokens, 640);
   });
 
+  // The schema pins currency to the ISO codes and one member that is not a
+  // code: the empty string, which is what the Model returns for a symbol that
+  // means more than one currency. Those two are the whole of what the Worker
+  // can now send, so the parser has to make an Extraction of the empty one
+  // rather than refuse it, and the Check has to be the thing that speaks up.
+  test('a receipt the Model would not name a currency for still reads', () {
+    final outcome = parseExtraction(withCurrency(recorded, ''));
+
+    expect(outcome, isA<ExtractionRead>());
+    final extraction = (outcome as ExtractionRead).extraction;
+    expect(extraction.currency, isEmpty);
+    expect(extraction.total, 44.10, reason: 'the rest of the receipt survives');
+    expect(
+      Check.of(extraction, now: fixtureNow).findings,
+      contains(isA<NoCurrency>()),
+    );
+  });
+
   test('and the Check finds nothing to flag in it', () {
     final extraction = (parseExtraction(recorded) as ExtractionRead).extraction;
 
     expect(Check.of(extraction, now: fixtureNow).findings, isEmpty);
   });
+}
+
+/// [recorded] with the receipt's currency read as [read] instead. The
+/// recording stays the one wire shape both halves agree on; this only swaps
+/// the one field whose set of legal values is what changed.
+Map<String, dynamic> withCurrency(Map<String, dynamic> recorded, String read) {
+  final response = jsonDecode(jsonEncode(recorded)) as Map<String, dynamic>;
+  final message = (response['output'] as List).firstWhere(
+    (item) => (item as Map<String, dynamic>)['type'] == 'message',
+  );
+  final content =
+      ((message as Map<String, dynamic>)['content'] as List).first
+          as Map<String, dynamic>;
+  final receipt = jsonDecode(content['text'] as String) as Map<String, dynamic>;
+
+  receipt['currency'] = read;
+  content['text'] = jsonEncode(receipt);
+  return response;
 }

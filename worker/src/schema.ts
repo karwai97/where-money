@@ -10,8 +10,9 @@
 //     optionality is a ["number", "null"] type union instead
 //   * the root is an object and does not use anyOf
 //
-// The category lists must stay in step with packages/core's taxonomy.dart; a
-// test reads that file and fails if they drift.
+// The category lists must stay in step with packages/core's taxonomy.dart, and
+// the currencies with its currencies.dart; a test reads those files and fails
+// if they drift.
 
 const categories = [
   'groceries',
@@ -35,6 +36,41 @@ const categories = [
 ];
 
 const paymentMethods = ['cash', 'card', 'ewallet', 'bank_transfer', 'unknown'];
+
+// The same list the picker offers, so the Model cannot return a code the app
+// would then have to refuse.
+const currencies = [
+  'AED', 'AFN', 'ALL', 'AMD', 'AOA', 'ARS', 'AUD', 'AWG', 'AZN',
+  'BAM', 'BBD', 'BDT', 'BGN', 'BHD', 'BIF', 'BMD', 'BND', 'BOB',
+  'BRL', 'BSD', 'BTN', 'BWP', 'BYN', 'BZD',
+  'CAD', 'CDF', 'CHF', 'CLP', 'CNY', 'COP', 'CRC', 'CUP', 'CVE',
+  'CZK',
+  'DJF', 'DKK', 'DOP', 'DZD',
+  'EGP', 'ERN', 'ETB', 'EUR',
+  'FJD', 'FKP',
+  'GBP', 'GEL', 'GHS', 'GIP', 'GMD', 'GNF', 'GTQ', 'GYD',
+  'HKD', 'HNL', 'HTG', 'HUF',
+  'IDR', 'ILS', 'INR', 'IQD', 'IRR', 'ISK',
+  'JMD', 'JOD', 'JPY',
+  'KES', 'KGS', 'KHR', 'KMF', 'KPW', 'KRW', 'KWD', 'KYD', 'KZT',
+  'LAK', 'LBP', 'LKR', 'LRD', 'LSL', 'LYD',
+  'MAD', 'MDL', 'MGA', 'MKD', 'MMK', 'MNT', 'MOP', 'MRU', 'MUR',
+  'MVR', 'MWK', 'MXN', 'MYR', 'MZN',
+  'NAD', 'NGN', 'NIO', 'NOK', 'NPR', 'NZD',
+  'OMR',
+  'PAB', 'PEN', 'PGK', 'PHP', 'PKR', 'PLN', 'PYG',
+  'QAR',
+  'RON', 'RSD', 'RUB', 'RWF',
+  'SAR', 'SBD', 'SCR', 'SDG', 'SEK', 'SGD', 'SHP', 'SLE', 'SOS',
+  'SRD', 'SSP', 'STN', 'SVC', 'SYP', 'SZL',
+  'THB', 'TJS', 'TMT', 'TND', 'TOP', 'TRY', 'TTD', 'TWD', 'TZS',
+  'UAH', 'UGX', 'USD', 'UYU', 'UZS',
+  'VED', 'VES', 'VND', 'VUV',
+  'WST',
+  'XAF', 'XCD', 'XCG', 'XOF', 'XPF',
+  'YER',
+  'ZAR', 'ZMW', 'ZWG',
+];
 
 const nullableNumber = (description: string) => ({
   type: ['number', 'null'],
@@ -92,9 +128,12 @@ export const receiptSchema = {
     },
     currency: {
       type: 'string',
+      enum: [...currencies, ''],
       description:
-        'ISO 4217 code. Infer from the printed symbol and locale cues; empty ' +
-        'string if genuinely ambiguous.',
+        'ISO 4217 code of the money charged. Infer from the printed symbol ' +
+        'and locale cues. Return the empty string rather than choosing ' +
+        'between candidates when a symbol means more than one currency — a ' +
+        'bare $ or ¥ is not enough on its own.',
     },
     subtotal: nullableNumber(
       'Total before tax and tip, or null if not printed.',

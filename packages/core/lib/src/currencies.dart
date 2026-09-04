@@ -1,9 +1,9 @@
 /// The currency codes of ISO 4217, and the few symbols receipts print instead.
 ///
-/// Closed for a different reason from the Category taxonomy. ADR-0005 closes
-/// that one because it is sent to the Model as an enum and this project
-/// decided its membership. Nobody decided ISO 4217's — it is a fact about the
-/// world — so it earns no ADR and no glossary entry, and no copy either: a
+/// Closed, like the Category taxonomy, by being sent to the Model as an enum.
+/// What ADR-0005 records about that one is that this project decided its
+/// membership. Nobody decided ISO 4217's — it is a fact about the world — so
+/// it earns no ADR and no glossary entry, and no copy either: a
 /// code is already the word in every language, which is why these are outside
 /// the invariant that every slug in a closed set has words in both languages.
 library;
