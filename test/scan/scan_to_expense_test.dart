@@ -154,9 +154,8 @@ void main() {
     expect(find.text('No receipts waiting.'), findsOneWidget);
   });
 
-  testWidgets('a flagged Extraction pins the Findings above the fields', (
-    tester,
-  ) async {
+  testWidgets('a flagged Extraction says each Finding with the field it is '
+      'about', (tester) async {
     model.answer = FakeModelGateway.reading(flawedExtraction);
     await photographAndWait(tester);
 
@@ -170,12 +169,18 @@ void main() {
       findsNothing,
     );
 
-    // Pinned, not merely present: scrolling down to correct what a Finding
-    // names must not scroll the Finding away.
-    await tester.drag(find.text('Line Items'), const Offset(0, -600));
-    await tester.pumpAndSettle();
-
-    expect(find.text('No date'), findsOneWidget);
+    // Under the field a correction would reach, rather than at the top of the
+    // screen: reading the complaint and fixing it are one gesture apart.
+    expect(
+      tester.getRect(find.text('No date')).top,
+      greaterThan(
+        tester.getRect(find.widgetWithText(TextField, 'Date')).bottom,
+      ),
+    );
+    expect(
+      tester.getRect(find.text('Line items do not match subtotal')).top,
+      greaterThan(tester.getRect(find.text('Line Items')).bottom),
+    );
   });
 
   testWidgets('a correction made during Review reaches the Ledger', (

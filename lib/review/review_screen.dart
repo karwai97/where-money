@@ -11,8 +11,9 @@ import 'finding_copy.dart';
 import 'review_bloc.dart';
 
 /// Review: what the Model read, beside the receipt it read it from, with
-/// anything the Check noticed pinned above. The same screen serves an Expense
-/// the user types themselves, which simply arrives with nothing pre-filled.
+/// anything the Check noticed said under the field it is about. The same screen
+/// serves an Expense the user types themselves, which simply arrives with
+/// nothing pre-filled.
 class ReviewScreen extends StatelessWidget {
   const ReviewScreen({super.key});
 
@@ -125,10 +126,10 @@ class _FormState extends State<_Form> {
     // Five years back to today is the ordinary range, and the end the field
     // falls outside of stretches to reach it. A date in the future or one
     // older than the range is exactly what the user opened the calendar to
-    // correct — the Check is complaining about it on the card above these
-    // fields — and a calendar that will not open on the date in the field is
-    // no use for correcting it. Widening only ever happens when the field is
-    // already outside, so an ordinary date still cannot be moved past today.
+    // correct — the Check is complaining about it under this very field — and
+    // a calendar that will not open on the date in the field is no use for
+    // correcting it. Widening only ever happens when the field is already
+    // outside, so an ordinary date still cannot be moved past today.
     final picked = await showDatePicker(
       context: context,
       initialDate: inTheField,
@@ -149,43 +150,61 @@ class _FormState extends State<_Form> {
     final items = state.extraction.lineItems;
     _matchRowsTo(items);
 
+    final noted = _SortedFindings(state.check.findings);
+
     return Scaffold(
       appBar: AppBar(title: Text(_titleOf(state, words))),
-      body: Column(
-        children: [
-          if (state.refusal != null) _Refused(state.refusal!),
-          // Above the fields and out of the scroll view, so what the Check
-          // noticed does not scroll away while the user corrects it.
-          if (state.check.findings.isEmpty)
-            _Clean(photographed: state.scan != null && state.editing == null)
-          else
-            _Findings(state.check.findings),
-          Expanded(
-            child: _BesideTheReceipt(
-              receipt: state.receipt,
+      body: _BesideTheReceipt(
+        receipt: state.receipt,
+        child: Column(
+          children: [
+            // The one Finding that earns room of its own, above the form and
+            // out of the scroll view: it is a claim about the whole
+            // photograph, and the Check returns it alone.
+            if (noted.notAReceipt case final NotAReceipt finding)
+              _WholePhoto(finding),
+            Expanded(
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
                 children: [
-                  _text(words, ReviewField.merchant),
-                  Row(
-                    children: [
-                      Expanded(child: _text(words, ReviewField.purchasedAt)),
-                      IconButton(
-                        tooltip: words.reviewPickDate,
-                        icon: const Icon(Icons.calendar_today),
-                        onPressed: _pickDate,
-                      ),
-                    ],
+                  // Everything at the top of the form is about the form rather
+                  // than about a field, and scrolls away with it: none of it is
+                  // worth height on a phone with the keyboard up.
+                  if (state.refusal != null) _Refused(state.refusal!),
+                  if (state.check.findings.isEmpty)
+                    _Clean(
+                      photographed: state.scan != null && state.editing == null,
+                    ),
+                  _Findings(noted.aboutNoField),
+                  _text(words, noted, ReviewField.merchant),
+                  _under(
+                    noted[ReviewField.purchasedAt],
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _bareText(words, ReviewField.purchasedAt),
+                        ),
+                        IconButton(
+                          tooltip: words.reviewPickDate,
+                          icon: const Icon(Icons.calendar_today),
+                          onPressed: _pickDate,
+                        ),
+                      ],
+                    ),
                   ),
-                  _text(words, ReviewField.currency),
-                  _Closed(
-                    name: ReviewField.category.name,
-                    label: ReviewField.category.labelIn(words),
-                    value: state.extraction.category,
-                    options: categories,
-                    copy: (slug) => categoryLabel(words, slug),
-                    onChosen: (value) =>
-                        _bloc.add(FieldCorrected(ReviewField.category, value)),
+                  _text(words, noted, ReviewField.currency),
+                  _under(
+                    noted[ReviewField.category],
+                    _Closed(
+                      name: ReviewField.category.name,
+                      label: ReviewField.category.labelIn(words),
+                      value: state.extraction.category,
+                      options: categories,
+                      copy: (slug) => categoryLabel(words, slug),
+                      onChosen: (value) => _bloc.add(
+                        FieldCorrected(ReviewField.category, value),
+                      ),
+                    ),
                   ),
                   if (state.extraction.categoryReason.isNotEmpty)
                     Padding(
@@ -197,25 +216,33 @@ class _FormState extends State<_Form> {
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ),
-                  _Closed(
-                    name: ReviewField.paymentMethod.name,
-                    label: ReviewField.paymentMethod.labelIn(words),
-                    value: state.extraction.paymentMethod,
-                    options: paymentMethods,
-                    copy: (slug) => paymentMethodLabel(words, slug),
-                    onChosen: (value) => _bloc.add(
-                      FieldCorrected(ReviewField.paymentMethod, value),
+                  _under(
+                    noted[ReviewField.paymentMethod],
+                    _Closed(
+                      name: ReviewField.paymentMethod.name,
+                      label: ReviewField.paymentMethod.labelIn(words),
+                      value: state.extraction.paymentMethod,
+                      options: paymentMethods,
+                      copy: (slug) => paymentMethodLabel(words, slug),
+                      onChosen: (value) => _bloc.add(
+                        FieldCorrected(ReviewField.paymentMethod, value),
+                      ),
                     ),
                   ),
-                  _text(words, ReviewField.subtotal, number: true),
-                  _text(words, ReviewField.tax, number: true),
-                  _text(words, ReviewField.tip, number: true),
-                  _text(words, ReviewField.total, number: true),
+                  _text(words, noted, ReviewField.subtotal, number: true),
+                  _text(words, noted, ReviewField.tax, number: true),
+                  _text(words, noted, ReviewField.tip, number: true),
+                  _text(words, noted, ReviewField.total, number: true),
                   const SizedBox(height: 24),
                   Text(
                     ReviewField.lineItems.labelIn(words),
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
+                  // Between the heading and the first row. All three of these
+                  // are about the set of rows rather than about any one of
+                  // them: the sum is a property of the set, and the other two
+                  // carry a description with no index to match a row on.
+                  _Findings(noted[ReviewField.lineItems]),
                   for (var index = 0; index < items.length; index++)
                     _Row(
                       controllers: _rows[index],
@@ -246,8 +273,8 @@ class _FormState extends State<_Form> {
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -261,7 +288,25 @@ class _FormState extends State<_Form> {
     }
   }
 
+  /// A field with whatever the Check said about it underneath: the correction
+  /// and the reason for it in one place.
+  Widget _under(List<Finding> findings, Widget field) => findings.isEmpty
+      ? field
+      : Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [field, _Findings(findings)],
+        );
+
   Widget _text(
+    AppLocalizations words,
+    _SortedFindings noted,
+    ReviewField field, {
+    bool number = false,
+  }) => _under(noted[field], _bareText(words, field, number: number));
+
+  /// The input alone. Only the Date needs it: a calendar shares its row, and
+  /// what the Check said belongs under the pair rather than under half of it.
+  Widget _bareText(
     AppLocalizations words,
     ReviewField field, {
     bool number = false,
@@ -330,7 +375,7 @@ class _Clean extends StatelessWidget {
     if (!photographed) return const SizedBox.shrink();
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Text(
         AppLocalizations.of(context).reviewClean,
         style: Theme.of(context).textTheme.bodySmall,
@@ -339,9 +384,52 @@ class _Clean extends StatelessWidget {
   }
 }
 
+/// The Check's Findings sorted into the places they are said. [Finding.field]
+/// has carried the answer since the Check was written; this is only the
+/// dispatch. The form asks for every [ReviewField] by name, so a Finding
+/// naming one is shown — a field added to the enum without a slot on this form
+/// would collect Findings nobody reads.
+class _SortedFindings {
+  factory _SortedFindings(List<Finding> findings) {
+    NotAReceipt? photograph;
+    final aboutNoField = <Finding>[];
+    final byField = <ReviewField, List<Finding>>{};
+
+    for (final finding in findings) {
+      if (finding is NotAReceipt) {
+        photograph = finding;
+      } else if (finding.field case final ReviewField field) {
+        (byField[field] ??= []).add(finding);
+      } else {
+        aboutNoField.add(finding);
+      }
+    }
+
+    return _SortedFindings._(photograph, aboutNoField, byField);
+  }
+
+  const _SortedFindings._(this.notAReceipt, this.aboutNoField, this._byField);
+
+  final NotAReceipt? notAReceipt;
+
+  /// A Finding no correction settles, which by default is where a new kind
+  /// added with a null field lands — the safe place for it.
+  final List<Finding> aboutNoField;
+
+  final Map<ReviewField, List<Finding>> _byField;
+
+  List<Finding> operator [](ReviewField field) =>
+      _byField[field] ?? const <Finding>[];
+}
+
 /// What the Check noticed, said in full. A Finding carries only its kind and
 /// the values it found; the sentence comes from [sayingFor], because a rule
 /// name would be worse copy than a sentence about this receipt.
+///
+/// Deliberately not `InputDecoration.errorText`: that is one string, and
+/// [sayingFor] returns a subject and a sentence under it. A field can also hold
+/// two of these at once — an empty total is both missing and not what the parts
+/// add to.
 class _Findings extends StatelessWidget {
   const _Findings(this.findings);
 
@@ -351,55 +439,100 @@ class _Findings extends StatelessWidget {
   Widget build(BuildContext context) {
     if (findings.isEmpty) return const SizedBox.shrink();
 
-    final words = AppLocalizations.of(context);
-    final colours = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(left: 12, bottom: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [for (final finding in findings) _Said(finding)],
+      ),
+    );
+  }
+}
 
-    return Card(
-      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      color: colours.surfaceContainerHighest,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            for (final (finding, (label, detail)) in findings.map(
-              (finding) => (finding, sayingFor(words, finding)),
-            ))
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      finding.severity == Severity.fail
-                          ? Icons.error_outline
-                          : Icons.info_outline,
-                      size: 20,
-                      color: finding.severity == Severity.fail
-                          ? colours.error
-                          : colours.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            label,
-                            style: Theme.of(context).textTheme.titleSmall,
-                          ),
-                          Text(
-                            detail,
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+/// One Finding: the severity, the subject, the sentence. A `fail` reads as an
+/// error and a `warn` as a note, so arithmetic that does not add up stays
+/// distinguishable from something merely unusual.
+class _Said extends StatelessWidget {
+  const _Said(this.finding);
+
+  final Finding finding;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colours = theme.colorScheme;
+    final failed = finding.severity == Severity.fail;
+    final (label, detail) = sayingFor(AppLocalizations.of(context), finding);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            failed ? Icons.error_outline : Icons.info_outline,
+            size: 20,
+            color: failed ? colours.error : colours.onSurfaceVariant,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: theme.textTheme.titleSmall),
+                Text(detail, style: theme.textTheme.bodySmall),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A photograph that was never a receipt. Said across the whole form, because
+/// there is no field to go and fix — and the Check short-circuits on it, so it
+/// never shares the screen with anything.
+class _WholePhoto extends StatelessWidget {
+  const _WholePhoto(this.finding);
+
+  final NotAReceipt finding;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colours = theme.colorScheme;
+    final (label, detail) = sayingFor(AppLocalizations.of(context), finding);
+
+    return Container(
+      width: double.infinity,
+      color: colours.errorContainer,
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.error_outline, color: colours.onErrorContainer),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: colours.onErrorContainer,
+                  ),
                 ),
-              ),
-          ],
-        ),
+                Text(
+                  detail,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colours.onErrorContainer,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -412,7 +545,7 @@ class _Refused extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+    padding: const EdgeInsets.only(bottom: 12),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
