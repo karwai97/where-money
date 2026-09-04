@@ -12,7 +12,8 @@ void main() {
 
   blocTest<LedgerBloc, LedgerState>(
     'opening an empty Ledger settles on nothing rather than on a spinner',
-    build: () => LedgerBloc(InMemoryLedgerStore(), FakeModelGateway()),
+    build: () =>
+        LedgerBloc(InMemoryLedgerStore(), FakeModelGateway(), homeCurrency: 'MYR'),
     act: (bloc) => bloc.add(const LedgerOpened()),
     expect: () => [
       isA<LedgerReady>().having((state) => state.expenses, 'expenses', isEmpty),
@@ -22,7 +23,11 @@ void main() {
   blocTest<LedgerBloc, LedgerState>(
     'an existing Ledger arrives newest first',
     build: () =>
-        LedgerBloc(InMemoryLedgerStore(augustLedger), FakeModelGateway()),
+        LedgerBloc(
+          InMemoryLedgerStore(augustLedger),
+          FakeModelGateway(),
+          homeCurrency: 'MYR',
+        ),
     act: (bloc) => bloc.add(const LedgerOpened()),
     verify: (bloc) {
       final expenses = (bloc.state as LedgerReady).expenses;
@@ -38,7 +43,7 @@ void main() {
   test('an Expense committed elsewhere turns up in the Ledger without it '
       'being asked again', () async {
     final store = InMemoryLedgerStore();
-    final bloc = LedgerBloc(store, FakeModelGateway())
+    final bloc = LedgerBloc(store, FakeModelGateway(), homeCurrency: 'MYR')
       ..add(const LedgerOpened());
     await Future<void>.delayed(Duration.zero);
 
@@ -59,13 +64,14 @@ void main() {
     build: () => LedgerBloc(
       InMemoryLedgerStore()..refuseReads = StateError('denied'),
       FakeModelGateway(),
+      homeCurrency: 'MYR',
     ),
     act: (bloc) => bloc.add(const LedgerOpened()),
     expect: () => [isA<LedgerUnavailable>()],
   );
 
   LedgerBloc opened(InMemoryLedgerStore store) =>
-      LedgerBloc(store, FakeModelGateway(), now: august)
+      LedgerBloc(store, FakeModelGateway(), now: august, homeCurrency: 'MYR')
         ..add(const LedgerOpened());
 
   Future<LedgerReady> settled(LedgerBloc bloc) async {

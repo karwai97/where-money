@@ -56,4 +56,28 @@ void main() {
   test('a language this version does not know falls back to English', () async {
     expect(await preferencesHolding({'language': 'fr'}).language(), 'en');
   });
+
+  test('a Ledger nobody has spent in yet has no Home Currency', () async {
+    expect(await preferencesHolding({}).homeCurrency(), isNull);
+  });
+
+  test(
+    'the Home Currency is stored as its code, and survives a restart',
+    () async {
+      await preferencesHolding({}).setHomeCurrency('SGD');
+
+      expect(await SharedPreferencesAsync().getString('homeCurrency'), 'SGD');
+      expect(
+        await StoredDevicePreferences(SharedPreferencesAsync()).homeCurrency(),
+        'SGD',
+      );
+    },
+  );
+
+  test('a code this version does not know reads as having none', () async {
+    expect(
+      await preferencesHolding({'homeCurrency': 'XYZ'}).homeCurrency(),
+      isNull,
+    );
+  });
 }

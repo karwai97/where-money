@@ -10,6 +10,7 @@ import '../on_screen.dart';
 import '../review/review_bloc.dart';
 import '../review/review_screen.dart';
 import '../scan/receipt_on_screen.dart';
+import '../settings/settings_cubit.dart';
 import 'how_it_got_here.dart';
 import 'ledger_bloc.dart';
 
@@ -139,6 +140,7 @@ class _Headline extends StatelessWidget {
     final words = AppLocalizations.of(context);
     final text = Theme.of(context).textTheme;
     final scanned = expense.source == ExpenseSource.scanned;
+    final home = context.watch<SettingsCubit>().state.homeCurrency;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -162,7 +164,9 @@ class _Headline extends StatelessWidget {
         ),
         // The Rollup counts one currency and says how many it left out
         // (ADR-0006). This is where the user finds out which one theirs was.
-        if (expense.currency != homeCurrency) ...[
+        // Nothing is left out while there is no Home Currency, so there is
+        // nothing to say either.
+        if (home != null && expense.currency != home) ...[
           const SizedBox(height: 8),
           Text(
             words.expenseForeignCurrency(expense.currency),

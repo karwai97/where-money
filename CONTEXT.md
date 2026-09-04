@@ -79,7 +79,9 @@ _Avoid_: Tag, label, type
 **Home Currency**:
 The single currency Rollups and Recaps are computed in. An Expense in any other
 currency is stored faithfully and excluded from aggregation, and the exclusion is
-shown rather than hidden.
+shown rather than hidden. A Ledger has none until its first Expense, which is
+where it comes from; until then nothing is aggregated at all. After that it is
+the user's, visible and changeable in Settings (ADR-0009).
 _Avoid_: Base currency, default currency
 
 ### Narrative
@@ -105,7 +107,9 @@ locks on open, which theme it is drawn in. Lives in the phone's own preferences
 and never in the Ledger, because it is a fact about this device rather than
 about the money, and it is read before the first frame so the app opens the way
 it was left. Not the same as a Knob: a Setting is the user's choice about their
-own phone, a Knob is the operator's choice about how the Model is used.
+own phone, a Knob is the operator's choice about how the Model is used. The Home
+Currency sits here and is the one exception to the "about this device" half of
+that: ADR-0009 says why, and says the account is where it belongs.
 _Avoid_: Preference, option, config, toggle
 
 **Language**:

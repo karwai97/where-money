@@ -34,6 +34,7 @@ class WhereMoneyApp extends StatelessWidget {
     this.knobs = const Knobs(),
     this.theme = ThemeMode.system,
     this.language = defaultLanguage,
+    this.homeCurrency,
     this.clock = DateTime.now,
     this.photograph,
   });
@@ -62,6 +63,12 @@ class WhereMoneyApp extends StatelessWidget {
   /// same reason as [theme]: the first frame is drawn in the language the user
   /// chose rather than in whichever one was compiled in.
   final String language;
+
+  /// The Home Currency this launch opens with, already read off the phone, or
+  /// null on a Ledger that has not had its first Expense yet. Handed down like
+  /// [theme] and [language]: the first frame is drawn knowing whether there
+  /// are totals to show (ADR-0009).
+  final String? homeCurrency;
 
   /// What a console has to say about how a receipt is read. Plain values,
   /// handed down: nothing below here asks anything for them.
@@ -112,7 +119,11 @@ class WhereMoneyApp extends StatelessWidget {
           BlocProvider(
             create: (_) => SettingsCubit(
               preferences,
-              from: Settings(theme: theme, language: language),
+              from: Settings(
+                theme: theme,
+                language: language,
+                homeCurrency: homeCurrency,
+              ),
             ),
           ),
         ],

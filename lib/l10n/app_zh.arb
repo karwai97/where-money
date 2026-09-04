@@ -12,6 +12,11 @@
   "settingsLanguageEnglish": "English",
   "settingsLanguageChinese": "中文",
 
+  "settingsHomeCurrency": "主货币",
+  "settingsHomeCurrencyInferred": "取自你的第一笔支出。",
+  "settingsHomeCurrencyNone": "你的第一笔支出会定下这一项。",
+  "settingsHomeCurrencyGoverns": "总额和月度回顾都按它来算。其他货币的支出会列出来，但不计入总额。",
+
   "settingsLock": "锁定 where_money",
   "settingsLockBiometrics": "显示你的消费记录之前，先要求指纹、面容，或本机的 PIN 码。",
   "settingsLockDeviceCredential": "本机没有设置指纹，因此显示你的消费记录之前会要求 PIN 码。",
@@ -201,6 +206,16 @@
   "rollupLessThan": "比{month}少 {percent}%。",
   "rollupLeftOutThisMonth": "{count, plural, other{这个月有 {count} 笔以 {currencies} 支付的支出，没有计入这些总额。}}",
   "rollupLeftOutTheseMonths": "{count, plural, other{这几个月有 {count} 笔以 {currencies} 支付的支出，没有计入这些总额。}}",
+  "rollupNoHomeCurrencyTitle": "还没有总额",
+  "rollupNoHomeCurrency": "总额从你的第一笔支出开始。你用哪种货币记下它，图表和月度回顾就按哪种货币来算；之后可以在设置里改。",
+
+  "currencyChooseTitle": "选一种货币",
+  "currencyClose": "关闭",
+  "currencySearch": "搜索代码",
+  "currencyYours": "你用过的",
+  "currencyAll": "全部货币",
+  "currencyNoMatch": "没有代码匹配 {query}。",
+
   "rollupLoading": "正在打开这个月",
 
   "inboxTitle": "待处理",

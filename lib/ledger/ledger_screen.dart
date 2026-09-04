@@ -75,6 +75,14 @@ class LedgerScreen extends StatelessWidget {
               words.ledgerUnreadable,
               detail: reason,
             ),
+            // No month bar: there is no Rollup to name a month with until the
+            // app knows what this Ledger's money is. Ordinarily this is the
+            // empty Ledger a new user opens; it holds Expenses only in the
+            // moment before the first one has been learned from.
+            LedgerWithoutHomeCurrency(expenses: []) => _Message(
+              words.ledgerEmpty,
+            ),
+            LedgerWithoutHomeCurrency(:final expenses) => _Expenses(expenses),
             LedgerReady() => Column(
               children: [
                 _MonthBar(state),

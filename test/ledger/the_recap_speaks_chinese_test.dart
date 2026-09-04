@@ -46,6 +46,7 @@ void main() {
         signIn: FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai),
         storesFor: (_) => store.stores,
         model: model,
+        homeCurrency: 'MYR',
         language: language,
         photograph: (_) async => null,
       ),

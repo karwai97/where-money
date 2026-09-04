@@ -38,6 +38,12 @@ const _allowed = {
   r'Expected a JSON object, got ${decoded.runtimeType}.',
   r'Knobs(model: $model, effort: $effort, longEdge: $longEdge, ',
   r'dailyCap: $dailyCap)',
+  // Currency aliases: what a receipt prints where a code belongs. Machine-
+  // readable in the same sense a code is — the app never chose these words,
+  // and it does not translate them either.
+  r'S$',
+  r'HK$',
+  r'NT$',
 };
 
 Iterable<File> _sources() => Directory('lib')

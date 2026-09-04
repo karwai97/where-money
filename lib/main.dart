@@ -43,6 +43,7 @@ Future<void> main() async {
   final language = await preferences.language().catchError(
     (_) => defaultLanguage,
   );
+  final homeCurrency = await preferences.homeCurrency().catchError((_) => null);
 
   runApp(
     WhereMoneyApp(
@@ -52,6 +53,7 @@ Future<void> main() async {
       knobs: knobs,
       theme: theme,
       language: language,
+      homeCurrency: homeCurrency,
       model: WorkerModelGateway(
         endpoint: worker,
         knobs: knobs,

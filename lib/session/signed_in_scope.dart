@@ -61,7 +61,9 @@ class SignedInScope extends StatelessWidget {
     // Read once, for the blocs that are about to be built. After this the
     // Setting reaches them as events rather than as a rebuild — see
     // [_FollowsTheLanguage].
-    final language = context.read<SettingsCubit>().state.language;
+    final settings = context.read<SettingsCubit>().state;
+    final language = settings.language;
+    final homeCurrency = settings.homeCurrency;
 
     return MultiBlocProvider(
       // Keyed by uid so a second account never inherits the first account's
@@ -74,9 +76,13 @@ class SignedInScope extends StatelessWidget {
         // Expense a user opens.
         RepositoryProvider<ReceiptStore>.value(value: stores.receipts),
         BlocProvider(
-          create: (_) =>
-              LedgerBloc(stores.ledger, model, language: language, now: clock())
-                ..add(const LedgerOpened()),
+          create: (_) => LedgerBloc(
+            stores.ledger,
+            model,
+            language: language,
+            homeCurrency: homeCurrency,
+            now: clock(),
+          )..add(const LedgerOpened()),
         ),
         // Held above the Review route, so leaving Review and coming back finds
         // the work still there.
@@ -86,6 +92,7 @@ class SignedInScope extends StatelessWidget {
             stores.scans,
             stores.receipts,
             clock: clock,
+            homeCurrency: homeCurrency,
           ),
         ),
         BlocProvider(
@@ -101,27 +108,67 @@ class SignedInScope extends StatelessWidget {
           ),
         ),
       ],
-      child: _FollowsTheLanguage(child: child),
+      child: _FollowsTheSettings(child: _LearnsItsHomeCurrency(child: child)),
     );
   }
 }
 
-/// Hands a Language change to the two blocs that ask the Model for words. They
-/// are keyed by the user rather than by the language on purpose: re-keying
-/// would drop a loaded Ledger and an Inbox mid-Scan because somebody changed a
-/// UI preference. So the Setting arrives as an event, and each bloc decides
-/// what a new language costs it.
-class _FollowsTheLanguage extends StatelessWidget {
-  const _FollowsTheLanguage({required this.child});
+/// Hands a Setting to the blocs that read it. They are keyed by the user
+/// rather than by the Setting on purpose: re-keying would drop a loaded Ledger
+/// and an Inbox mid-Scan because somebody changed a preference. So the Setting
+/// arrives as an event, and each bloc decides what it costs.
+class _FollowsTheSettings extends StatelessWidget {
+  const _FollowsTheSettings({required this.child});
 
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => BlocListener<SettingsCubit, Settings>(
-    listenWhen: (before, after) => before.language != after.language,
-    listener: (context, settings) {
-      context.read<LedgerBloc>().add(LanguageChanged(settings.language));
-      context.read<InboxBloc>().add(InboxLanguageChanged(settings.language));
+  Widget build(BuildContext context) => MultiBlocListener(
+    listeners: [
+      BlocListener<SettingsCubit, Settings>(
+        listenWhen: (before, after) => before.language != after.language,
+        listener: (context, settings) {
+          context.read<LedgerBloc>().add(LanguageChanged(settings.language));
+          context.read<InboxBloc>().add(
+            InboxLanguageChanged(settings.language),
+          );
+        },
+      ),
+      BlocListener<SettingsCubit, Settings>(
+        listenWhen: (before, after) =>
+            before.homeCurrency != after.homeCurrency,
+        listener: (context, settings) {
+          final currency = settings.homeCurrency;
+          if (currency == null) return;
+          context.read<LedgerBloc>().add(HomeCurrencyChanged(currency));
+          context.read<ReviewBloc>().add(ReviewHomeCurrencyChanged(currency));
+        },
+      ),
+    ],
+    child: child,
+  );
+}
+
+/// The other direction: the first Expense saying what this Ledger's money is.
+/// Here rather than on a screen, because the Ledger can arrive while the user
+/// is anywhere in the app, and a Setting learned only when the charts happen
+/// to be open is one the user has to go and find.
+///
+/// The oldest Expense, which on an ordinary Ledger is the only one. A Ledger
+/// restored onto a new phone arrives full with the preference unset, and the
+/// first thing that user ever spent is still the right answer.
+class _LearnsItsHomeCurrency extends StatelessWidget {
+  const _LearnsItsHomeCurrency({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => BlocListener<LedgerBloc, LedgerState>(
+    listener: (context, state) {
+      if (state is! LedgerWithoutHomeCurrency) return;
+      final learned = learnableCurrency(state.expenses);
+      if (learned == null) return;
+      context.read<SettingsCubit>().learnHomeCurrency(learned);
     },
     child: child,
   );

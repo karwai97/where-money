@@ -21,6 +21,24 @@ class RollupScreen extends StatelessWidget {
 
     return BlocBuilder<LedgerBloc, LedgerState>(
       builder: (context, state) {
+        // Nothing is aggregated until the app knows what this Ledger's money
+        // is, and bars of zero would say the month was empty rather than that
+        // there is no axis to draw them on yet (ADR-0009).
+        if (state is LedgerWithoutHomeCurrency) {
+          return Scaffold(
+            appBar: AppBar(title: Text(words.rollupNoHomeCurrencyTitle)),
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Text(
+                  words.rollupNoHomeCurrency,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          );
+        }
+
         if (state is! LedgerReady) {
           return Scaffold(
             body: Center(

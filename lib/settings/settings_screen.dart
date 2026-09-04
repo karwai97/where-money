@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import '../choosing_a_currency.dart';
 import '../data/device_preferences.dart';
 import '../l10n/app_localizations.dart';
+import '../ledger/ledger_bloc.dart';
 import '../lock/device_lock.dart';
 import '../session/session_bloc.dart';
 import 'how_scans_are_read.dart';
@@ -65,6 +67,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           const _ThemeChoice(),
           const _LanguageChoice(),
+          const _HomeCurrencyChoice(),
           if (availability == null || locks == null)
             ListTile(title: Text(words.settingsLock))
           else
@@ -142,6 +145,51 @@ String _named(AppLocalizations words, String language) => switch (language) {
   'zh' => words.settingsLanguageChinese,
   _ => language,
 };
+
+/// The one Setting that is about the money rather than about this phone
+/// (ADR-0009). It changes freely and says so in place: no dialog asking
+/// whether the user meant it, because the house style says things where they
+/// happen, and the line under the row already says what it governs.
+class _HomeCurrencyChoice extends StatelessWidget {
+  const _HomeCurrencyChoice();
+
+  @override
+  Widget build(BuildContext context) {
+    final words = AppLocalizations.of(context);
+    final currency = context.watch<SettingsCubit>().state.homeCurrency;
+    // Where it came from, worked out rather than remembered: it was taken from
+    // the first Expense exactly when it still matches what that Expense would
+    // teach. Somebody who has since chosen a different one is not told a
+    // provenance that stopped being true when they changed it.
+    final learned = learnableCurrency(
+      context.watch<LedgerBloc>().state.expenses,
+    );
+
+    return ListTile(
+      title: Text(words.settingsHomeCurrency),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (currency == null)
+            Text(words.settingsHomeCurrencyNone)
+          else if (currency == learned)
+            Text(words.settingsHomeCurrencyInferred),
+          Text(words.settingsHomeCurrencyGoverns),
+        ],
+      ),
+      isThreeLine: true,
+      trailing: Text(
+        currency ?? '',
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
+      onTap: () async {
+        final cubit = context.read<SettingsCubit>();
+        final chosen = await chooseACurrency(context);
+        if (chosen != null) await cubit.chooseHomeCurrency(chosen);
+      },
+    );
+  }
+}
 
 /// Beside the Theme one, and the same shape: two choices of the same kind
 /// should look like the same kind of thing.

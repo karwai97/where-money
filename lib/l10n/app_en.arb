@@ -21,6 +21,14 @@
     "description": "Named in its own language, as above. Identical in every ARB file on purpose."
   },
 
+  "settingsHomeCurrency": "Home Currency",
+  "@settingsHomeCurrency": {
+    "description": "The currency the Ledger is aggregated in. Named the same thing the glossary names it."
+  },
+  "settingsHomeCurrencyInferred": "Taken from your first expense.",
+  "settingsHomeCurrencyNone": "Your first expense will set this.",
+  "settingsHomeCurrencyGoverns": "Totals and Recaps are worked out in it. Spending in other currencies is listed but not counted.",
+
   "settingsLock": "Lock where_money",
   "settingsLockBiometrics": "Ask for your fingerprint or face, or this phone’s PIN, before showing your spending.",
   "settingsLockDeviceCredential": "No fingerprint is set up on this phone, so it asks for your PIN before showing your spending.",
@@ -483,6 +491,33 @@
       "currencies": { "type": "String" }
     }
   },
+  "rollupNoHomeCurrencyTitle": "No totals yet",
+  "@rollupNoHomeCurrencyTitle": {
+    "description": "Where the month would be named, on a Ledger with no Home Currency to work a month out in."
+  },
+  "rollupNoHomeCurrency": "Totals start with your first expense. Whatever you record it in becomes the currency the charts and Recaps are worked out in, and you can change it in Settings afterwards.",
+
+  "currencyChooseTitle": "Choose a currency",
+  "@currencyChooseTitle": {
+    "description": "The sheet that replaced the free-text currency field. Opened from Review and from the Settings row."
+  },
+  "currencyClose": "Close",
+  "currencySearch": "Search codes",
+  "@currencySearch": {
+    "description": "The search field in that sheet. Codes only — a currency is never named or translated here, because the code is already the word in every language."
+  },
+  "currencyYours": "Yours",
+  "@currencyYours": {
+    "description": "The head of the list: the Home Currency and whatever this Ledger already holds."
+  },
+  "currencyAll": "All currencies",
+  "currencyNoMatch": "No code matches {query}.",
+  "@currencyNoMatch": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+
   "rollupLoading": "Opening the month",
   "@rollupLoading": {
     "description": "The charts, reached before the Ledger they are drawn from has finished loading. For a screen reader only."

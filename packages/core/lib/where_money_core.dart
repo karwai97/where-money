@@ -8,6 +8,7 @@ library;
 
 export 'src/check.dart';
 export 'src/corrected_fields.dart';
+export 'src/currencies.dart';
 export 'src/expense.dart';
 export 'src/extraction.dart';
 export 'src/fixtures.dart';

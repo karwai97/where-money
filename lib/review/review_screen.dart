@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import '../choosing_a_currency.dart';
 import '../l10n/app_localizations.dart';
 import '../on_screen.dart';
 import '../scan/receipt_on_screen.dart';
@@ -87,7 +88,6 @@ class _FormState extends State<_Form> {
       ReviewField.purchasedAt: TextEditingController(
         text: extraction.purchasedAt ?? '',
       ),
-      ReviewField.currency: TextEditingController(text: extraction.currency),
       ReviewField.subtotal: TextEditingController(
         text: _amountText(extraction.subtotal),
       ),
@@ -192,7 +192,16 @@ class _FormState extends State<_Form> {
                       ],
                     ),
                   ),
-                  _text(words, noted, ReviewField.currency),
+                  _under(
+                    noted[ReviewField.currency],
+                    CurrencyField(
+                      label: ReviewField.currency.labelIn(words),
+                      value: state.extraction.currency,
+                      onChosen: (value) => _bloc.add(
+                        FieldCorrected(ReviewField.currency, value),
+                      ),
+                    ),
+                  ),
                   _under(
                     noted[ReviewField.category],
                     _Closed(

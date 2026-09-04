@@ -57,6 +57,7 @@ void main() {
         signIn: FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai),
         storesFor: (_) => store.stores,
         model: model,
+        homeCurrency: 'MYR',
         photograph: (_) async => null,
         clock: on == null ? DateTime.now : () => on,
       ),

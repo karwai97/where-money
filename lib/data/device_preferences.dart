@@ -23,6 +23,13 @@ abstract interface class DevicePreferences {
 
   Future<void> setLanguage(String value);
 
+  /// The currency this Ledger's totals are computed in, or null until the
+  /// first Expense is committed and it is learned from that. Here rather than
+  /// on the account, which is where it belongs: see ADR-0009.
+  Future<String?> homeCurrency();
+
+  Future<void> setHomeCurrency(String value);
+
   /// Whether the app asks for a fingerprint or the device PIN when it opens.
   /// On unless the user has said otherwise.
   Future<bool> locksOnOpen();
@@ -68,6 +75,19 @@ class StoredDevicePreferences implements DevicePreferences {
   @override
   Future<void> setLanguage(String value) =>
       _preferences.setString('language', value);
+
+  @override
+  Future<String?> homeCurrency() async {
+    // Read against the set for the same reason the language is: a code this
+    // version does not know is one a newer version wrote, and having none is
+    // a state the app already handles.
+    final stored = await _preferences.getString('homeCurrency');
+    return isoCurrencies.contains(stored) ? stored : null;
+  }
+
+  @override
+  Future<void> setHomeCurrency(String value) =>
+      _preferences.setString('homeCurrency', value);
 
   @override
   Future<bool> locksOnOpen() async =>

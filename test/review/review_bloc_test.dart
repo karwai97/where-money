@@ -148,14 +148,14 @@ void main() {
     bloc.add(const ReviewCommitted());
     await pumpEventQueue();
 
-    expect(store.contents.single.correctedFields, [
-      'merchant',
-      'purchasedAt',
-      'currency',
-      'total',
-      'category',
-      'paymentMethod',
-    ]);
+    expect(
+      store.contents.single.correctedFields,
+      ['merchant', 'purchasedAt', 'total', 'category', 'paymentMethod'],
+      reason:
+          'the currency is missing on purpose: there was no Extraction to '
+          'correct, so choosing one is filling a blank rather than putting '
+          'the Model right',
+    );
     await bloc.close();
   });
 

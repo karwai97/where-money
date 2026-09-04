@@ -5,6 +5,7 @@
 /// where the Extraction contradicts itself. It costs nothing and calls nothing.
 library;
 
+import 'currencies.dart';
 import 'extraction.dart';
 import 'review_field.dart';
 import 'taxonomy.dart';
@@ -287,11 +288,15 @@ List<Finding> _findings(
 
   findings.addAll(_dateFindings(extraction.purchasedAt, now, alreadyReviewed));
 
+  // Membership, not length: `XYZ` is three characters and no currency, and
+  // `???` is what an Expense that never had one is stored with. An alias is
+  // not accepted here — the Check reports what the Extraction says, and
+  // rewriting `RM` into `MYR` is Review's job when it seeds the form.
   final currency = extraction.currency.trim();
-  if (currency.length != 3) {
-    findings.add(
-      currency.isEmpty ? const NoCurrency() : CurrencyNotAnIsoCode(currency),
-    );
+  if (currency.isEmpty) {
+    findings.add(const NoCurrency());
+  } else if (!isoCurrencies.contains(currency.toUpperCase())) {
+    findings.add(CurrencyNotAnIsoCode(currency));
   }
 
   final subtotal = extraction.subtotal;

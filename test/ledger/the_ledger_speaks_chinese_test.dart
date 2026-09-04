@@ -38,7 +38,10 @@ void main() {
     view.resetDevicePixelRatio();
   });
 
-  Future<void> openLedger(WidgetTester tester) async {
+  Future<void> openLedger(
+    WidgetTester tester, {
+    String? homeCurrency = 'MYR',
+  }) async {
     tester.view
       ..physicalSize = const Size(1200, 3000)
       ..devicePixelRatio = 1;
@@ -49,6 +52,7 @@ void main() {
         signIn: FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai),
         storesFor: (_) => store.stores,
         model: model,
+        homeCurrency: homeCurrency,
         language: 'zh',
         photograph: (_) async => null,
       ),
@@ -56,8 +60,11 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> openCharts(WidgetTester tester) async {
-    await openLedger(tester);
+  Future<void> openCharts(
+    WidgetTester tester, {
+    String? homeCurrency = 'MYR',
+  }) async {
+    await openLedger(tester, homeCurrency: homeCurrency);
     await tester.tap(find.byTooltip('图表'));
     await tester.pumpAndSettle();
   }
@@ -356,5 +363,15 @@ void main() {
       reason: 'the count it needs lands inside the Chinese sentence',
     );
     expect(find.textContaining('A month needs'), findsNothing);
+  });
+
+  testWidgets('a Ledger with no Home Currency says why there are no totals, '
+      'in Chinese', (tester) async {
+    store = InMemoryLedgerStore();
+    await openCharts(tester, homeCurrency: null);
+
+    expect(find.text('还没有总额'), findsOneWidget);
+    expect(find.textContaining('总额从你的第一笔支出开始'), findsOneWidget);
+    expect(find.textContaining('Totals start with'), findsNothing);
   });
 }

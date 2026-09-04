@@ -8,6 +8,7 @@ import '../fakes/in_memory_device_preferences.dart';
 import '../fakes/fake_model_gateway.dart';
 import '../fakes/fake_sign_in_gateway.dart';
 import '../fakes/in_memory_ledger_store.dart';
+import '../picking_a_currency.dart';
 import '../scan/inbox_bloc_test.dart' show photograph;
 import 'where_things_sit.dart';
 
@@ -98,7 +99,7 @@ void main() {
   Future<void> fillIn(WidgetTester tester) async {
     await type(tester, 'Merchant', 'Kopitiam SS2');
     await type(tester, 'Date', '2026-08-22');
-    await type(tester, 'Currency', 'MYR');
+    await pickCurrency(tester, 'Currency', 'MYR');
     await type(tester, 'Total', '26.00');
   }
 
@@ -221,7 +222,7 @@ void main() {
     await openReview(tester);
     await type(tester, 'Merchant', 'Kopitiam SS2');
     await type(tester, 'Date', '2026-08-22');
-    await type(tester, 'Currency', 'MYR');
+    await pickCurrency(tester, 'Currency', 'MYR');
 
     expect(find.text('No total'), findsOneWidget);
 
@@ -530,7 +531,7 @@ void main() {
     await openReview(tester, on: DateTime(2028, 3, 1));
     await type(tester, 'Merchant', 'Kopitiam SS2');
     await type(tester, 'Date', '2028-03-01');
-    await type(tester, 'Currency', 'MYR');
+    await pickCurrency(tester, 'Currency', 'MYR');
     await type(tester, 'Total', '26.00');
 
     expect(find.text('Date in the future'), findsNothing);

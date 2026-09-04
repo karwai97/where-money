@@ -8,6 +8,7 @@ import '../fakes/fake_model_gateway.dart';
 import '../fakes/fake_sign_in_gateway.dart';
 import '../fakes/in_memory_device_preferences.dart';
 import '../fakes/in_memory_ledger_store.dart';
+import '../picking_a_currency.dart';
 import '../scan/inbox_bloc_test.dart' show photograph;
 import 'where_things_sit.dart';
 
@@ -231,7 +232,7 @@ void main() {
 
     await openReview(tester);
     await type(tester, '商家', '嘉家咖啡店');
-    await type(tester, '货币', 'MYR');
+    await pickCurrency(tester, '货币', 'MYR');
     await type(tester, '总额', '26.00');
     await tester.tap(find.text('加入账本'));
     await tester.pumpAndSettle();
@@ -279,5 +280,55 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('说明'), findsNothing);
+  });
+
+  testWidgets('the currency sheet reads in Chinese, and the codes do not', (
+    tester,
+  ) async {
+    await openReview(tester);
+    await tester.tap(
+      find.ancestor(of: find.text('货币'), matching: find.byType(InkWell)).first,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('选一种货币'), findsOneWidget);
+    expect(find.text('搜索代码'), findsOneWidget);
+    expect(find.text('全部货币'), findsOneWidget);
+    expect(find.text('Choose a currency'), findsNothing);
+    expect(find.text('All currencies'), findsNothing);
+
+    await tester.enterText(inTheCurrencySheet(find.byType(TextField)), 'MYR');
+    await tester.pumpAndSettle();
+
+    expect(
+      inTheCurrencySheet(find.widgetWithText(ListTile, 'MYR')),
+      findsOne,
+      reason: 'a code is already the word in every language',
+    );
+
+    await tester.enterText(inTheCurrencySheet(find.byType(TextField)), 'ZZZ');
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('没有代码匹配'), findsOneWidget);
+    expect(find.textContaining('No code matches'), findsNothing);
+  });
+
+  testWidgets('the head of the sheet is named in Chinese too', (tester) async {
+    await store.add(
+      Expense.fromExtraction(
+        cleanExtraction,
+        id: 'already-spent',
+        now: DateTime(2026, 8, 20),
+      ),
+    );
+
+    await openReview(tester);
+    await tester.tap(
+      find.ancestor(of: find.text('货币'), matching: find.byType(InkWell)).first,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('你用过的'), findsOneWidget);
+    expect(find.text('Yours'), findsNothing);
   });
 }

@@ -10,6 +10,7 @@ class Settings extends Equatable {
   const Settings({
     this.theme = ThemeMode.system,
     this.language = defaultLanguage,
+    this.homeCurrency,
   });
 
   final ThemeMode theme;
@@ -19,13 +20,25 @@ class Settings extends Equatable {
   /// building the Locale is the one place that needs one.
   final String language;
 
+  /// The currency the Ledger aggregates in, or null until the first Expense
+  /// teaches the app what it is (ADR-0009). The one Setting that is a fact
+  /// about the money rather than about this phone.
+  final String? homeCurrency;
+
   /// Copied rather than rebuilt, so choosing one Setting cannot quietly reset
   /// the one beside it.
-  Settings copyWith({ThemeMode? theme, String? language}) =>
-      Settings(theme: theme ?? this.theme, language: language ?? this.language);
+  Settings copyWith({
+    ThemeMode? theme,
+    String? language,
+    String? homeCurrency,
+  }) => Settings(
+    theme: theme ?? this.theme,
+    language: language ?? this.language,
+    homeCurrency: homeCurrency ?? this.homeCurrency,
+  );
 
   @override
-  List<Object?> get props => [theme, language];
+  List<Object?> get props => [theme, language, homeCurrency];
 }
 
 /// Holds the Settings the app is drawn with and writes each change back to the
@@ -55,5 +68,19 @@ class SettingsCubit extends Cubit<Settings> {
   Future<void> chooseLanguage(String language) async {
     emit(state.copyWith(language: language));
     await _preferences.setLanguage(language);
+  }
+
+  Future<void> chooseHomeCurrency(String currency) async {
+    if (currency == state.homeCurrency) return;
+    emit(state.copyWith(homeCurrency: currency));
+    await _preferences.setHomeCurrency(currency);
+  }
+
+  /// The first Expense saying what this Ledger's money is. Separate from
+  /// [chooseHomeCurrency] because it must never overwrite a currency the user
+  /// picked: this is inference, and inference loses to a decision.
+  Future<void> learnHomeCurrency(String currency) async {
+    if (state.homeCurrency != null) return;
+    await chooseHomeCurrency(currency);
   }
 }

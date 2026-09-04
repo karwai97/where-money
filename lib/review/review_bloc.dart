@@ -71,6 +71,18 @@ final class FieldCorrected extends ReviewEvent {
   List<Object?> get props => [field, value];
 }
 
+/// The Home Currency arrived or changed. What Review seeds a blank currency
+/// field with; it does not reach a Review already in progress, because the
+/// field the user is looking at is theirs by then.
+final class ReviewHomeCurrencyChanged extends ReviewEvent {
+  const ReviewHomeCurrencyChanged(this.currency);
+
+  final String currency;
+
+  @override
+  List<Object?> get props => [currency];
+}
+
 final class LineItemAdded extends ReviewEvent {
   const LineItemAdded();
 }
@@ -123,6 +135,7 @@ final class ReviewInProgress extends ReviewState {
     required this.extraction,
     required this.check,
     required this.correctedFields,
+    this.modelReadNoCurrency = false,
     this.scan,
     this.editing,
     this.receipt,
@@ -161,6 +174,13 @@ final class ReviewInProgress extends ReviewState {
   /// Field names, in the order the user first changed them.
   final List<String> correctedFields;
 
+  /// Whether the currency was blank when this Review opened. Recorded once, at
+  /// the start, because the app seeds the field a moment later: the Model made
+  /// no claim about a blank, so choosing one is filling it in rather than
+  /// correcting the Model, and counting it would understate accuracy for a
+  /// field the Model never answered.
+  final bool modelReadNoCurrency;
+
   final bool committing;
 
   /// Set when the last commit was turned away. The typing is still here.
@@ -194,15 +214,24 @@ final class ReviewInProgress extends ReviewState {
     extraction: extraction ?? this.extraction,
     check: check ?? this.check,
     correctedFields: correctedFields ?? this.correctedFields,
+    modelReadNoCurrency: modelReadNoCurrency,
     committing: committing,
     refusal: refusal,
   );
 }
 
 class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
-  ReviewBloc(this._ledger, this._scans, this._receipts, {Clock? clock})
-    : _now = clock ?? DateTime.now,
-      super(const ReviewIdle()) {
+  ReviewBloc(
+    this._ledger,
+    this._scans,
+    this._receipts, {
+    Clock? clock,
+    this._homeCurrency,
+  }) : _now = clock ?? DateTime.now,
+       super(const ReviewIdle()) {
+    on<ReviewHomeCurrencyChanged>(
+      (event, emit) => _homeCurrency = event.currency,
+    );
     on<ManualExpenseStarted>(_onManualExpenseStarted);
     on<ScanReviewStarted>(_onScanReviewStarted);
     on<ExpenseEditStarted>(_onExpenseEditStarted);
@@ -222,6 +251,12 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
   final ReceiptStore _receipts;
 
   final Clock _now;
+
+  /// What a blank currency field is filled in with, or null before the first
+  /// Expense has taught the app one. Kept up to date through
+  /// [ReviewHomeCurrencyChanged] rather than read from a Setting: this bloc
+  /// sits above the Navigator and reads nothing.
+  String? _homeCurrency;
 
   /// What day it is, for the one thing on this screen that needs it and is not
   /// a Finding: the calendar the Date field opens has to be bounded, and a
@@ -251,14 +286,16 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
     Emitter<ReviewState> emit,
   ) {
     final held = _unfinished[_manualLane];
+    final seeded = _seeded(Extraction.blank());
     _show(
       emit,
       held ??
           ReviewInProgress(
             expenseId: _anIdFor(_now()),
-            extraction: Extraction.blank(),
-            check: Check.of(Extraction.blank(), now: _now()),
+            extraction: seeded,
+            check: Check.of(seeded, now: _now()),
             correctedFields: const [],
+            modelReadNoCurrency: true,
           ),
     );
   }
@@ -271,15 +308,17 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
     if (extraction == null) return;
 
     final started = _unfinished[event.scan.id];
+    final seeded = _seeded(extraction);
     _show(
       emit,
       started ??
           ReviewInProgress(
             expenseId: event.scan.id,
             scan: event.scan,
-            extraction: extraction,
-            check: Check.of(extraction, now: _now()),
+            extraction: seeded,
+            check: Check.of(seeded, now: _now()),
             correctedFields: const [],
+            modelReadNoCurrency: extraction.currency.trim().isEmpty,
           ),
     );
 
@@ -330,8 +369,11 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
     if (current == null) return;
 
     final next = _applyField(current.extraction, event.field, event.value);
+    // A currency chosen into a field the Model left blank is not a correction
+    // of the Model, which is the only thing the tally measures.
     final changed =
-        next.valueAt(event.field) != current.extraction.valueAt(event.field);
+        next.valueAt(event.field) != current.extraction.valueAt(event.field) &&
+        !(event.field == ReviewField.currency && current.modelReadNoCurrency);
 
     _show(
       emit,
@@ -462,6 +504,25 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
     } catch (error) {
       _show(emit, current.copyWith(refusal: error.toString()));
     }
+  }
+
+  /// The currency field as the form should open with it. What a receipt
+  /// printed where a code belonged is read as the code it means, a blank takes
+  /// the Home Currency, and anything the app cannot place is left exactly as
+  /// it arrived — falling back would turn a committed foreign Expense into a
+  /// home one the moment somebody opened it to fix a typo.
+  ///
+  /// Written into the Extraction rather than only into the widget, so the
+  /// Check sees the seeded value and stays quiet about it.
+  Extraction _seeded(Extraction extraction) {
+    final read = extraction.currency.trim();
+    if (read.isEmpty) {
+      final home = _homeCurrency;
+      return home == null ? extraction : extraction.copyWith(currency: home);
+    }
+
+    final code = currencyFrom(read);
+    return code == null ? extraction : extraction.copyWith(currency: code);
   }
 
   void _show(Emitter<ReviewState> emit, ReviewInProgress state) {

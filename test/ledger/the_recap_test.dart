@@ -34,6 +34,7 @@ void main() {
       gateway,
       now: august,
       language: language,
+      homeCurrency: 'MYR',
     )..add(const LedgerOpened());
     return (bloc: bloc, model: gateway);
   }
@@ -114,7 +115,7 @@ void main() {
   test('adding an Expense makes the next open ask again', () async {
     final store = InMemoryLedgerStore(seedLedger(around: august));
     final model = FakeModelGateway();
-    final bloc = LedgerBloc(store, model, now: august)
+    final bloc = LedgerBloc(store, model, now: august, homeCurrency: 'MYR')
       ..add(const LedgerOpened());
     await settled(bloc);
     expect(model.rollupsAsked, hasLength(1));
@@ -130,7 +131,7 @@ void main() {
     final ledger = seedLedger(around: august);
     final store = InMemoryLedgerStore(ledger);
     final model = FakeModelGateway();
-    final bloc = LedgerBloc(store, model, now: august)
+    final bloc = LedgerBloc(store, model, now: august, homeCurrency: 'MYR')
       ..add(const LedgerOpened());
     await settled(bloc);
     expect(model.rollupsAsked, hasLength(1));
@@ -148,7 +149,7 @@ void main() {
     final ledger = seedLedger(around: august);
     final store = InMemoryLedgerStore(ledger);
     final model = FakeModelGateway();
-    final bloc = LedgerBloc(store, model, now: august)
+    final bloc = LedgerBloc(store, model, now: august, homeCurrency: 'MYR')
       ..add(const LedgerOpened());
     await settled(bloc);
 
@@ -331,6 +332,28 @@ void main() {
     },
   );
 
+  // Nothing cached needs invalidating by hand: `rollupHash` already hashes the
+  // currency the month was computed in, so a change simply misses.
+  test('changing the Home Currency re-keys the month and asks again', () async {
+    // Enough spending in each currency for either to be worth writing up, so
+    // the second ask is the re-key rather than a month that only just got big
+    // enough.
+    final abroad = [
+      for (var day = 1; day <= minimumExpensesForRecap; day++)
+        spent('Kopitiam SS2', 12.00, day: day).copyWith(currency: 'SGD'),
+    ];
+    final (:bloc, :model) = opened([...seedLedger(around: august), ...abroad]);
+    await settled(bloc);
+    expect(model.rollupsAsked, hasLength(1));
+
+    bloc.add(const HomeCurrencyChanged('SGD'));
+    await settled(bloc);
+
+    expect(model.rollupsAsked, hasLength(2));
+    expect(model.rollupsAsked.last, contains('SGD'));
+    await bloc.close();
+  });
+
   test('changing back serves the Recap already paid for', () async {
     final (:bloc, :model) = opened(seedLedger(around: august));
     await settled(bloc);
@@ -358,8 +381,12 @@ void main() {
 
   test('changing the language does not reload the Ledger', () async {
     final store = InMemoryLedgerStore(seedLedger(around: august));
-    final bloc = LedgerBloc(store, FakeModelGateway(), now: august)
-      ..add(const LedgerOpened());
+    final bloc = LedgerBloc(
+      store,
+      FakeModelGateway(),
+      now: august,
+      homeCurrency: 'MYR',
+    )..add(const LedgerOpened());
     final before = (await settled(bloc)).expenses;
 
     final seen = <LedgerState>[];
@@ -448,8 +475,12 @@ void main() {
   test('the Recap is never written to the Ledger', () async {
     final store = InMemoryLedgerStore(seedLedger(around: august));
     final before = store.contents.length;
-    final bloc = LedgerBloc(store, FakeModelGateway(), now: august)
-      ..add(const LedgerOpened());
+    final bloc = LedgerBloc(
+      store,
+      FakeModelGateway(),
+      now: august,
+      homeCurrency: 'MYR',
+    )..add(const LedgerOpened());
     await settled(bloc);
 
     expect(store.contents.length, before);

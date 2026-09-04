@@ -7,12 +7,14 @@ class InMemoryDevicePreferences implements DevicePreferences {
     bool locksOnOpen = true,
     ThemeMode theme = ThemeMode.system,
     this._language = defaultLanguage,
+    this._homeCurrency,
   }) : _locks = locksOnOpen,
        _mode = theme;
 
   bool _locks;
   ThemeMode _mode;
   String _language;
+  String? _homeCurrency;
   final _explained = <String>{};
 
   @override
@@ -26,6 +28,12 @@ class InMemoryDevicePreferences implements DevicePreferences {
 
   @override
   Future<void> setLanguage(String value) async => _language = value;
+
+  @override
+  Future<String?> homeCurrency() async => _homeCurrency;
+
+  @override
+  Future<void> setHomeCurrency(String value) async => _homeCurrency = value;
 
   @override
   Future<bool> locksOnOpen() async => _locks;

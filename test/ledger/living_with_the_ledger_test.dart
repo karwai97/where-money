@@ -106,6 +106,7 @@ void main() {
         signIn: FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai),
         storesFor: (_) => store.stores,
         model: FakeModelGateway(),
+        homeCurrency: 'MYR',
         photograph: (_) async => null,
       ),
     );

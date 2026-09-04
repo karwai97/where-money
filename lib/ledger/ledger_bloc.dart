@@ -65,6 +65,19 @@ final class LanguageChanged extends LedgerEvent {
   List<Object?> get props => [language];
 }
 
+/// The Home Currency arrived, either learned from the first Expense or chosen
+/// in Settings. Carried the same way [LanguageChanged] is, and for the same
+/// reason: re-keying the bloc would throw away a loaded Ledger because a
+/// preference moved.
+final class HomeCurrencyChanged extends LedgerEvent {
+  const HomeCurrencyChanged(this.currency);
+
+  final String currency;
+
+  @override
+  List<Object?> get props => [currency];
+}
+
 /// Confirmed on screen before it gets here.
 final class ExpenseDeleted extends LedgerEvent {
   const ExpenseDeleted(this.expenseId);
@@ -160,6 +173,11 @@ final class RecapUnavailable extends RecapState {
 sealed class LedgerState extends Equatable {
   const LedgerState();
 
+  /// The whole Ledger, newest first, and empty on a state that has not read
+  /// one. Here rather than on the two states that hold it so that a reader
+  /// wanting only the Expenses does not have to know which of them it has.
+  List<Expense> get expenses => const [];
+
   @override
   List<Object?> get props => const [];
 }
@@ -178,6 +196,7 @@ final class LedgerReady extends LedgerState {
   });
 
   /// The whole Ledger, newest first. The month on screen is [inMonth].
+  @override
   final List<Expense> expenses;
 
   /// The month the user is looking at. Computed here and nowhere else, so the
@@ -198,7 +217,32 @@ final class LedgerReady extends LedgerState {
       expensesIn(expenses, year: rollup.year, month: rollup.month);
 
   @override
-  List<Object?> get props => [expenses, rollup.year, rollup.month, recap];
+  List<Object?> get props => [
+    expenses,
+    rollup.year,
+    rollup.month,
+    // The axis the month was computed on. Without it a Home Currency changed
+    // in Settings recomputes an identical-looking state that Equatable then
+    // swallows, and the charts stay in the old currency.
+    rollup.homeCurrency,
+    recap,
+  ];
+}
+
+/// The Ledger is readable and there is no Home Currency to aggregate it in
+/// yet, so there is no Rollup and nothing has been asked of the Model. A phase
+/// of the interface rather than a shape of the domain: it ends at the first
+/// commit, and nothing below this file knows it exists (ADR-0009).
+final class LedgerWithoutHomeCurrency extends LedgerState {
+  const LedgerWithoutHomeCurrency(this.expenses);
+
+  /// Ordinarily empty. Not always: a Ledger restored onto a new phone arrives
+  /// full with the preference unset, and this is what it is learned from.
+  @override
+  final List<Expense> expenses;
+
+  @override
+  List<Object?> get props => [expenses];
 }
 
 /// The Ledger could not be read at all, which on a signed-in user means the
@@ -218,6 +262,7 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
     this._model, {
     DateTime? now,
     this._language = defaultLanguage,
+    this._homeCurrency,
   }) : _opened = _firstOf(now ?? DateTime.now()),
        super(const LedgerLoading()) {
     _month = _opened;
@@ -225,6 +270,7 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
     on<MonthStepped>(_onStepped);
     on<RecapAskedAgain>(_onAskedAgain);
     on<LanguageChanged>(_onLanguageChanged);
+    on<HomeCurrencyChanged>(_onHomeCurrencyChanged);
     on<ExpenseDeleted>(_onDeleted);
     on<_RecapWanted>(_onRecapWanted);
     on<_LedgerChanged>((event, emit) {
@@ -243,6 +289,11 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
   /// through [LanguageChanged]. The constructor takes the one the app opened in
   /// so the first Recap is not asked for in English and then replaced.
   String _language;
+
+  /// The currency every Rollup here is computed in, or null until the app has
+  /// been told one. Read off the phone before the first frame like the theme
+  /// and the language, and kept up to date through [HomeCurrencyChanged].
+  String? _homeCurrency;
 
   /// The month the app was opened in, which is as far forward as there is
   /// anything to see.
@@ -264,12 +315,21 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
   /// two statements on purpose: building a [LedgerReady] costs nothing and
   /// starts nothing, and this is the only place a month gets paid for.
   void _show(Emitter<LedgerState> emit) {
-    final ready = _ready();
+    final home = _homeCurrency;
+    // Nothing is aggregated and nothing is asked for until the app knows what
+    // this Ledger's money is. Asking the Model to write up a month computed on
+    // a currency nobody chose would be paying for a guess.
+    if (home == null) {
+      emit(LedgerWithoutHomeCurrency(_expenses));
+      return;
+    }
+
+    final ready = _ready(home);
     emit(ready);
     _wantRecap(ready.rollup);
   }
 
-  LedgerReady _ready() {
+  LedgerReady _ready(String homeCurrency) {
     final rollup = Rollup.forMonth(
       _expenses,
       year: _month.year,
@@ -374,6 +434,18 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
     if (state is LedgerReady) _show(emit);
   }
 
+  /// The charts are recomputed and the Recaps re-key themselves: [rollupHash]
+  /// already hashes the currency, so a month written up in the old one is
+  /// still held under its own key and the new one simply misses.
+  void _onHomeCurrencyChanged(
+    HomeCurrencyChanged event,
+    Emitter<LedgerState> emit,
+  ) {
+    if (event.currency == _homeCurrency) return;
+    _homeCurrency = event.currency;
+    if (state is! LedgerLoading && state is! LedgerUnavailable) _show(emit);
+  }
+
   void _onAskedAgain(RecapAskedAgain event, Emitter<LedgerState> emit) {
     if (state case final LedgerReady ready
         when ready.recap is RecapUnavailable) {
@@ -417,11 +489,17 @@ RecapState _recapFrom(RecapAnswer answer) => switch (answer) {
 
 DateTime _firstOf(DateTime at) => DateTime(at.year, at.month);
 
-/// The currency the Rollup aggregates in. Everything else is stored faithfully
-/// and left out of the totals, with the count shown (ADR-0006). There is no
-/// settings screen yet, so this is one constant in one place rather than a
-/// preference the user can move.
-const String homeCurrency = 'MYR';
+/// What a Ledger teaches the app its money is: the oldest Expense carrying a
+/// code the app knows, or null when there is nothing to learn from. A code the
+/// app cannot place is no basis for an aggregation axis — an Expense committed
+/// as `???` would leave every Rollup empty for good.
+///
+/// Read in two places, which is why it is one function: the listener that
+/// learns it, and the Settings row that says a Home Currency came from there.
+String? learnableCurrency(List<Expense> expenses) => expenses.reversed
+    .map((expense) => expense.currency)
+    .where(isoCurrencies.contains)
+    .firstOrNull;
 
 /// Enough months for a direction to be visible without the bars turning into
 /// a stripe on a phone.

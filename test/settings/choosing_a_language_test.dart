@@ -124,6 +124,14 @@ void main() {
   testWidgets('every word on the screen moves, the panels below included', (
     tester,
   ) async {
+    // Settings runs past the bottom of a small phone, and what is below the
+    // fold is never built. This claim is about the panels down there, so the
+    // screen has to be tall enough to hold them.
+    tester.view
+      ..physicalSize = const Size(1000, 2400)
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
     await tester.pumpWidget(app(language: 'zh'));
     await openSettings(tester);
 
@@ -131,6 +139,7 @@ void main() {
       '设置',
       '主题',
       '语言',
+      '主货币',
       '锁定 where_money',
       '退出登录',
       '每次扫描请求的设置',

@@ -279,6 +279,57 @@ void main() {
     expect(kind<NoCurrency>(check), isNull);
   });
 
+  test('a three-letter code nobody issues is flagged too', () {
+    final check = Check.of(
+      clean(purchasedAt: '2026-08-21', currency: 'XYZ'),
+      now: now,
+    );
+
+    expect(kind<CurrencyNotAnIsoCode>(check)?.read, 'XYZ');
+  });
+
+  test('the placeholder a currencyless Expense is stored with is flagged', () {
+    final check = Check.of(
+      clean(purchasedAt: '2026-08-21', currency: '???'),
+      now: now,
+    );
+
+    expect(kind<CurrencyNotAnIsoCode>(check)?.read, '???');
+  });
+
+  test('an unambiguous symbol is still not a code', () {
+    for (final read in const ['\$', 'RM']) {
+      final check = Check.of(
+        clean(purchasedAt: '2026-08-21', currency: read),
+        now: now,
+      );
+
+      expect(kind<CurrencyNotAnIsoCode>(check)?.read, read);
+    }
+  });
+
+  test('a real code raises nothing, in either case', () {
+    for (final read in const ['SGD', 'sgd']) {
+      final check = Check.of(
+        clean(purchasedAt: '2026-08-21', currency: read),
+        now: now,
+      );
+
+      expect(kind<CurrencyNotAnIsoCode>(check), isNull);
+      expect(kind<NoCurrency>(check), isNull);
+    }
+  });
+
+  test('a correction is checked against the same set', () {
+    final check = Check.of(
+      clean(purchasedAt: '2026-08-21', currency: 'XYZ'),
+      now: now,
+      alreadyReviewed: true,
+    );
+
+    expect(kind<CurrencyNotAnIsoCode>(check)?.read, 'XYZ');
+  });
+
   test('nothing read at all is a different Finding from a bad code', () {
     final check = Check.of(
       clean(purchasedAt: '2026-08-21', currency: '  '),
