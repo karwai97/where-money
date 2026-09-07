@@ -88,7 +88,7 @@ void main() {
     await waitFor(tester, find.byTooltip('Inbox, 1 waiting'));
 
     // Nothing opened itself: the Ledger is still what is on screen.
-    expect(find.text('Ledger'), findsOneWidget);
+    expect(find.text('LEDGER'), findsOneWidget);
     expect(find.text('Review this receipt'), findsNothing);
 
     await openTheInbox(tester);

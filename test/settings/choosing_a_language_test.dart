@@ -33,7 +33,7 @@ void main() {
 
   Future<void> openSettings(WidgetTester tester) async {
     await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.settings));
+    await tester.tap(find.byIcon(Icons.settings_outlined));
     await tester.pumpAndSettle();
   }
 
@@ -135,16 +135,7 @@ void main() {
     await tester.pumpWidget(app(language: 'zh'));
     await openSettings(tester);
 
-    for (final chinese in [
-      '设置',
-      '主题',
-      '语言',
-      '主货币',
-      '锁定 where_money',
-      '退出登录',
-      '每次扫描请求的设置',
-      '审核修正了什么',
-    ]) {
+    for (final chinese in ['设置', '主题', '语言', '主货币', '锁定 where_money', '退出登录']) {
       expect(find.text(chinese), findsWidgets, reason: '$chinese is missing');
     }
 
@@ -154,8 +145,6 @@ void main() {
       'Language',
       'Lock where_money',
       'Sign out',
-      'What each Scan asks for',
-      'What Review had to correct',
     ]) {
       expect(
         find.text(english),
@@ -163,16 +152,6 @@ void main() {
         reason: '$english is still here',
       );
     }
-  });
-
-  testWidgets('the Knobs the panel reports are read in 中文 too', (tester) async {
-    await tester.pumpWidget(app(language: 'zh'));
-    await openSettings(tester);
-
-    // A count with a language of its own around it, which is the whole reason
-    // these are ICU messages rather than concatenated fragments.
-    expect(find.text('每日上限：40 次扫描'), findsOne);
-    expect(find.text('模型：gpt-5-nano'), findsOne);
   });
 
   testWidgets('a language change does not undo the theme beside it', (

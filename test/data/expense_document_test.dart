@@ -60,13 +60,16 @@ void main() {
     expect(read.lineItems.last.quantity, isNull);
   });
 
-  test('the document id becomes the Expense id, and is not duplicated inside', () {
-    expect(expenseToDocument(groceries), isNot(contains('id')));
-    expect(
-      expenseFromDocument('somewhere-else', expenseToDocument(groceries)).id,
-      'somewhere-else',
-    );
-  });
+  test(
+    'the document id becomes the Expense id, and is not duplicated inside',
+    () {
+      expect(expenseToDocument(groceries), isNot(contains('id')));
+      expect(
+        expenseFromDocument('somewhere-else', expenseToDocument(groceries)).id,
+        'somewhere-else',
+      );
+    },
+  );
 
   test('a hand-typed Expense stays hand-typed across a round trip', () {
     final typed = Expense(
@@ -168,7 +171,8 @@ void main() {
     expect(
       read.receiptPath,
       'jaya-grocer-2.jpg',
-      reason: 'a scanned Expense carries the id of the Scan the photo is '
+      reason:
+          'a scanned Expense carries the id of the Scan the photo is '
           'named after',
     );
   });

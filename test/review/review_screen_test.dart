@@ -229,7 +229,7 @@ void main() {
     await tester.tap(find.text('Add to Ledger'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Ledger'), findsOneWidget);
+    expect(find.text('LEDGER'), findsOneWidget);
     expect(store.contents, hasLength(1));
   });
 
@@ -516,7 +516,7 @@ void main() {
     await tester.tap(find.text('Add to Ledger'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Ledger'), findsOneWidget);
+    expect(find.text('LEDGER'), findsOneWidget);
     expect(store.contents, hasLength(1));
     expect(find.text('Kopitiam SS2'), findsOneWidget);
   });

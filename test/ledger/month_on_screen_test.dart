@@ -30,6 +30,7 @@ void main() {
   final now = DateTime.now();
   final thisMonth = short[now.month - 1];
   final lastMonth = short[DateTime(now.year, now.month - 1).month - 1];
+  final nextMonth = short[DateTime(now.year, now.month + 1).month - 1];
 
   late InMemoryLedgerStore store;
   final model = FakeModelGateway();
@@ -96,10 +97,14 @@ void main() {
     expect(find.text('AirAsia'), findsNothing);
   });
 
-  testWidgets('stepping back shows the month before it and nothing from this '
-      'one', (tester) async {
+  // The trend in the Ledger's header is the way through the months: the
+  // chevrons direction C replaced it with are gone, and a column knows which
+  // month it drew.
+  testWidgets('tapping the month before this one moves the list onto it', (
+    tester,
+  ) async {
     await openLedger(tester);
-    await tester.tap(find.byTooltip('Previous month'));
+    await tester.tap(find.text(lastMonth));
     await tester.pumpAndSettle();
 
     expect(find.text('AirAsia'), findsWidgets);
@@ -110,10 +115,55 @@ void main() {
     tester,
   ) async {
     await openLedger(tester);
-    await tester.tap(find.byTooltip('Next month'));
+
+    // Nothing to tap that leads past the month the app opened in: the trend
+    // ends there, so there is no forward step to shut off.
+    expect(find.text(thisMonth), findsWidgets);
+    expect(find.text(nextMonth), findsNothing);
+    expect(find.text('Ikea Damansara'), findsWidgets);
+  });
+
+  // A bar of no height marks nothing, and the months worth stepping back to
+  // are often the empty ones.
+  testWidgets('the month on screen is named in the accent even when it drew '
+      'no bar', (tester) async {
+    store = InMemoryLedgerStore();
+    await openLedger(tester);
+
+    final label = tester.widget<Text>(find.text(thisMonth));
+
+    expect(
+      label.style?.color,
+      isNotNull,
+      reason: 'the showing month carries a colour of its own',
+    );
+    expect(
+      label.style?.color,
+      isNot(tester.widget<Text>(find.text(lastMonth)).style?.color),
+    );
+  });
+
+  // The complaint this was built for: the trend used to end at the month on
+  // screen, so walking back put that month against the right-hand edge and
+  // left nothing on screen leading forward. Restarting the app was the only
+  // way back to today.
+  testWidgets('walking back down the trend leaves a way forward again', (
+    tester,
+  ) async {
+    store = InMemoryLedgerStore(seedLedger(around: DateTime(2026, 8, 23)));
+    await openLedger(tester, on: DateTime(2026, 8, 23));
+
+    // The oldest column the trend opens on, six months back from August.
+    await tester.tap(find.text('Mar'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Ikea Damansara'), findsWidgets);
+    expect(find.text('Apr'), findsWidgets, reason: 'a month later than March');
+
+    await tester.tap(find.text('Apr'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('AirAsia'), findsNothing, reason: 'off March, not on it');
+    expect(find.text('May'), findsWidgets, reason: 'and still going forward');
   });
 
   testWidgets('a month with nothing in it says so rather than showing a stale '
@@ -121,7 +171,53 @@ void main() {
     store = InMemoryLedgerStore();
     await openLedger(tester);
 
-    expect(find.textContaining('Nothing'), findsOneWidget);
+    expect(find.textContaining('Nothing here yet'), findsOneWidget);
+  });
+
+  // Found by running the app, not by reading it. The trend is the only way
+  // through the months now, so hiding it on a month with no spending — which
+  // the chart detail is right to do — left the reader on a dead screen with
+  // nothing to tap.
+  testWidgets('a month with nothing in it still has a way out of it', (
+    tester,
+  ) async {
+    store = InMemoryLedgerStore();
+    await openLedger(tester);
+
+    expect(
+      find.text(lastMonth),
+      findsWidgets,
+      reason:
+          'an empty month draws no bar, but its column is still the way '
+          'back',
+    );
+
+    await tester.tap(find.text(lastMonth));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining(lastMonth), findsWidgets);
+  });
+
+  // Direction C folds the total into the Ledger's own header. Before that the
+  // screen a user opens on could not say what the month came to at all — the
+  // figure was a tap away on the charts.
+  testWidgets('the Ledger says what the month came to, not only what it went '
+      'on', (tester) async {
+    await openLedger(tester);
+
+    expect(find.text('MYR 1806.75'), findsOneWidget);
+    expect(find.textContaining('than'), findsWidgets);
+  });
+
+  testWidgets('the Ledger owns up to what its own total leaves out', (
+    tester,
+  ) async {
+    await openLedger(tester);
+
+    // The seeded month spends USD, which is not the Home Currency and so is
+    // not in the figure above the list (ADR-0006). The charts said so; the
+    // screen holding the total now has to say it too.
+    expect(find.textContaining('not in these totals'), findsOneWidget);
   });
 
   testWidgets('the charts break the month down by category', (tester) async {
@@ -141,6 +237,65 @@ void main() {
     expect(find.text(thisMonth), findsOneWidget);
     expect(find.text(lastMonth), findsOneWidget);
     expect(find.textContaining('MYR 1806.75'), findsWidgets);
+  });
+
+  testWidgets('tapping a month in the trend moves the whole screen onto it', (
+    tester,
+  ) async {
+    await openCharts(tester);
+    expect(find.text('Home'), findsOneWidget);
+
+    await tester.tap(find.text(lastMonth));
+    await tester.pumpAndSettle();
+
+    // The title, the breakdown and the trend all read from one Rollup, so a
+    // breakdown that is now last month's is the whole screen having moved.
+    expect(find.widgetWithText(AppBar, thisMonth), findsNothing);
+    expect(find.text('Travel'), findsOneWidget);
+    expect(find.text('Home'), findsNothing);
+  });
+
+  testWidgets('the Ledger behind the charts is on the month the trend was '
+      'left on', (tester) async {
+    await openCharts(tester);
+
+    await tester.tap(find.text(lastMonth));
+    await tester.pumpAndSettle();
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    expect(find.text('AirAsia'), findsWidgets);
+    expect(find.text('Ikea Damansara'), findsNothing);
+  });
+
+  // The trend now reaches past the month on screen, so the charts cannot take
+  // the end of it for the month they are about — the title would name one
+  // month and the figure above the bars another.
+  testWidgets('the charts are about the month on screen, not the end of the '
+      'trend', (tester) async {
+    store = InMemoryLedgerStore(seedLedger(around: DateTime(2026, 8, 23)));
+    await openLedger(tester, on: DateTime(2026, 8, 23));
+
+    await tester.tap(find.text('Mar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Charts'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('March 2026'), findsOneWidget);
+    expect(find.textContaining('August'), findsNothing);
+  });
+
+  testWidgets('a month in the trend is a button, not just a drawing', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    await openCharts(tester);
+
+    expect(
+      tester.getSemantics(find.text(lastMonth)),
+      containsSemantics(hasTapAction: true, isButton: true),
+    );
+    semantics.dispose();
   });
 
   testWidgets('spending in another currency is named as left out rather than '

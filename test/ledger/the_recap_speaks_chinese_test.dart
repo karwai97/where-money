@@ -65,7 +65,7 @@ void main() {
   }
 
   Future<void> chooseChinese(WidgetTester tester) async {
-    await tester.tap(find.byIcon(Icons.settings));
+    await tester.tap(find.byIcon(Icons.settings_outlined));
     await tester.pumpAndSettle();
     await tester.tap(find.byType(DropdownButton<String>));
     await tester.pumpAndSettle();
@@ -128,7 +128,7 @@ void main() {
     // A third answer, so a served cache and a fresh ask are told apart by what
     // is on the screen rather than by counting anything.
     model.recapAnswer = FakeModelGateway.wrote('A third nobody asked for.');
-    await tester.tap(find.byIcon(Icons.settings));
+    await tester.tap(find.byIcon(Icons.settings_outlined));
     await tester.pumpAndSettle();
     await tester.tap(find.byType(DropdownButton<String>));
     await tester.pumpAndSettle();

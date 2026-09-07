@@ -9,6 +9,7 @@ class _Palette {
     required this.surf,
     required this.ink,
     required this.muted,
+    required this.dim,
     required this.rule,
     required this.track,
     required this.accent,
@@ -19,6 +20,13 @@ class _Palette {
   final Color surf;
   final Color ink;
   final Color muted;
+
+  /// A third tier of ink, under [muted]: the column heads over the Ledger's
+  /// list, and the ISO code beside an amount. Material names two text
+  /// colours and the design needs three, so this one lands on `outline` —
+  /// nothing else in the app reads that role.
+  final Color dim;
+
   final Color rule;
   final Color track;
   final Color accent;
@@ -33,6 +41,7 @@ const _dark = _Palette(
   surf: Color(0xFF1D1F25),
   ink: Color(0xFFE5E6EB),
   muted: Color(0xFF9A9DA8),
+  dim: Color(0xFF7E8290),
   rule: Color(0xFF262931),
   track: Color(0xFF2E323C),
   accent: Color(0xFF9B8CF0),
@@ -44,6 +53,7 @@ const _light = _Palette(
   surf: Color(0xFFF1F2F5),
   ink: Color(0xFF17181C),
   muted: Color(0xFF5A5E68),
+  dim: Color(0xFF62666F),
   rule: Color(0xFFE3E5EA),
   track: Color(0xFFD9DBE2),
   // The one value that does not invert. Dark's #9B8CF0 measures 2.72:1 on this
@@ -73,10 +83,9 @@ final _darkTheme = _grownFrom(Brightness.dark, _dark);
 
 /// The seed supplies every tonal role the design does not name. What Graphite
 /// measured is laid over the top.
-ThemeData _grownFrom(Brightness brightness, _Palette palette) => ThemeData(
-  useMaterial3: true,
-  colorScheme:
-      ColorScheme.fromSeed(seedColor: _seed, brightness: brightness).copyWith(
+ThemeData _grownFrom(Brightness brightness, _Palette palette) {
+  final colours = ColorScheme.fromSeed(seedColor: _seed, brightness: brightness)
+      .copyWith(
         primary: palette.accent,
         onPrimary: palette.onAccent,
         surface: palette.bg,
@@ -84,6 +93,37 @@ ThemeData _grownFrom(Brightness brightness, _Palette palette) => ThemeData(
         surfaceContainer: palette.surf,
         surfaceContainerHighest: palette.track,
         onSurfaceVariant: palette.muted,
+        outline: palette.dim,
         outlineVariant: palette.rule,
+      );
+
+  return ThemeData(
+    useMaterial3: true,
+    colorScheme: colours,
+    // Graphite draws a 52px bar with a rule under it, a title at reading size
+    // rather than Material's headline, and actions a tier dimmer than the ink
+    // beside them — the actions are ways out of the screen, not the screen.
+    appBarTheme: AppBarTheme(
+      toolbarHeight: 52,
+      backgroundColor: colours.surface,
+      foregroundColor: colours.onSurface,
+      scrolledUnderElevation: 0,
+      shape: Border(bottom: BorderSide(color: colours.outlineVariant)),
+      titleTextStyle: TextStyle(
+        color: colours.onSurface,
+        fontSize: 17,
+        fontWeight: FontWeight.w500,
+        letterSpacing: -0.1,
       ),
-);
+      iconTheme: IconThemeData(size: 22, color: colours.onSurface),
+      actionsIconTheme: IconThemeData(size: 22, color: colours.onSurfaceVariant),
+    ),
+    // Said out loud because Material would not do it: a FloatingActionButton
+    // reads `primaryContainer`, not `primary`, so the one button the design
+    // fills with the accent was coming out a tonal violet nobody measured.
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: colours.primary,
+      foregroundColor: colours.onPrimary,
+    ),
+  );
+}

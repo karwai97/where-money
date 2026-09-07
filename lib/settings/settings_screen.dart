@@ -8,15 +8,10 @@ import '../l10n/app_localizations.dart';
 import '../ledger/ledger_bloc.dart';
 import '../lock/device_lock.dart';
 import '../session/session_bloc.dart';
-import 'how_scans_are_read.dart';
 import 'settings_cubit.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key, required this.knobs});
-
-  /// Handed down rather than looked up: knobs are plain values everywhere else
-  /// they go, and this is the last place they land.
-  final Knobs knobs;
+  const SettingsScreen({super.key});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -90,12 +85,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: Text(words.settingsSignOut),
             onTap: _signOut,
           ),
-          // Below what the user came here for. This half is for whoever is
-          // diagnosing a Scan, not for whoever is using the app.
-          const Divider(),
-          HowScansAreRead(knobs: widget.knobs),
-          const Divider(),
-          const WhatReviewHadToCorrect(),
         ],
       ),
     );

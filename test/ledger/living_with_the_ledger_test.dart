@@ -196,7 +196,11 @@ void main() {
       'paid in', (tester) async {
     await openLedger(tester);
 
-    expect(find.text('USD 24.99'), findsOneWidget);
+    // The Ledger sets the code beside the figure rather than in front of it,
+    // so a column of amounts lines up on its digits. Both halves are still
+    // on screen, which is the part ADR-0006 depends on.
+    expect(find.text('USD'), findsOneWidget);
+    expect(find.text('24.99'), findsOneWidget);
 
     await tester.tap(find.text('Steam'));
     await tester.pumpAndSettle();

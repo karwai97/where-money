@@ -316,6 +316,14 @@
   "@ledgerTitle": {
     "description": "The Ledger: the screen the app opens on, and the one a user spends the most time reading."
   },
+  "ledgerColumnMerchant": "Merchant",
+  "@ledgerColumnMerchant": {
+    "description": "Heads the left column of the Ledger's list. Deliberately not the Review form's Merchant label: this names a column of a list, and rewording a form field should not silently reword a column head."
+  },
+  "ledgerColumnAmount": "Amount",
+  "@ledgerColumnAmount": {
+    "description": "Heads the right column of the Ledger's list, above what each Expense cost. Not 'Total', which is one Expense's own field in Review, and not the month's total either — that is the figure in the header above."
+  },
   "ledgerAddByHand": "Add an Expense by hand",
   "ledgerPhotograph": "Photograph a receipt",
   "ledgerTakeAPhoto": "Take a photo",
@@ -329,8 +337,6 @@
       "count": { "type": "int" }
     }
   },
-  "ledgerPreviousMonth": "Previous month",
-  "ledgerNextMonth": "Next month",
   "ledgerUnreadable": "Your Ledger could not be read.",
   "ledgerEmpty": "Nothing here yet.\nAdd one with the button below.",
   "ledgerNothingInMonth": "Nothing in {month}.",

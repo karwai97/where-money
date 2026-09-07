@@ -16,7 +16,7 @@ Single-context — one `CONTEXT.md` and `docs/adr/` at the repo root. See `docs/
 
 ### Code comments
 
-Comments explain *why*, not *what* — no section banners, no changelog or attribution comments, no commented-out code, keep it minimal and straight forward. Use the `lean-comments` skill for a dedicated comment cleanup or review pass.
+Keep the comments minimal and straight forward. Use the `lean-comments` skill for a dedicated comment cleanup or review pass.
 
 ### Prose
 

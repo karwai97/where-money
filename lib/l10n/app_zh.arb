@@ -149,6 +149,9 @@
   "reviewFindingReasonSeparator": "；",
   "ledgerTitle": "账本",
 
+  "ledgerColumnMerchant": "商家",
+  "ledgerColumnAmount": "金额",
+
   "ledgerAddByHand": "手动添加一笔支出",
   "ledgerPhotograph": "拍一张收据",
   "ledgerTakeAPhoto": "拍照",
@@ -156,8 +159,6 @@
   "ledgerCharts": "图表",
   "ledgerInbox": "待处理",
   "ledgerInboxWaiting": "{count, plural, other{待处理，{count} 张等着}}",
-  "ledgerPreviousMonth": "上一个月",
-  "ledgerNextMonth": "下一个月",
   "ledgerUnreadable": "读不到你的账本。",
   "ledgerEmpty": "这里还什么都没有。\n用下面的按钮加一笔。",
   "ledgerNothingInMonth": "{month}没有记录。",

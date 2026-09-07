@@ -119,16 +119,29 @@ class _Track extends StatelessWidget {
 /// against. The month on screen is the only one in the accent colour: the
 /// others are context, and colouring them all would bury the point.
 class MonthTrend extends StatelessWidget {
-  const MonthTrend(this.months, {super.key});
+  const MonthTrend(
+    this.months, {
+    required this.showing,
+    required this.onPicked,
+    super.key,
+  });
 
   final List<Rollup> months;
+
+  /// The month the screen is on. The window can reach past it, so which month
+  /// this trend is about has to be said rather than read off the end.
+  final Rollup showing;
+
+  /// What a tapped column means. A callback rather than an event because this
+  /// file draws Rollups and knows nothing else — the screen that has a bloc
+  /// decides what a tap is worth.
+  final void Function(Rollup month) onPicked;
 
   @override
   Widget build(BuildContext context) {
     if (months.isEmpty) return const SizedBox.shrink();
 
     final theme = Theme.of(context);
-    final showing = months.last;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -140,22 +153,50 @@ class MonthTrend extends StatelessWidget {
           style: theme.textTheme.titleSmall,
         ),
         const SizedBox(height: 8),
-        SizedBox(height: _plotHeight, child: _Columns(months, showing)),
+        MonthColumns(months, showing: showing, onPicked: onPicked),
       ],
     );
   }
 }
 
+/// The bars on their own. Pulled out of [MonthTrend] because the Ledger's
+/// header draws the same trend without a number above it — the total is
+/// already the headline there — and shorter, so it can sit above the list
+/// rather than fill a screen.
+class MonthColumns extends StatelessWidget {
+  const MonthColumns(
+    this.months, {
+    required this.showing,
+    required this.onPicked,
+    this.height = _plotHeight,
+    super.key,
+  });
+
+  final List<Rollup> months;
+
+  /// The month the screen is on, and so the one column in the accent. Named
+  /// rather than taken as the last of [months]: the Ledger's header windows
+  /// its trend so there are months after the one on screen, which is what
+  /// gives a reader who has stepped back a way forward again.
+  final Rollup showing;
+
+  final void Function(Rollup month) onPicked;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) =>
+      SizedBox(height: height, child: _Columns(months, showing, onPicked));
+}
+
 class _Columns extends StatelessWidget {
-  const _Columns(this.months, this.showing);
+  const _Columns(this.months, this.showing, this.onPicked);
 
   final List<Rollup> months;
   final Rollup showing;
+  final void Function(Rollup month) onPicked;
 
   @override
   Widget build(BuildContext context) {
-    final words = AppLocalizations.of(context);
-    final theme = Theme.of(context);
     final tallest = months.map((r) => r.total).reduce((a, b) => a > b ? a : b);
 
     return Row(
@@ -163,49 +204,104 @@ class _Columns extends StatelessWidget {
       children: [
         for (final month in months)
           Expanded(
-            child: Semantics(
-              label: words.chartsMonthTotal(
-                month.monthLabel(words),
-                asMoney(month.homeCurrency, month.total),
-              ),
-              container: true,
-              excludeSemantics: true,
-              child: Column(
-                children: [
-                  Expanded(
-                    child: FractionallySizedBox(
-                      heightFactor: tallest == 0
-                          ? 0
-                          : (month.total / tallest).clamp(0.0, 1.0),
-                      alignment: Alignment.bottomCenter,
-                      child: Align(
-                        alignment: Alignment.bottomCenter,
-                        child: Container(
-                          width: _columnWidth,
-                          decoration: BoxDecoration(
-                            color:
-                                month.year == showing.year &&
-                                    month.month == showing.month
-                                ? theme.colorScheme.primary
-                                : theme.colorScheme.surfaceContainerHighest,
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(4),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    month.shortMonthLabel(words),
-                    style: theme.textTheme.labelSmall,
-                  ),
-                ],
-              ),
+            child: _MonthColumn(
+              month,
+              // A month is drawn against the tallest in the window rather than
+              // its own total, or every column would be full height and the
+              // trend would have no shape.
+              fraction: tallest == 0
+                  ? 0
+                  : (month.total / tallest).clamp(0.0, 1.0),
+              isShowing:
+                  month.year == showing.year && month.month == showing.month,
+              onTap: () => onPicked(month),
             ),
           ),
       ],
+    );
+  }
+}
+
+class _MonthColumn extends StatelessWidget {
+  const _MonthColumn(
+    this.month, {
+    required this.fraction,
+    required this.isShowing,
+    required this.onTap,
+  });
+
+  final Rollup month;
+  final double fraction;
+
+  /// Whether this is the month the screen is on, which is the only one in the
+  /// accent colour.
+  final bool isShowing;
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final words = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+
+    return Semantics(
+      label: words.chartsMonthTotal(
+        month.monthLabel(words),
+        asMoney(month.homeCurrency, month.total),
+      ),
+      container: true,
+      excludeSemantics: true,
+      button: true,
+      // The gesture is on the InkWell below, but a screen reader never reaches
+      // it: this node excludes its own subtree, so the action has to be
+      // published here too or the column is a button that cannot be pressed.
+      onTap: onTap,
+      child: InkWell(
+        // The whole column, label and all — a month that cost nothing draws no
+        // bar, and a target you can only hit where there is ink is a target
+        // that disappears exactly when the trend is most worth stepping into.
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(4),
+        excludeFromSemantics: true,
+        child: Column(
+          children: [
+            Expanded(
+              child: FractionallySizedBox(
+                heightFactor: fraction,
+                alignment: Alignment.bottomCenter,
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    width: _columnWidth,
+                    decoration: BoxDecoration(
+                      color: isShowing
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.surfaceContainerHighest,
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(4),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              month.shortMonthLabel(words),
+              // The label carries the accent as well as the bar. A month
+              // nobody spent anything in draws a bar of no height, so on the
+              // months where knowing where you are matters most the bar alone
+              // says nothing.
+              style: isShowing
+                  ? theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    )
+                  : theme.textTheme.labelSmall,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

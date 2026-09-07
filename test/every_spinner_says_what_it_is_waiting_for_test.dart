@@ -153,7 +153,7 @@ void main() {
     store.holdLedger = Completer<void>();
 
     await open(tester);
-    await reach(tester, find.text('Ledger'));
+    await reach(tester, find.text('LEDGER'));
 
     expect(find.bySemanticsLabel('Opening your Ledger'), findsOneWidget);
 
