@@ -104,24 +104,21 @@ void main() {
     },
   );
 
-  test(
-    'picking the month before lands on it, with its own Expenses',
-    () async {
-      final bloc = opened(InMemoryLedgerStore(seedLedger(around: august)));
-      await settled(bloc);
+  test('picking the month before lands on it, with its own Expenses', () async {
+    final bloc = opened(InMemoryLedgerStore(seedLedger(around: august)));
+    await settled(bloc);
 
-      bloc.add(const MonthPicked(2026, 7));
-      final state = await settled(bloc);
+    bloc.add(const MonthPicked(2026, 7));
+    final state = await settled(bloc);
 
-      expect(state.rollup.month, 7);
-      expect(state.inMonth.map((e) => e.merchant), contains('AirAsia'));
-      expect(
-        state.inMonth.map((e) => e.merchant),
-        isNot(contains('Ikea Damansara')),
-      );
-      await bloc.close();
-    },
-  );
+    expect(state.rollup.month, 7);
+    expect(state.inMonth.map((e) => e.merchant), contains('AirAsia'));
+    expect(
+      state.inMonth.map((e) => e.merchant),
+      isNot(contains('Ikea Damansara')),
+    );
+    await bloc.close();
+  });
 
   test(
     'a month nobody spent anything in is empty rather than an error',

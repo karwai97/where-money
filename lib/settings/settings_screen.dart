@@ -170,7 +170,7 @@ class _HomeCurrencyChoice extends StatelessWidget {
       isThreeLine: true,
       trailing: Text(
         currency ?? '',
-        style: context.asFigures(Theme.of(context).textTheme.titleMedium),
+        style: asFigures(Theme.of(context).textTheme.titleMedium),
       ),
       onTap: () async {
         final cubit = context.read<SettingsCubit>();

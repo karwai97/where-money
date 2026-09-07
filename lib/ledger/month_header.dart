@@ -55,11 +55,13 @@ class MonthHeader extends StatelessWidget {
               children: [
                 Expanded(child: _Total(rollup)),
                 Text(
-                  rollup.shortMonthAndYearLabel(words),
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: colours.primary,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 1.1,
+                  rollup.shortMonthAndYearLabel(words).toUpperCase(),
+                  style: atItsWeight(
+                    theme.textTheme.labelSmall?.copyWith(
+                      color: colours.primary,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1.1,
+                    ),
                   ),
                 ),
               ],
@@ -102,7 +104,7 @@ class _Total extends StatelessWidget {
 
     return Text(
       asMoney(rollup.homeCurrency, rollup.total),
-      style: context.asFigures(
+      style: asFigures(
         theme.textTheme.titleLarge?.copyWith(
           fontWeight: FontWeight.w500,
           letterSpacing: -0.2,

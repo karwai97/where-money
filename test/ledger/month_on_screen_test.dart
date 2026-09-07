@@ -32,6 +32,11 @@ void main() {
   final lastMonth = short[DateTime(now.year, now.month - 1).month - 1];
   final nextMonth = short[DateTime(now.year, now.month + 1).month - 1];
 
+  /// A month as the trend draws it. The columns are upper case, which is
+  /// typography rather than wording — elsewhere the same month is read from a
+  /// sentence, so the two spellings are kept apart here rather than merged.
+  String column(String month) => month.toUpperCase();
+
   late InMemoryLedgerStore store;
   final model = FakeModelGateway();
 
@@ -104,7 +109,7 @@ void main() {
     tester,
   ) async {
     await openLedger(tester);
-    await tester.tap(find.text(lastMonth));
+    await tester.tap(find.text(column(lastMonth)));
     await tester.pumpAndSettle();
 
     expect(find.text('AirAsia'), findsWidgets);
@@ -118,9 +123,32 @@ void main() {
 
     // Nothing to tap that leads past the month the app opened in: the trend
     // ends there, so there is no forward step to shut off.
-    expect(find.text(thisMonth), findsWidgets);
-    expect(find.text(nextMonth), findsNothing);
+    expect(find.text(column(thisMonth)), findsWidgets);
+    expect(find.text(column(nextMonth)), findsNothing);
     expect(find.text('Ikea Damansara'), findsWidgets);
+  });
+
+  // The two lines of a row are not equals. Material paints both in the one
+  // ink, which left a date and a category reading as loudly as the merchant
+  // they belong to.
+  testWidgets('a row says the merchant louder than what it was for', (
+    tester,
+  ) async {
+    await openLedger(tester);
+
+    final merchant = tester.widget<Text>(find.text('Ikea Damansara'));
+    final under = tester.widget<Text>(find.textContaining('· Home'));
+
+    expect(
+      merchant.style?.fontWeight,
+      FontWeight.w500,
+      reason: 'the merchant carries the weight',
+    );
+    expect(
+      under.style?.color,
+      isNot(merchant.style?.color),
+      reason: 'and the line under it is a tier down in ink',
+    );
   });
 
   // A bar of no height marks nothing, and the months worth stepping back to
@@ -130,7 +158,7 @@ void main() {
     store = InMemoryLedgerStore();
     await openLedger(tester);
 
-    final label = tester.widget<Text>(find.text(thisMonth));
+    final label = tester.widget<Text>(find.text(column(thisMonth)));
 
     expect(
       label.style?.color,
@@ -139,7 +167,7 @@ void main() {
     );
     expect(
       label.style?.color,
-      isNot(tester.widget<Text>(find.text(lastMonth)).style?.color),
+      isNot(tester.widget<Text>(find.text(column(lastMonth))).style?.color),
     );
   });
 
@@ -154,16 +182,24 @@ void main() {
     await openLedger(tester, on: DateTime(2026, 8, 23));
 
     // The oldest column the trend opens on, six months back from August.
-    await tester.tap(find.text('Mar'));
+    await tester.tap(find.text(column('Mar')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Apr'), findsWidgets, reason: 'a month later than March');
+    expect(
+      find.text(column('Apr')),
+      findsWidgets,
+      reason: 'a month later than March',
+    );
 
-    await tester.tap(find.text('Apr'));
+    await tester.tap(find.text(column('Apr')));
     await tester.pumpAndSettle();
 
     expect(find.text('AirAsia'), findsNothing, reason: 'off March, not on it');
-    expect(find.text('May'), findsWidgets, reason: 'and still going forward');
+    expect(
+      find.text(column('May')),
+      findsWidgets,
+      reason: 'and still going forward',
+    );
   });
 
   testWidgets('a month with nothing in it says so rather than showing a stale '
@@ -185,17 +221,20 @@ void main() {
     await openLedger(tester);
 
     expect(
-      find.text(lastMonth),
+      find.text(column(lastMonth)),
       findsWidgets,
       reason:
           'an empty month draws no bar, but its column is still the way '
           'back',
     );
 
-    await tester.tap(find.text(lastMonth));
+    await tester.tap(find.text(column(lastMonth)));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining(lastMonth), findsWidgets);
+    // The badge over the total, which names the month it landed on. Upper
+    // case like the column it was tapped: on an empty Ledger there is no
+    // sentence naming the month to find instead.
+    expect(find.textContaining(column(lastMonth)), findsWidgets);
   });
 
   // Direction C folds the total into the Ledger's own header. Before that the
@@ -234,8 +273,8 @@ void main() {
   ) async {
     await openCharts(tester);
 
-    expect(find.text(thisMonth), findsOneWidget);
-    expect(find.text(lastMonth), findsOneWidget);
+    expect(find.text(column(thisMonth)), findsOneWidget);
+    expect(find.text(column(lastMonth)), findsOneWidget);
     expect(find.textContaining('MYR 1806.75'), findsWidgets);
   });
 
@@ -245,7 +284,7 @@ void main() {
     await openCharts(tester);
     expect(find.text('Home'), findsOneWidget);
 
-    await tester.tap(find.text(lastMonth));
+    await tester.tap(find.text(column(lastMonth)));
     await tester.pumpAndSettle();
 
     // The title, the breakdown and the trend all read from one Rollup, so a
@@ -259,7 +298,7 @@ void main() {
       'left on', (tester) async {
     await openCharts(tester);
 
-    await tester.tap(find.text(lastMonth));
+    await tester.tap(find.text(column(lastMonth)));
     await tester.pumpAndSettle();
     await tester.pageBack();
     await tester.pumpAndSettle();
@@ -276,7 +315,7 @@ void main() {
     store = InMemoryLedgerStore(seedLedger(around: DateTime(2026, 8, 23)));
     await openLedger(tester, on: DateTime(2026, 8, 23));
 
-    await tester.tap(find.text('Mar'));
+    await tester.tap(find.text(column('Mar')));
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Charts'));
     await tester.pumpAndSettle();
@@ -292,7 +331,7 @@ void main() {
     await openCharts(tester);
 
     expect(
-      tester.getSemantics(find.text(lastMonth)),
+      tester.getSemantics(find.text(column(lastMonth))),
       containsSemantics(hasTapAction: true, isButton: true),
     );
     semantics.dispose();
@@ -345,7 +384,7 @@ void main() {
 
     expect(find.text('Groceries'), findsOneWidget);
     expect(find.text('MYR 423.10'), findsOneWidget);
-    expect(find.text(thisMonth), findsOneWidget);
+    expect(find.text(column(thisMonth)), findsOneWidget);
   });
 
   // Geometry rather than text, unlike everything else here, because the defect

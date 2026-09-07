@@ -56,9 +56,7 @@ class CategoryBreakdown extends StatelessWidget {
                       Expanded(child: Text(category.labelIn(words))),
                       Text(
                         asMoney(rollup.homeCurrency, category.amount),
-                        style: context.asFigures(
-                          DefaultTextStyle.of(context).style,
-                        ),
+                        style: asFigures(DefaultTextStyle.of(context).style),
                       ),
                     ],
                   ),
@@ -156,7 +154,7 @@ class MonthTrend extends StatelessWidget {
         // bar would be read by nobody.
         Text(
           asMoney(showing.homeCurrency, showing.total),
-          style: context.asFigures(theme.textTheme.titleSmall),
+          style: asFigures(theme.textTheme.titleSmall),
         ),
         const SizedBox(height: 8),
         MonthColumns(months, showing: showing, onPicked: onPicked),
@@ -293,17 +291,22 @@ class _MonthColumn extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              month.shortMonthLabel(words),
+              // Upper case is typography, not wording — the message files hold
+              // the month names as they are written, and this is a no-op in a
+              // language whose months are not cased.
+              month.shortMonthLabel(words).toUpperCase(),
               // The label carries the accent as well as the bar. A month
               // nobody spent anything in draws a bar of no height, so on the
               // months where knowing where you are matters most the bar alone
               // says nothing.
               style: isShowing
-                  ? theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.w600,
+                  ? atItsWeight(
+                      theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     )
-                  : theme.textTheme.labelSmall,
+                  : theme.textTheme.labelSmall?.copyWith(letterSpacing: 0.6),
             ),
           ],
         ),

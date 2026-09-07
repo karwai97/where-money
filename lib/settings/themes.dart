@@ -1,36 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// The face figures are set in, carried on the theme so a screen asks for it
-/// the way it asks for a colour rather than importing the theme file.
-///
 /// C5 Graphite sets two faces: everything reads in Public Sans, and anything
 /// that is a number — a total, an amount, the ISO code beside it — is
-/// monospaced, so a column of figures is read down its digits. Material names
-/// one family per theme, so the second one has to be said somewhere.
-@immutable
-class Figures extends ThemeExtension<Figures> {
-  const Figures(this.face);
+/// monospaced, so a column of figures is read down its digits.
+///
+/// Both of these ask the font package for a style again rather than adjusting
+/// one, because a weight cannot be changed after the fact. Each weight is
+/// registered as a family of its own — `PublicSans_w600`, not Public Sans at
+/// 600 — so a `copyWith(fontWeight:)` downstream of one sets a number nothing
+/// reads and the text stays at 400. It fails silently, which is the whole
+/// reason these exist: the weight is taken off [style], and the file that
+/// actually draws it is fetched to match.
 
-  /// Merged onto whatever size the caller is already using, so a call site
-  /// says "this is a figure" and changes nothing else about the text.
-  final TextStyle face;
+/// The figure face, at whatever weight [style] asks for.
+TextStyle? asFigures(TextStyle? style) =>
+    style == null ? null : GoogleFonts.jetBrainsMono(textStyle: style);
 
-  @override
-  Figures copyWith({TextStyle? face}) => Figures(face ?? this.face);
-
-  @override
-  Figures lerp(Figures? other, double t) =>
-      other == null ? this : Figures(TextStyle.lerp(face, other.face, t)!);
-}
-
-/// The figure face for this context. An extension method rather than a lookup
-/// spelled out at each call site, because forgetting it is silent: the text
-/// still draws, in the wrong face.
-extension FigureStyle on BuildContext {
-  TextStyle? asFigures(TextStyle? style) =>
-      style?.merge(Theme.of(this).extension<Figures>()?.face);
-}
+/// The reading face, at whatever weight [style] asks for. Only needed where
+/// that weight is not the one the type ramp already carries.
+TextStyle? atItsWeight(TextStyle? style) =>
+    style == null ? null : GoogleFonts.publicSans(textStyle: style);
 
 /// The colours one brightness of C5 Graphite is made of. Field names are the
 /// design's own token names, so the values can be checked against the palette
@@ -130,10 +120,19 @@ ThemeData _grownFrom(Brightness brightness, _Palette palette) {
       );
 
   final base = ThemeData(useMaterial3: true, colorScheme: colours);
+  final text = GoogleFonts.publicSansTextTheme(base.textTheme);
 
   return base.copyWith(
-    textTheme: GoogleFonts.publicSansTextTheme(base.textTheme),
-    extensions: [Figures(GoogleFonts.jetBrainsMono())],
+    // Material paints every text slot in the one ink. Graphite has a second
+    // tier under it — what a row was for under the merchant, how a month
+    // compares under its total, the months under the trend's bars — and these
+    // two slots are where the app says that kind of thing. Said here so a
+    // supporting line is muted by being supporting, not by each caller
+    // remembering to colour it.
+    textTheme: text.copyWith(
+      bodySmall: text.bodySmall?.copyWith(color: colours.onSurfaceVariant),
+      labelSmall: text.labelSmall?.copyWith(color: colours.onSurfaceVariant),
+    ),
     // Graphite draws a 52px bar with a rule under it, a title at reading size
     // rather than Material's headline, and actions a tier dimmer than the ink
     // beside them — the actions are ways out of the screen, not the screen.

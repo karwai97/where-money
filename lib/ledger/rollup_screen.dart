@@ -180,7 +180,7 @@ class _Headline extends StatelessWidget {
       children: [
         Text(
           asMoney(rollup.homeCurrency, rollup.total),
-          style: context.asFigures(theme.textTheme.headlineMedium),
+          style: asFigures(theme.textTheme.headlineMedium),
         ),
         const SizedBox(height: 4),
         Text(

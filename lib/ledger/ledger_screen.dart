@@ -37,10 +37,12 @@ class LedgerScreen extends StatelessWidget {
           // is why the message files hold it in sentence case.
           title: Text(
             words.ledgerTitle.toUpperCase(),
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 1.8,
+            style: atItsWeight(
+              Theme.of(context).textTheme.labelLarge?.copyWith(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 1.8,
+              ),
             ),
           ),
           actions: [
@@ -274,10 +276,12 @@ class _ColumnHeads extends StatelessWidget {
     final theme = Theme.of(context);
     final colours = theme.colorScheme;
 
-    final style = theme.textTheme.labelSmall?.copyWith(
-      color: colours.outline,
-      fontWeight: FontWeight.w600,
-      letterSpacing: 1.4,
+    final style = atItsWeight(
+      theme.textTheme.labelSmall?.copyWith(
+        color: colours.outline,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 1.4,
+      ),
     );
 
     return Container(
@@ -352,8 +356,10 @@ class _ExpenseRow extends StatelessWidget {
                         merchantLabel(words, expense.merchant),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w500,
+                        style: atItsWeight(
+                          theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -415,7 +421,7 @@ class _Amount extends StatelessWidget {
       children: [
         Text(
           expense.currency,
-          style: context.asFigures(
+          style: asFigures(
             theme.textTheme.labelSmall?.copyWith(
               color: counted ? colours.outline : colours.primary,
               letterSpacing: 0.4,
@@ -425,7 +431,7 @@ class _Amount extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           asAmount(expense.total),
-          style: context.asFigures(
+          style: asFigures(
             theme.textTheme.bodyMedium?.copyWith(
               color: counted ? colours.onSurface : colours.onSurfaceVariant,
               // Still asked for: until the monospaced face has been fetched
