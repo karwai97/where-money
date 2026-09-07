@@ -74,5 +74,7 @@ ui-debug.log
 # referenced by CLAUDE.md and the ADRs, and it stays tracked.
 .claude/settings.local.json
 .claude/*.local.json
+# A second checkout of this repo, made by an agent to work off to one side.
+.claude/worktrees/
 *-handoff.md
 .scratch/
