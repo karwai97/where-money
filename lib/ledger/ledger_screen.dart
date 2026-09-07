@@ -35,12 +35,16 @@ class LedgerScreen extends StatelessWidget {
           // The one title in the app set as a tracked upper case mark rather
           // than a heading — upper case here is typography, not wording, which
           // is why the message files hold it in sentence case.
+          //
+          // Heavier than the artboard's 600, which was asked for after seeing
+          // both on a phone. At 13px under this much tracking, 600 reads as a
+          // caption rather than as the name of the screen.
           title: Text(
             words.ledgerTitle.toUpperCase(),
             style: atItsWeight(
               Theme.of(context).textTheme.labelLarge?.copyWith(
                 fontSize: 13,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
                 letterSpacing: 1.8,
               ),
             ),
