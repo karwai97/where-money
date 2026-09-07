@@ -1,4 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+/// The face figures are set in, carried on the theme so a screen asks for it
+/// the way it asks for a colour rather than importing the theme file.
+///
+/// C5 Graphite sets two faces: everything reads in Public Sans, and anything
+/// that is a number — a total, an amount, the ISO code beside it — is
+/// monospaced, so a column of figures is read down its digits. Material names
+/// one family per theme, so the second one has to be said somewhere.
+@immutable
+class Figures extends ThemeExtension<Figures> {
+  const Figures(this.face);
+
+  /// Merged onto whatever size the caller is already using, so a call site
+  /// says "this is a figure" and changes nothing else about the text.
+  final TextStyle face;
+
+  @override
+  Figures copyWith({TextStyle? face}) => Figures(face ?? this.face);
+
+  @override
+  Figures lerp(Figures? other, double t) =>
+      other == null ? this : Figures(TextStyle.lerp(face, other.face, t)!);
+}
+
+/// The figure face for this context. An extension method rather than a lookup
+/// spelled out at each call site, because forgetting it is silent: the text
+/// still draws, in the wrong face.
+extension FigureStyle on BuildContext {
+  TextStyle? asFigures(TextStyle? style) =>
+      style?.merge(Theme.of(this).extension<Figures>()?.face);
+}
 
 /// The colours one brightness of C5 Graphite is made of. Field names are the
 /// design's own token names, so the values can be checked against the palette
@@ -97,9 +129,11 @@ ThemeData _grownFrom(Brightness brightness, _Palette palette) {
         outlineVariant: palette.rule,
       );
 
-  return ThemeData(
-    useMaterial3: true,
-    colorScheme: colours,
+  final base = ThemeData(useMaterial3: true, colorScheme: colours);
+
+  return base.copyWith(
+    textTheme: GoogleFonts.publicSansTextTheme(base.textTheme),
+    extensions: [Figures(GoogleFonts.jetBrainsMono())],
     // Graphite draws a 52px bar with a rule under it, a title at reading size
     // rather than Material's headline, and actions a tier dimmer than the ink
     // beside them — the actions are ways out of the screen, not the screen.
@@ -109,14 +143,17 @@ ThemeData _grownFrom(Brightness brightness, _Palette palette) {
       foregroundColor: colours.onSurface,
       scrolledUnderElevation: 0,
       shape: Border(bottom: BorderSide(color: colours.outlineVariant)),
-      titleTextStyle: TextStyle(
+      titleTextStyle: GoogleFonts.publicSans(
         color: colours.onSurface,
         fontSize: 17,
         fontWeight: FontWeight.w500,
         letterSpacing: -0.1,
       ),
       iconTheme: IconThemeData(size: 22, color: colours.onSurface),
-      actionsIconTheme: IconThemeData(size: 22, color: colours.onSurfaceVariant),
+      actionsIconTheme: IconThemeData(
+        size: 22,
+        color: colours.onSurfaceVariant,
+      ),
     ),
     // Said out loud because Material would not do it: a FloatingActionButton
     // reads `primaryContainer`, not `primary`, so the one button the design

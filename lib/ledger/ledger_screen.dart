@@ -11,6 +11,7 @@ import '../scan/inbox_bloc.dart';
 import '../scan/inbox_screen.dart';
 import '../scan/photographer.dart';
 import '../settings/settings_screen.dart';
+import '../settings/themes.dart';
 import 'expense_screen.dart';
 import 'how_it_got_here.dart';
 import 'ledger_bloc.dart';
@@ -414,18 +415,24 @@ class _Amount extends StatelessWidget {
       children: [
         Text(
           expense.currency,
-          style: theme.textTheme.labelSmall?.copyWith(
-            color: counted ? colours.outline : colours.primary,
-            letterSpacing: 0.4,
+          style: context.asFigures(
+            theme.textTheme.labelSmall?.copyWith(
+              color: counted ? colours.outline : colours.primary,
+              letterSpacing: 0.4,
+            ),
           ),
         ),
         const SizedBox(width: 6),
         Text(
           asAmount(expense.total),
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: counted ? colours.onSurface : colours.onSurfaceVariant,
-            // A column of figures that does not jog when a 1 follows an 8.
-            fontFeatures: const [FontFeature.tabularFigures()],
+          style: context.asFigures(
+            theme.textTheme.bodyMedium?.copyWith(
+              color: counted ? colours.onSurface : colours.onSurfaceVariant,
+              // Still asked for: until the monospaced face has been fetched
+              // this draws in the fallback, and a column of figures should not
+              // jog when a 1 follows an 8.
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
           ),
         ),
       ],

@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:where_money_core/where_money_core.dart';
 
 import '../l10n/app_localizations.dart';
+import '../settings/themes.dart';
 import '../on_screen.dart';
 
 const double _barThickness = 10;
@@ -53,7 +54,12 @@ class CategoryBreakdown extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(child: Text(category.labelIn(words))),
-                      Text(asMoney(rollup.homeCurrency, category.amount)),
+                      Text(
+                        asMoney(rollup.homeCurrency, category.amount),
+                        style: context.asFigures(
+                          DefaultTextStyle.of(context).style,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 6),
@@ -150,7 +156,7 @@ class MonthTrend extends StatelessWidget {
         // bar would be read by nobody.
         Text(
           asMoney(showing.homeCurrency, showing.total),
-          style: theme.textTheme.titleSmall,
+          style: context.asFigures(theme.textTheme.titleSmall),
         ),
         const SizedBox(height: 8),
         MonthColumns(months, showing: showing, onPicked: onPicked),

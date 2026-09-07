@@ -9,6 +9,7 @@ import '../ledger/ledger_bloc.dart';
 import '../lock/device_lock.dart';
 import '../session/session_bloc.dart';
 import 'settings_cubit.dart';
+import 'themes.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -169,7 +170,7 @@ class _HomeCurrencyChoice extends StatelessWidget {
       isThreeLine: true,
       trailing: Text(
         currency ?? '',
-        style: Theme.of(context).textTheme.titleMedium,
+        style: context.asFigures(Theme.of(context).textTheme.titleMedium),
       ),
       onTap: () async {
         final cubit = context.read<SettingsCubit>();

@@ -12,6 +12,7 @@ import 'package:where_money_core/where_money_core.dart';
 
 import '../l10n/app_localizations.dart';
 import '../on_screen.dart';
+import '../settings/themes.dart';
 import 'charts.dart';
 
 /// Short enough to sit above a list and still leave it most of the screen.
@@ -101,12 +102,16 @@ class _Total extends StatelessWidget {
 
     return Text(
       asMoney(rollup.homeCurrency, rollup.total),
-      style: theme.textTheme.titleLarge?.copyWith(
-        fontWeight: FontWeight.w500,
-        letterSpacing: -0.2,
-        // The one thing the figures owe each other across a month change: the
-        // total must not jog sideways when 1284.60 becomes 998.00.
-        fontFeatures: const [FontFeature.tabularFigures()],
+      style: context.asFigures(
+        theme.textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.w500,
+          letterSpacing: -0.2,
+          // Asked for as well as the monospaced face, which does not need it:
+          // the face is fetched, and until it arrives this is drawn in the
+          // fallback. The one thing the figures owe each other across a month
+          // change is not jogging sideways when 1284.60 becomes 998.00.
+          fontFeatures: const [FontFeature.tabularFigures()],
+        ),
       ),
     );
   }

@@ -36,6 +36,11 @@ dependencies:
   local_auth: ^3.0.2
   shared_preferences: ^2.5.5
   firebase_remote_config: ^6.6.0
+  # C5 Graphite is drawn in Public Sans and sets its figures in JetBrains Mono.
+  # Fetched on first use and cached rather than committed as assets, so a phone
+  # that has never had a network draws the fallback face until it does — which
+  # is why the figures still ask for tabular numerals themselves.
+  google_fonts: ^8.2.1
 
 dev_dependencies:
   flutter_test:

@@ -4,6 +4,7 @@ import 'package:where_money_core/where_money_core.dart';
 
 import '../l10n/app_localizations.dart';
 import '../on_screen.dart';
+import '../settings/themes.dart';
 import 'charts.dart';
 import 'ledger_bloc.dart';
 import 'left_out.dart';
@@ -179,7 +180,7 @@ class _Headline extends StatelessWidget {
       children: [
         Text(
           asMoney(rollup.homeCurrency, rollup.total),
-          style: theme.textTheme.headlineMedium,
+          style: context.asFigures(theme.textTheme.headlineMedium),
         ),
         const SizedBox(height: 4),
         Text(
