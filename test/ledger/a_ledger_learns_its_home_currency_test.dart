@@ -10,6 +10,7 @@ import '../fakes/in_memory_device_preferences.dart';
 import '../fakes/in_memory_ledger_store.dart';
 import '../picking_a_currency.dart';
 import '../scan/inbox_bloc_test.dart' show photograph;
+import '../as_drawn.dart';
 
 /// A Ledger with no Home Currency yet, and what it does about it. Nothing here
 /// asserts on a constant: the whole point is that there is no longer one to
@@ -73,19 +74,13 @@ void main() {
   Future<void> addByHand(WidgetTester tester, {String? currency}) async {
     await tester.tap(find.byTooltip('Add an Expense by hand'));
     await tester.pumpAndSettle();
-    await tester.enterText(
-      find.widgetWithText(TextField, 'Merchant'),
-      'Kopitiam SS2',
-    );
-    await tester.enterText(
-      find.widgetWithText(TextField, 'Date'),
-      '2026-08-22',
-    );
-    await tester.enterText(find.widgetWithText(TextField, 'Total'), '26.00');
+    await tester.enterText(fieldCalled('Merchant'), 'Kopitiam SS2');
+    await tester.enterText(fieldCalled('Date'), '2026-08-22');
+    await tester.enterText(fieldCalled('Total'), '26.00');
     await tester.pumpAndSettle();
     if (currency != null) await pickCurrency(tester, 'Currency', currency);
 
-    await tester.tap(find.text('Add to Ledger'));
+    await tester.tap(markSaying('Add to Ledger'));
     await tester.pumpAndSettle();
   }
 

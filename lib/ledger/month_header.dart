@@ -104,17 +104,7 @@ class _Total extends StatelessWidget {
 
     return Text(
       asMoney(rollup.homeCurrency, rollup.total),
-      style: asFigures(
-        theme.textTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.w500,
-          letterSpacing: -0.2,
-          // Asked for as well as the monospaced face, which does not need it:
-          // the face is fetched, and until it arrives this is drawn in the
-          // fallback. The one thing the figures owe each other across a month
-          // change is not jogging sideways when 1284.60 becomes 998.00.
-          fontFeatures: const [FontFeature.tabularFigures()],
-        ),
-      ),
+      style: asClaimedFigure(theme.textTheme.titleLarge),
     );
   }
 }

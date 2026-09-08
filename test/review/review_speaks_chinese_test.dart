@@ -11,6 +11,7 @@ import '../fakes/in_memory_ledger_store.dart';
 import '../picking_a_currency.dart';
 import '../scan/inbox_bloc_test.dart' show photograph;
 import 'where_things_sit.dart';
+import '../as_drawn.dart';
 
 /// The Review screen read in Chinese, on a real widget tree rather than
 /// through [sayingFor]. The Ledger it is reached from speaks Chinese too since
@@ -69,8 +70,10 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// The form cases a field's name upper at the call site, which is a no-op
+  /// in Chinese — asked for anyway, so this reads the same as the English one.
   Future<void> type(WidgetTester tester, String label, String value) async {
-    await tester.enterText(find.widgetWithText(TextField, label).first, value);
+    await tester.enterText(fieldCalled(label).first, value);
     await tester.pumpAndSettle();
   }
 

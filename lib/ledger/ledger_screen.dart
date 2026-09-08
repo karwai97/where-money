@@ -32,22 +32,11 @@ class LedgerScreen extends StatelessWidget {
     return _SaysThePhotosStayedBehind(
       child: Scaffold(
         appBar: AppBar(
-          // The one title in the app set as a tracked upper case mark rather
-          // than a heading — upper case here is typography, not wording, which
-          // is why the message files hold it in sentence case.
-          //
-          // Heavier than the artboard's 600, which was asked for after seeing
-          // both on a phone. At 13px under this much tracking, 600 reads as a
-          // caption rather than as the name of the screen.
+          // Upper case here is typography, not wording, which is why the
+          // message files hold it in sentence case.
           title: Text(
             words.ledgerTitle.toUpperCase(),
-            style: atItsWeight(
-              Theme.of(context).textTheme.labelLarge?.copyWith(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.8,
-              ),
-            ),
+            style: asScreenName(Theme.of(context).textTheme.labelLarge),
           ),
           actions: [
             Builder(builder: _chartsAction),
@@ -280,12 +269,8 @@ class _ColumnHeads extends StatelessWidget {
     final theme = Theme.of(context);
     final colours = theme.colorScheme;
 
-    final style = atItsWeight(
-      theme.textTheme.labelSmall?.copyWith(
-        color: colours.outline,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 1.4,
-      ),
+    final style = asTrackedMark(
+      theme.textTheme.labelSmall?.copyWith(color: colours.outline),
     );
 
     return Container(

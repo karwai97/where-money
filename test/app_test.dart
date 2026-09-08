@@ -7,6 +7,7 @@ import 'fakes/in_memory_device_preferences.dart';
 import 'fakes/fake_model_gateway.dart';
 import 'fakes/fake_sign_in_gateway.dart';
 import 'fakes/in_memory_ledger_store.dart';
+import 'as_drawn.dart';
 
 void main() {
   late FakeSignInGateway signIn;
@@ -43,7 +44,7 @@ void main() {
     await open(tester);
 
     expect(find.text('Continue with Google'), findsOneWidget);
-    expect(find.text('LEDGER'), findsNothing);
+    expect(markSaying('Ledger'), findsNothing);
   });
 
   testWidgets('signing in shows the Ledger', (tester) async {
@@ -51,7 +52,7 @@ void main() {
     await tester.tap(find.text('Continue with Google'));
     await tester.pumpAndSettle();
 
-    expect(find.text('LEDGER'), findsOneWidget);
+    expect(markSaying('Ledger'), findsOneWidget);
     expect(find.text('Continue with Google'), findsNothing);
   });
 
@@ -78,7 +79,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Ikea Damansara'), findsNothing);
-    expect(find.text('LEDGER'), findsNothing);
+    expect(markSaying('Ledger'), findsNothing);
     expect(find.text('Continue with Google'), findsOneWidget);
   });
 

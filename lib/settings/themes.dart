@@ -22,6 +22,47 @@ TextStyle? asFigures(TextStyle? style) =>
 TextStyle? atItsWeight(TextStyle? style) =>
     style == null ? null : GoogleFonts.publicSans(textStyle: style);
 
+/// The tracked mark the design labels a column with: the heads over the
+/// Ledger's list, and the heads and field names down Review's form. Cased at
+/// the call site, because upper case here is typography rather than wording.
+TextStyle? asTrackedMark(TextStyle? style) => atItsWeight(
+  style?.copyWith(fontWeight: FontWeight.w600, letterSpacing: 1.4),
+);
+
+/// The name of a screen, and the name of the one action a screen exists for.
+/// Heavier and more tracked than the mark above: at 13px this is competing
+/// with an icon row rather than with body text.
+///
+/// 700 rather than the artboard's 600, which was asked for after seeing both
+/// on a phone: at 13px under this much tracking, 600 reads as a caption
+/// rather than as the name of the screen.
+///
+/// A button's name is tracked a little tighter than a bar's — 1.2 against
+/// 1.8. A bar's name has the width of the screen and nothing to hold it; a
+/// button's is inside a shape that is already holding it.
+TextStyle? asScreenName(TextStyle? style, {double tracking = 1.8}) =>
+    atItsWeight(
+      style?.copyWith(
+        fontSize: 13,
+        fontWeight: FontWeight.w700,
+        letterSpacing: tracking,
+      ),
+    );
+
+/// A figure set as a headline rather than read down a column: the month's
+/// total over the Ledger, and the receipt's over Review.
+TextStyle? asClaimedFigure(TextStyle? style) => asFigures(
+  style?.copyWith(
+    fontWeight: FontWeight.w500,
+    letterSpacing: -0.2,
+    // Asked for as well as the monospaced face, which does not need it: the
+    // face is fetched, and until it arrives this is drawn in the fallback.
+    // The one thing two figures owe each other across a change of month or of
+    // receipt is not jogging sideways when 1284.60 becomes 998.00.
+    fontFeatures: const [FontFeature.tabularFigures()],
+  ),
+);
+
 /// The colours one brightness of C5 Graphite is made of. Field names are the
 /// design's own token names, so the values can be checked against the palette
 /// they came from without translating first.

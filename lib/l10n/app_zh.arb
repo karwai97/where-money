@@ -81,7 +81,14 @@
   "reviewClean": "这张收据上的数字都对得上。对照照片核实一遍，然后加进账本。",
   "reviewRefused": "这笔支出没有保存。你刚才输入的内容还在。",
 
+  "reviewToCheck": "{count, plural, other{{count} 项待核对}}",
+
+  "reviewSectionWhatThisWas": "这是什么",
+  "reviewSectionWhatItCost": "花了多少",
+
   "reviewPickDate": "选择日期",
+
+  "reviewTypeItIn": "在这里输入",
   "reviewCategoryReason": "模型这样归类的理由：{reason}",
 
   "reviewLineDescription": "说明",

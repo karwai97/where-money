@@ -12,6 +12,7 @@ import '../fakes/fake_model_gateway.dart';
 import '../fakes/fake_sign_in_gateway.dart';
 import '../fakes/in_memory_ledger_store.dart';
 import '../scan/inbox_bloc_test.dart' show photograph;
+import '../as_drawn.dart';
 
 /// The Ledger as something to live in: open an Expense, read what was bought,
 /// look at the receipt, fix a mistake, throw a duplicate away.
@@ -215,30 +216,21 @@ void main() {
     await tester.tap(find.byTooltip('Correct this Expense'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Correct this Expense'), findsOneWidget);
+    expect(markSaying('Correct this Expense'), findsOneWidget);
 
-    await tester.enterText(
-      find.widgetWithText(TextField, 'Total').first,
-      '99.00',
-    );
+    await tester.enterText(fieldCalled('Total').first, '99.00');
     await tester.pumpAndSettle();
 
     expect(find.text('Total does not add up'), findsOneWidget);
 
-    await tester.enterText(
-      find.widgetWithText(TextField, 'Total').first,
-      '44.10',
-    );
+    await tester.enterText(fieldCalled('Total').first, '44.10');
     await tester.pumpAndSettle();
 
     expect(find.text('Total does not add up'), findsNothing);
 
-    await tester.enterText(
-      find.widgetWithText(TextField, 'Merchant').first,
-      'Village Grocer KL',
-    );
+    await tester.enterText(fieldCalled('Merchant').first, 'Village Grocer KL');
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Save'));
+    await tester.tap(markSaying('Save'));
     await tester.pumpAndSettle();
 
     final saved = store.contents.firstWhere((e) => e.id == 'scan-7');
