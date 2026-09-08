@@ -7,6 +7,8 @@
 /// trend's numbers are on the bars for a screen reader.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:where_money_core/where_money_core.dart';
 
@@ -17,6 +19,19 @@ import '../on_screen.dart';
 const double _barThickness = 10;
 const double _columnWidth = 20;
 const double _plotHeight = 140;
+
+/// Between a bar and the month under it.
+const double _labelGap = 6;
+
+/// How many lines a month label may take before it is ellipsised. Two,
+/// because at large text sizes a three-letter month is wider than a sixth of
+/// a phone and there is nowhere sideways for it to go.
+const int _labelLines = 2;
+
+/// The least a bar is worth drawing at. Direction C's 40px trend is this plus
+/// [_labelGap] plus one line of label at ordinary text size, which is why the
+/// header still measures exactly 40 there.
+const double _minimumBar = 18;
 
 /// What each Category cost this month, biggest first.
 class CategoryBreakdown extends StatelessWidget {
@@ -185,12 +200,83 @@ class MonthColumns extends StatelessWidget {
   final Rollup showing;
 
   final void Function(Rollup month) onPicked;
+
+  /// The height the trend is drawn at where the labels fit in it — direction
+  /// C's 40 above the Ledger's list, the plot's own 140 on the chart detail.
+  /// A floor rather than the last word: see [build].
   final double height;
 
   @override
-  Widget build(BuildContext context) =>
-      SizedBox(height: height, child: _Columns(months, showing, onPicked));
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, space) {
+      // The labels are measured rather than assumed, and the trend takes
+      // whatever they turn out to need. At 200% text a month label wraps to
+      // two lines inside a sixth of a phone, which is 30px more than the
+      // Ledger's 40px trend has to give — and a Column cannot give a child
+      // more room than it has, so the label was clipped and the bar above it
+      // squeezed to nothing. This is the one control that changes month, so
+      // it grows instead.
+      final labels = _labelExtent(
+        context,
+        months,
+        space.maxWidth / math.max(months.length, 1),
+      );
+
+      return SizedBox(
+        height: math.max(height, _minimumBar + _labelGap + labels),
+        child: _Columns(months, showing, onPicked),
+      );
+    },
+  );
 }
+
+/// The tallest a month label lays out in [columnWidth], at the text size the
+/// phone is set to. Measured against [_showingStyle] because that is the
+/// heavier and more widely tracked of the two, and so the first to wrap.
+double _labelExtent(
+  BuildContext context,
+  List<Rollup> months,
+  double columnWidth,
+) {
+  final words = AppLocalizations.of(context);
+  final style = _showingStyle(Theme.of(context));
+  final scaler = MediaQuery.textScalerOf(context);
+  var tallest = 0.0;
+
+  for (final month in months) {
+    final painter = TextPainter(
+      text: TextSpan(text: _labelOf(month, words), style: style),
+      textScaler: scaler,
+      textDirection: Directionality.of(context),
+      maxLines: _labelLines,
+      ellipsis: '…',
+    )..layout(maxWidth: columnWidth);
+    tallest = math.max(tallest, painter.height);
+    painter.dispose();
+  }
+
+  return tallest;
+}
+
+/// Upper case is typography, not wording — the message files hold the month
+/// names as they are written, and this is a no-op in a language whose months
+/// are not cased.
+String _labelOf(Rollup month, AppLocalizations words) =>
+    month.shortMonthLabel(words).toUpperCase();
+
+/// The label of the month the screen is on. It carries the accent as well as
+/// the bar, because a month nobody spent anything in draws a bar of no height
+/// — so on the months where knowing where you are matters most, the bar alone
+/// says nothing.
+TextStyle? _showingStyle(ThemeData theme) => atItsWeight(
+  theme.textTheme.labelSmall?.copyWith(
+    color: theme.colorScheme.primary,
+    fontWeight: FontWeight.w600,
+  ),
+);
+
+TextStyle? _contextStyle(ThemeData theme) =>
+    theme.textTheme.labelSmall?.copyWith(letterSpacing: 0.6);
 
 class _Columns extends StatelessWidget {
   const _Columns(this.months, this.showing, this.onPicked);
@@ -289,24 +375,16 @@ class _MonthColumn extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: _labelGap),
             Text(
-              // Upper case is typography, not wording — the message files hold
-              // the month names as they are written, and this is a no-op in a
-              // language whose months are not cased.
-              month.shortMonthLabel(words).toUpperCase(),
-              // The label carries the accent as well as the bar. A month
-              // nobody spent anything in draws a bar of no height, so on the
-              // months where knowing where you are matters most the bar alone
-              // says nothing.
-              style: isShowing
-                  ? atItsWeight(
-                      theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    )
-                  : theme.textTheme.labelSmall?.copyWith(letterSpacing: 0.6),
+              _labelOf(month, words),
+              textAlign: TextAlign.center,
+              // Held to what [_labelExtent] measured room for. Without these
+              // a third line at some text size the trend was not sized for
+              // would clip again.
+              maxLines: _labelLines,
+              overflow: TextOverflow.ellipsis,
+              style: isShowing ? _showingStyle(theme) : _contextStyle(theme),
             ),
           ],
         ),

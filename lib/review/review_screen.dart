@@ -594,13 +594,25 @@ class _Closed extends StatelessWidget {
       // step with the Extraction after a Line Item above it is removed.
       key: ValueKey('$name:$value'),
       initialValue: options.contains(value) ? value : options.last,
+      // Said out loud because the default is worse than it looks: a dropdown
+      // lays its options out in an IndexedStack and takes the width of the
+      // widest one, not of the one selected. At 200% text "Fees & charges"
+      // wants 450px inside a 302px field, and the field overflows by the
+      // difference whichever Category is chosen. Expanded, the stack takes
+      // the field's width instead of the longest label's.
+      isExpanded: true,
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
       ),
       items: [
         for (final option in options)
-          DropdownMenuItem(value: option, child: Text(copy(option))),
+          DropdownMenuItem(
+            value: option,
+            // And a long Category ends in an ellipsis rather than in a
+            // stripe, now that the room it gets is the field's.
+            child: Text(copy(option), overflow: TextOverflow.ellipsis),
+          ),
       ],
       onChanged: (chosen) => chosen == null ? null : onChosen(chosen),
     ),
