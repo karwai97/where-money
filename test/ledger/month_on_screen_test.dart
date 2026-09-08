@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:where_money/app.dart';
 import 'package:where_money_core/where_money_core.dart';
@@ -332,8 +333,99 @@ void main() {
 
     expect(
       tester.getSemantics(find.text(column(lastMonth))),
-      containsSemantics(hasTapAction: true, isButton: true),
+      // Focusable as well as tappable. A tap action alone is only a button
+      // for a finger: switch access and an external keyboard move platform
+      // focus, and for a while this column was the one control on the Ledger
+      // they could not reach, because the node that carried the label
+      // excluded the subtree the focus lived in.
+      isSemantics(
+        hasTapAction: true,
+        isButton: true,
+        isFocusable: true,
+        hasFocusAction: true,
+      ),
     );
+    semantics.dispose();
+  });
+
+  // The same move as 'tapping the month before this one', made the way switch
+  // access and an external keyboard make it: focus onto the column, then
+  // activate what is focused. A finger was never the problem.
+  testWidgets('focus can land on a month and pick it', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await openLedger(tester);
+
+    // The trend labels a column with the month spelled out and its total, and
+    // every abbreviation this file works in is a prefix of the long name.
+    final node = find.semantics.byLabel(RegExp('^$lastMonth'));
+
+    tester.semantics.performAction(node, SemanticsAction.focus);
+    await tester.pumpAndSettle();
+
+    // Asked of the node afterwards as well, not only of the call. Both halves
+    // earn their keep: `performAction` refuses an action the node does not
+    // offer, and this says focus actually landed rather than being accepted
+    // and dropped.
+    expect(
+      tester.getSemantics(find.text(column(lastMonth))),
+      isSemantics(isFocused: true),
+    );
+    expect(
+      find.text('Ikea Damansara'),
+      findsWidgets,
+      reason: 'focus alone moves nothing — the month changes on activation',
+    );
+
+    tester.semantics.tap(node);
+    await tester.pumpAndSettle();
+    expect(find.text('AirAsia'), findsWidgets);
+    expect(find.text('Ikea Damansara'), findsNothing);
+
+    semantics.dispose();
+  });
+
+  // Reachable is half of it. Material's default focus wash is a tenth of the
+  // accent over the header's own container, which measures 1.17:1 there and
+  // is no mark at all — so the column draws a ring in the accent, which is
+  // 5.8:1 on that ground.
+  testWidgets('a focused month is ringed in the accent', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await openLedger(tester);
+
+    Border? ringAround(String month) {
+      final box = find
+          .ancestor(
+            of: find.text(column(month)),
+            matching: find.byType(Container),
+          )
+          .evaluate()
+          .map((element) => element.widget as Container)
+          .firstWhere((container) => container.foregroundDecoration != null);
+      return (box.foregroundDecoration! as BoxDecoration).border as Border?;
+    }
+
+    expect(
+      ringAround(lastMonth)?.top.color,
+      const Color(0x00000000),
+      reason: 'nothing is ringed until focus arrives',
+    );
+
+    tester.semantics.performAction(
+      find.semantics.byLabel(RegExp('^$lastMonth')),
+      SemanticsAction.focus,
+    );
+    await tester.pumpAndSettle();
+
+    final accent = Theme.of(
+      tester.element(find.text(column(lastMonth))),
+    ).colorScheme.primary;
+    expect(ringAround(lastMonth)?.top.color, accent);
+    expect(
+      ringAround(thisMonth)?.top.color,
+      const Color(0x00000000),
+      reason: 'and only the focused one',
+    );
+
     semantics.dispose();
   });
 

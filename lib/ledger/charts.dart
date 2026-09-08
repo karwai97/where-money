@@ -312,7 +312,7 @@ class _Columns extends StatelessWidget {
   }
 }
 
-class _MonthColumn extends StatelessWidget {
+class _MonthColumn extends StatefulWidget {
   const _MonthColumn(
     this.month, {
     required this.fraction,
@@ -330,63 +330,98 @@ class _MonthColumn extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
+  State<_MonthColumn> createState() => _MonthColumnState();
+}
+
+class _MonthColumnState extends State<_MonthColumn> {
+  /// Held because the focus ring is drawn rather than washed on. A tenth of
+  /// the accent over a container barely lighter than the ground — Material's
+  /// default — measures 1.17:1 on the Ledger's header, and even at a quarter
+  /// it only reaches 1.6:1. The accent itself is 5.8:1 there, so the mark
+  /// that says where focus is is a line in it.
+  bool _focused = false;
+
+  @override
   Widget build(BuildContext context) {
+    final month = widget.month;
+    final onTap = widget.onTap;
     final words = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
-    return Semantics(
-      label: words.chartsMonthTotal(
-        month.monthLabel(words),
-        asMoney(month.homeCurrency, month.total),
-      ),
-      container: true,
-      excludeSemantics: true,
-      button: true,
-      // The gesture is on the InkWell below, but a screen reader never reaches
-      // it: this node excludes its own subtree, so the action has to be
-      // published here too or the column is a button that cannot be pressed.
+    // The InkWell is the outer one, and the label is published inside it.
+    // The other way round — a Semantics that excluded its whole subtree and
+    // republished the tap — cost the column its focus: everything focusable
+    // lived in the excluded subtree, so the node offered a tap and a button
+    // flag and no focus action at all. Switch access, an external keyboard
+    // and anything else that moves platform focus could not reach the one
+    // control on this screen that changes month, and the focus highlight was
+    // never drawn because focus never landed there.
+    return InkWell(
+      // The whole column, label and all — a month that cost nothing draws no
+      // bar, and a target you can only hit where there is ink is a target
+      // that disappears exactly when the trend is most worth stepping into.
       onTap: onTap,
-      child: InkWell(
-        // The whole column, label and all — a month that cost nothing draws no
-        // bar, and a target you can only hit where there is ink is a target
-        // that disappears exactly when the trend is most worth stepping into.
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(4),
-        excludeFromSemantics: true,
-        child: Column(
-          children: [
-            Expanded(
-              child: FractionallySizedBox(
-                heightFactor: fraction,
-                alignment: Alignment.bottomCenter,
-                child: Align(
+      borderRadius: BorderRadius.circular(4),
+      onFocusChange: (focused) => setState(() => _focused = focused),
+      child: Semantics(
+        label: words.chartsMonthTotal(
+          month.monthLabel(words),
+          asMoney(month.homeCurrency, month.total),
+        ),
+        button: true,
+        // The bars and the month under them are said once, as the label
+        // above, rather than as a drawing and a word a reader has to put
+        // back together.
+        excludeSemantics: true,
+        child: Container(
+          // Painted in front of the column rather than around it, so the
+          // trend does not shift by four pixels the moment focus arrives —
+          // and so the ring costs the bar no height in a header measured to
+          // the pixel.
+          foregroundDecoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(
+              color: _focused ? theme.colorScheme.primary : Colors.transparent,
+              width: 2,
+            ),
+          ),
+          child: Column(
+            children: [
+              Expanded(
+                child: FractionallySizedBox(
+                  heightFactor: widget.fraction,
                   alignment: Alignment.bottomCenter,
-                  child: Container(
-                    width: _columnWidth,
-                    decoration: BoxDecoration(
-                      color: isShowing
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.surfaceContainerHighest,
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(4),
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      width: _columnWidth,
+                      decoration: BoxDecoration(
+                        color: widget.isShowing
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.surfaceContainerHighest,
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(4),
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: _labelGap),
-            Text(
-              _labelOf(month, words),
-              textAlign: TextAlign.center,
-              // Held to what [_labelExtent] measured room for. Without these
-              // a third line at some text size the trend was not sized for
-              // would clip again.
-              maxLines: _labelLines,
-              overflow: TextOverflow.ellipsis,
-              style: isShowing ? _showingStyle(theme) : _contextStyle(theme),
-            ),
-          ],
+              const SizedBox(height: _labelGap),
+              Text(
+                _labelOf(month, words),
+                textAlign: TextAlign.center,
+                // Held to what [_labelExtent] measured room for. Without
+                // these a third line at some text size the trend was not
+                // sized for would clip again.
+                maxLines: _labelLines,
+                overflow: TextOverflow.ellipsis,
+                style: widget.isShowing
+                    ? _showingStyle(theme)
+                    : _contextStyle(theme),
+              ),
+            ],
+          ),
         ),
       ),
     );
