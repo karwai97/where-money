@@ -97,9 +97,9 @@ void main() {
     await settled(bloc);
     expect(model.rollupsAsked, hasLength(1));
 
-    bloc.add(const MonthStepped(-1));
+    bloc.add(const MonthPicked(2026, 7));
     await settled(bloc);
-    bloc.add(const MonthStepped(1));
+    bloc.add(const MonthPicked(2026, 8));
     final state = await settled(bloc);
 
     expect(state.rollup.month, 8);
@@ -249,9 +249,9 @@ void main() {
     );
     await settled(bloc);
 
-    bloc.add(const MonthStepped(-1));
+    bloc.add(const MonthPicked(2026, 7));
     await settled(bloc);
-    bloc.add(const MonthStepped(1));
+    bloc.add(const MonthPicked(2026, 8));
     final state = await settled(bloc);
 
     expect(state.recap, isA<RecapUnavailable>());

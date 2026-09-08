@@ -12,8 +12,11 @@ void main() {
 
   blocTest<LedgerBloc, LedgerState>(
     'opening an empty Ledger settles on nothing rather than on a spinner',
-    build: () =>
-        LedgerBloc(InMemoryLedgerStore(), FakeModelGateway(), homeCurrency: 'MYR'),
+    build: () => LedgerBloc(
+      InMemoryLedgerStore(),
+      FakeModelGateway(),
+      homeCurrency: 'MYR',
+    ),
     act: (bloc) => bloc.add(const LedgerOpened()),
     expect: () => [
       isA<LedgerReady>().having((state) => state.expenses, 'expenses', isEmpty),
@@ -22,12 +25,11 @@ void main() {
 
   blocTest<LedgerBloc, LedgerState>(
     'an existing Ledger arrives newest first',
-    build: () =>
-        LedgerBloc(
-          InMemoryLedgerStore(augustLedger),
-          FakeModelGateway(),
-          homeCurrency: 'MYR',
-        ),
+    build: () => LedgerBloc(
+      InMemoryLedgerStore(augustLedger),
+      FakeModelGateway(),
+      homeCurrency: 'MYR',
+    ),
     act: (bloc) => bloc.add(const LedgerOpened()),
     verify: (bloc) {
       final expenses = (bloc.state as LedgerReady).expenses;
@@ -102,24 +104,21 @@ void main() {
     },
   );
 
-  test(
-    'stepping back lands on the month before, with its own Expenses',
-    () async {
-      final bloc = opened(InMemoryLedgerStore(seedLedger(around: august)));
-      await settled(bloc);
+  test('picking the month before lands on it, with its own Expenses', () async {
+    final bloc = opened(InMemoryLedgerStore(seedLedger(around: august)));
+    await settled(bloc);
 
-      bloc.add(const MonthStepped(-1));
-      final state = await settled(bloc);
+    bloc.add(const MonthPicked(2026, 7));
+    final state = await settled(bloc);
 
-      expect(state.rollup.month, 7);
-      expect(state.inMonth.map((e) => e.merchant), contains('AirAsia'));
-      expect(
-        state.inMonth.map((e) => e.merchant),
-        isNot(contains('Ikea Damansara')),
-      );
-      await bloc.close();
-    },
-  );
+    expect(state.rollup.month, 7);
+    expect(state.inMonth.map((e) => e.merchant), contains('AirAsia'));
+    expect(
+      state.inMonth.map((e) => e.merchant),
+      isNot(contains('Ikea Damansara')),
+    );
+    await bloc.close();
+  });
 
   test(
     'a month nobody spent anything in is empty rather than an error',
@@ -127,7 +126,7 @@ void main() {
       final bloc = opened(InMemoryLedgerStore(seedLedger(around: august)));
       await settled(bloc);
 
-      bloc.add(const MonthStepped(-4));
+      bloc.add(const MonthPicked(2026, 4));
       final state = await settled(bloc);
 
       expect(state.rollup.month, 4);
@@ -177,13 +176,102 @@ void main() {
     },
   );
 
-  test('there is no month after the one the Ledger opened in', () async {
+  test('a month picked outright is the month on screen, however far back it '
+      'is', () async {
     final bloc = opened(InMemoryLedgerStore(seedLedger(around: august)));
+    await settled(bloc);
 
-    expect((await settled(bloc)).hasLaterMonth, isFalse);
+    bloc.add(const MonthPicked(2026, 7));
+    final state = await settled(bloc);
 
-    bloc.add(const MonthStepped(-1));
-    expect((await settled(bloc)).hasLaterMonth, isTrue);
+    expect(state.rollup.month, 7);
+    expect(state.inMonth.map((e) => e.merchant), contains('AirAsia'));
+    await bloc.close();
+  });
+
+  test('picking the month already on screen leaves it there', () async {
+    final bloc = opened(InMemoryLedgerStore(seedLedger(around: august)));
+    await settled(bloc);
+
+    bloc.add(const MonthPicked(2026, 8));
+    final state = await settled(bloc);
+
+    expect(state.rollup.month, 8);
+    expect(state.inMonth.map((e) => e.merchant), contains('Ikea Damansara'));
+    await bloc.close();
+  });
+
+  test(
+    'a month after the one the Ledger opened in cannot be picked either',
+    () async {
+      final bloc = opened(InMemoryLedgerStore(seedLedger(around: august)));
+      await settled(bloc);
+
+      bloc.add(const MonthPicked(2027, 3));
+      final state = await settled(bloc);
+
+      expect(state.rollup.year, 2026);
+      expect(state.rollup.month, 8);
+      await bloc.close();
+    },
+  );
+
+  test('the month the Ledger opened in ends the trend, having nothing '
+      'after it', () async {
+    final bloc = opened(InMemoryLedgerStore(seedLedger(around: august)));
+    final state = await settled(bloc);
+
+    expect(state.trend.last.year, 2026);
+    expect(state.trend.last.month, 8);
+    await bloc.close();
+  });
+
+  // The trend is the only way through the months, so a window that ended at
+  // the month picked would strand a reader on the month they walked back to.
+  test('a month picked off the back of the trend keeps later months on '
+      'screen to walk forward through', () async {
+    final bloc = opened(InMemoryLedgerStore(seedLedger(around: august)));
+    final opening = await settled(bloc);
+    final oldest = opening.trend.first;
+
+    expect(oldest.month, 3, reason: 'six months back from August');
+
+    bloc.add(MonthPicked(oldest.year, oldest.month));
+    final state = await settled(bloc);
+
+    expect(state.rollup.month, 3);
+    expect(
+      state.trend.where((m) => m.month > 3),
+      isNotEmpty,
+      reason: 'the window slid so the month on screen is not against its edge',
+    );
+    expect(
+      state.trend.any((m) => m.month == 3),
+      isTrue,
+      reason: 'and the month on screen is still one of the columns',
+    );
+    await bloc.close();
+  });
+
+  test('walking forward off the front of the trend goes no further than the '
+      'month the Ledger opened in', () async {
+    final bloc = opened(InMemoryLedgerStore(seedLedger(around: august)));
+    await settled(bloc);
+
+    bloc.add(const MonthPicked(2026, 3));
+    final back = await settled(bloc);
+
+    // Straight back up the trend, tapping its newest column each time.
+    var state = back;
+    for (var step = 0; step < 4; step++) {
+      final newest = state.trend.last;
+      bloc.add(MonthPicked(newest.year, newest.month));
+      state = await settled(bloc);
+    }
+
+    expect(state.rollup.year, 2026);
+    expect(state.rollup.month, 8);
+    expect(state.trend.last.month, 8);
     await bloc.close();
   });
 
@@ -194,7 +282,6 @@ void main() {
     expect(state.rollup.month, 8);
     expect(state.inMonth, isEmpty);
     expect(state.rollup.hasSpending, isFalse);
-    expect(state.hasLaterMonth, isFalse);
     await bloc.close();
   });
 
@@ -204,7 +291,7 @@ void main() {
     final bloc = opened(store);
     await settled(bloc);
 
-    bloc.add(const MonthStepped(-1));
+    bloc.add(const MonthPicked(2026, 7));
     await settled(bloc);
 
     expect(store.contents.length, before);

@@ -20,13 +20,19 @@ final class LedgerOpened extends LedgerEvent {
   const LedgerOpened();
 }
 
-final class MonthStepped extends LedgerEvent {
-  const MonthStepped(this.by);
+/// A month named outright rather than stepped to — the user tapping a bar in
+/// the trend. Absolute because that is what the tap means: the bar knows which
+/// month it drew, and making the screen subtract that from the month on screen
+/// would put calendar arithmetic in a widget to reach an event that then has
+/// to add it back.
+final class MonthPicked extends LedgerEvent {
+  const MonthPicked(this.year, this.month);
 
-  final int by;
+  final int year;
+  final int month;
 
   @override
-  List<Object?> get props => [by];
+  List<Object?> get props => [year, month];
 }
 
 /// The user asking for a Recap the Model could not write the first time. The
@@ -192,7 +198,6 @@ final class LedgerReady extends LedgerState {
     required this.rollup,
     required this.trend,
     required this.recap,
-    required this.hasLaterMonth,
   });
 
   /// The whole Ledger, newest first. The month on screen is [inMonth].
@@ -203,15 +208,13 @@ final class LedgerReady extends LedgerState {
   /// charts, the list and — later — the Recap cannot disagree.
   final Rollup rollup;
 
-  /// The months leading up to [rollup], oldest first and including it.
+  /// Six months around [rollup], oldest first and always including it —
+  /// months after it too, wherever there are any, because tapping a column is
+  /// how the reader moves and a window that stopped at [rollup] only went back.
   final List<Rollup> trend;
 
   /// The same month said in words, or why it is not.
   final RecapState recap;
-
-  /// False in the month the Ledger opened in: there is no spending to look at
-  /// after today.
-  final bool hasLaterMonth;
 
   List<Expense> get inMonth =>
       expensesIn(expenses, year: rollup.year, month: rollup.month);
@@ -225,6 +228,12 @@ final class LedgerReady extends LedgerState {
     // in Settings recomputes an identical-looking state that Equatable then
     // swallows, and the charts stay in the old currency.
     rollup.homeCurrency,
+    // Where the trend window sits. The same month can be reached with the
+    // window in two places, and without this Equatable swallows the second of
+    // them — leaving the header's bars showing months the reader has walked
+    // away from.
+    trend.last.year,
+    trend.last.month,
     recap,
   ];
 }
@@ -266,8 +275,9 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
   }) : _opened = _firstOf(now ?? DateTime.now()),
        super(const LedgerLoading()) {
     _month = _opened;
+    _windowEnd = _opened;
     on<LedgerOpened>(_onOpened);
-    on<MonthStepped>(_onStepped);
+    on<MonthPicked>(_onPicked);
     on<RecapAskedAgain>(_onAskedAgain);
     on<LanguageChanged>(_onLanguageChanged);
     on<HomeCurrencyChanged>(_onHomeCurrencyChanged);
@@ -300,15 +310,54 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
   final DateTime _opened;
 
   late DateTime _month;
+
+  /// The newest month the trend draws. Held apart from [_month] because the
+  /// trend is the only way through the months: a window that always ended at
+  /// the month on screen put that month against the right-hand edge, and a
+  /// reader who stepped back then had nothing on screen leading forward again.
+  late DateTime _windowEnd;
+
   List<Expense> _expenses = const [];
   StreamSubscription<List<Expense>>? _watching;
 
   final Recaps _recaps = Recaps();
 
-  void _onStepped(MonthStepped event, Emitter<LedgerState> emit) {
-    _month = DateTime(_month.year, _month.month + event.by);
-    if (_month.isAfter(_opened)) _month = _opened;
+  void _onPicked(MonthPicked event, Emitter<LedgerState> emit) {
+    _moveMonthTo(DateTime(event.year, event.month), emit);
+  }
+
+  /// The one place the month on screen moves, so the ceiling at [_opened] is
+  /// stated once and holds however the user got there.
+  void _moveMonthTo(DateTime month, Emitter<LedgerState> emit) {
+    _month = month.isAfter(_opened) ? _opened : month;
+    _windowEnd = _windowEndingFor(_month);
     if (state is LedgerReady) _show(emit);
+  }
+
+  /// Where the trend should end for a month, given where it ends now.
+  ///
+  /// The rule is one line: the month on screen never sits on an edge of the
+  /// window unless there is nothing past that edge. So a month picked from
+  /// inside the window leaves the window where it is, and one picked off
+  /// either end slides it by just enough to keep a month showing beyond —
+  /// which is what makes the trend a way forward as well as back. The ceiling
+  /// at [_opened] is the one edge allowed to hold the month against it: there
+  /// is no spending to look at after today.
+  DateTime _windowEndingFor(DateTime month) {
+    final start = DateTime(_windowEnd.year, _windowEnd.month - trendMonths + 1);
+    final end = switch (month) {
+      _ when !month.isAfter(start) => DateTime(
+        month.year,
+        month.month + trendMonths - 2,
+      ),
+      _ when !month.isBefore(_windowEnd) => DateTime(
+        month.year,
+        month.month + 1,
+      ),
+      _ => _windowEnd,
+    };
+
+    return end.isAfter(_opened) ? _opened : end;
   }
 
   /// The month on screen, and then whatever it still needs. The two halves are
@@ -342,13 +391,12 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
       rollup: rollup,
       trend: Rollup.trailing(
         _expenses,
-        year: _month.year,
-        month: _month.month,
+        year: _windowEnd.year,
+        month: _windowEnd.month,
         months: trendMonths,
         homeCurrency: homeCurrency,
       ),
       recap: _recapFor(rollup),
-      hasLaterMonth: _month.isBefore(_opened),
     );
   }
 

@@ -9,6 +9,7 @@ import '../fakes/fake_model_gateway.dart';
 import '../fakes/fake_sign_in_gateway.dart';
 import '../fakes/in_memory_ledger_store.dart';
 import 'inbox_bloc_test.dart' show photograph;
+import '../as_drawn.dart';
 
 /// The whole tracer bullet, from the shutter to the Ledger, as the user sees
 /// it: photograph a receipt, put the phone down, come back to find it read and
@@ -88,8 +89,8 @@ void main() {
     await waitFor(tester, find.byTooltip('Inbox, 1 waiting'));
 
     // Nothing opened itself: the Ledger is still what is on screen.
-    expect(find.text('Ledger'), findsOneWidget);
-    expect(find.text('Review this receipt'), findsNothing);
+    expect(markSaying('Ledger'), findsOneWidget);
+    expect(markSaying('Review this receipt'), findsNothing);
 
     await openTheInbox(tester);
     await waitFor(tester, find.text('Ready to Review'));
@@ -103,7 +104,7 @@ void main() {
     await tester.tap(find.text('Review'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Review this receipt'), findsOneWidget);
+    expect(markSaying('Review this receipt'), findsOneWidget);
     expect(find.text('Village Grocer Bangsar'), findsOneWidget);
     expect(find.byTooltip('Zoom into the receipt'), findsOneWidget);
   });
@@ -147,7 +148,7 @@ void main() {
     );
     expect(store.contents, isEmpty);
 
-    await tester.tap(find.text('Add to Ledger'));
+    await tester.tap(markSaying('Add to Ledger'));
     await tester.pumpAndSettle();
 
     expect(store.contents, hasLength(1));
@@ -173,13 +174,11 @@ void main() {
     // screen: reading the complaint and fixing it are one gesture apart.
     expect(
       tester.getRect(find.text('No date')).top,
-      greaterThan(
-        tester.getRect(find.widgetWithText(TextField, 'Date')).bottom,
-      ),
+      greaterThan(tester.getRect(fieldCalled('Date')).bottom),
     );
     expect(
       tester.getRect(find.text('Line items do not match subtotal')).top,
-      greaterThan(tester.getRect(find.text('Line Items')).bottom),
+      greaterThan(tester.getRect(markSaying('Line Items')).bottom),
     );
   });
 
@@ -190,12 +189,9 @@ void main() {
     await tester.tap(find.text('Review'));
     await tester.pumpAndSettle();
 
-    await tester.enterText(
-      find.widgetWithText(TextField, 'Merchant').first,
-      'Village Grocer KL',
-    );
+    await tester.enterText(fieldCalled('Merchant').first, 'Village Grocer KL');
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Add to Ledger'));
+    await tester.tap(markSaying('Add to Ledger'));
     await tester.pumpAndSettle();
 
     expect(store.contents.single.merchant, 'Village Grocer KL');

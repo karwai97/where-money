@@ -140,7 +140,24 @@
   "reviewClean": "Everything on this receipt adds up. Check it against the photo, then add it.",
   "reviewRefused": "That Expense was not saved. Your typing is still here.",
 
+  "reviewToCheck": "{count, plural, =1{1 to check} other{{count} to check}}",
+  "@reviewToCheck": {
+    "description": "How many Findings stand, in the mark beside the total the receipt claims. Upper case is typography and is applied on screen, so this is held as written.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "reviewSectionWhatThisWas": "What this was",
+  "reviewSectionWhatItCost": "What it cost",
+  "@reviewSectionWhatItCost": {
+    "description": "The two heads over Review's form, cased upper on screen as the Ledger's column heads are. The first covers who it was with and what it was for, the second the currency and the figures."
+  },
+
   "reviewPickDate": "Pick a date",
+
+  "reviewTypeItIn": "Type it in",
+  "@reviewTypeItIn": {
+    "description": "Stands in an empty field the Check complained about, where there is nothing to read and something to do. Not shown in a field nobody has complained about — an empty Tip is not a task."
+  },
   "reviewCategoryReason": "The Model chose that because: {reason}",
   "@reviewCategoryReason": {
     "description": "The Model’s own words for why it chose a Category. The reason itself arrives in whatever language the Extraction was read in, and ticket 10 is what makes that the user’s.",
@@ -316,6 +333,14 @@
   "@ledgerTitle": {
     "description": "The Ledger: the screen the app opens on, and the one a user spends the most time reading."
   },
+  "ledgerColumnMerchant": "Merchant",
+  "@ledgerColumnMerchant": {
+    "description": "Heads the left column of the Ledger's list. Deliberately not the Review form's Merchant label: this names a column of a list, and rewording a form field should not silently reword a column head."
+  },
+  "ledgerColumnAmount": "Amount",
+  "@ledgerColumnAmount": {
+    "description": "Heads the right column of the Ledger's list, above what each Expense cost. Not 'Total', which is one Expense's own field in Review, and not the month's total either — that is the figure in the header above."
+  },
   "ledgerAddByHand": "Add an Expense by hand",
   "ledgerPhotograph": "Photograph a receipt",
   "ledgerTakeAPhoto": "Take a photo",
@@ -329,8 +354,6 @@
       "count": { "type": "int" }
     }
   },
-  "ledgerPreviousMonth": "Previous month",
-  "ledgerNextMonth": "Next month",
   "ledgerUnreadable": "Your Ledger could not be read.",
   "ledgerEmpty": "Nothing here yet.\nAdd one with the button below.",
   "ledgerNothingInMonth": "Nothing in {month}.",

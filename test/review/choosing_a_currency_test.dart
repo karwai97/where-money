@@ -10,6 +10,7 @@ import '../fakes/in_memory_device_preferences.dart';
 import '../fakes/in_memory_ledger_store.dart';
 import '../picking_a_currency.dart';
 import '../scan/inbox_bloc_test.dart' show photograph;
+import '../as_drawn.dart';
 
 /// The currency stopped being typed. Everything here is about what a user can
 /// see and choose: the field they cannot type into, the order of the rows in
@@ -75,7 +76,7 @@ void main() {
   Future<void> openTheSheet(WidgetTester tester) async {
     await tester.tap(
       find
-          .ancestor(of: find.text('Currency'), matching: find.byType(InkWell))
+          .ancestor(of: markSaying('Currency'), matching: find.byType(InkWell))
           .first,
     );
     await tester.pumpAndSettle();
@@ -102,7 +103,7 @@ void main() {
     await openReview(tester);
 
     expect(
-      find.widgetWithText(TextField, 'Currency'),
+      fieldCalled('Currency'),
       findsNothing,
       reason: 'a currency that can be typed is a currency that can be a typo',
     );
@@ -238,7 +239,7 @@ void main() {
       reason: 'an edit opens on what is stored, never on the Home Currency',
     );
 
-    await tester.tap(find.text('Save'));
+    await tester.tap(markSaying('Save'));
     await tester.pumpAndSettle();
 
     expect(store.contents.single.currency, 'SGD');
@@ -251,7 +252,7 @@ void main() {
     Future<List<String>> commit(WidgetTester tester, String read) async {
       await openReviewOfAScan(tester, cleanExtraction.copyWith(currency: read));
       await pickCurrency(tester, 'Currency', 'SGD');
-      await tester.tap(find.text('Add to Ledger'));
+      await tester.tap(markSaying('Add to Ledger'));
       await tester.pumpAndSettle();
 
       return store.contents.single.correctedFields;
@@ -273,12 +274,12 @@ void main() {
     ) async {
       await openReviewOfAScan(tester, cleanExtraction.copyWith(currency: ''));
       await tester.enterText(
-        find.widgetWithText(TextField, 'Merchant').first,
+        fieldCalled('Merchant').first,
         'Village Grocer KL',
       );
       await tester.pumpAndSettle();
       await pickCurrency(tester, 'Currency', 'SGD');
-      await tester.tap(find.text('Add to Ledger'));
+      await tester.tap(markSaying('Add to Ledger'));
       await tester.pumpAndSettle();
 
       expect(store.contents.single.correctedFields, ['merchant']);

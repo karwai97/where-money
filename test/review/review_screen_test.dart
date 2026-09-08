@@ -11,6 +11,7 @@ import '../fakes/in_memory_ledger_store.dart';
 import '../picking_a_currency.dart';
 import '../scan/inbox_bloc_test.dart' show photograph;
 import 'where_things_sit.dart';
+import '../as_drawn.dart';
 
 /// Widget tests, because these criteria are about what is on the screen. As in
 /// ticket 03, assertions are on text the user can read; widget types appear
@@ -91,8 +92,9 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// Typing into a field found by its label, cased the way the form draws it.
   Future<void> type(WidgetTester tester, String label, String value) async {
-    await tester.enterText(find.widgetWithText(TextField, label).first, value);
+    await tester.enterText(fieldCalled(label).first, value);
     await tester.pumpAndSettle();
   }
 
@@ -108,8 +110,8 @@ void main() {
   ) async {
     await openReview(tester);
 
-    expect(find.text('Add an Expense'), findsOneWidget);
-    expect(find.text('Merchant'), findsOneWidget);
+    expect(markSaying('Add an Expense'), findsOneWidget);
+    expect(markSaying('Merchant'), findsOneWidget);
     expect(find.text('Kopitiam SS2'), findsNothing);
   });
 
@@ -134,6 +136,29 @@ void main() {
       saying.bottom,
       lessThan(fieldNamed(tester, 'Date').top),
       reason: 'and above the next field, not floating over it',
+    );
+
+    // The indent that puts it there is the label column plus whatever
+    // InputDecorator leaves after an `icon`, which is Material's number and
+    // not ours. Pinned from both sides so that a change to it fails here
+    // rather than quietly sliding the sentence under the field's name.
+    final named = find.descendant(
+      of: fieldCalled('Merchant'),
+      matching: markSaying('Merchant'),
+    );
+    final typed = find.descendant(
+      of: fieldCalled('Merchant'),
+      matching: find.byType(EditableText),
+    );
+    expect(
+      saying.left,
+      greaterThanOrEqualTo(rectOf(tester, named).right),
+      reason: 'clear of the column the field is named in',
+    );
+    expect(
+      saying.left,
+      lessThanOrEqualTo(rectOf(tester, typed).left),
+      reason: 'and no further in than the value it is about',
     );
   });
 
@@ -188,7 +213,7 @@ void main() {
       );
     }
     expect(
-      rectOf(tester, find.text('Line Items')).top,
+      rectOf(tester, markSaying('Line Items')).top,
       greaterThan(rectOf(tester, find.text('Total does not add up')).bottom),
       reason: 'both fit between the total and what comes after it',
     );
@@ -226,10 +251,10 @@ void main() {
 
     expect(find.text('No total'), findsOneWidget);
 
-    await tester.tap(find.text('Add to Ledger'));
+    await tester.tap(markSaying('Add to Ledger'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Ledger'), findsOneWidget);
+    expect(markSaying('Ledger'), findsOneWidget);
     expect(store.contents, hasLength(1));
   });
 
@@ -272,14 +297,14 @@ void main() {
     );
 
     final banner = rectOf(tester, find.text('Not a receipt'));
-    expect(find.text('Merchant'), findsOneWidget);
+    expect(markSaying('Merchant'), findsOneWidget);
 
     // The form's own scroll view, reached by type the way a field is.
     await tester.drag(find.byType(Scrollable).first, const Offset(0, -300));
     await tester.pumpAndSettle();
 
     expect(
-      find.text('Merchant'),
+      markSaying('Merchant'),
       findsNothing,
       reason: 'the form did move, so the banner had something to sit still for',
     );
@@ -327,8 +352,8 @@ void main() {
     expect(find.textContaining(clean), findsNothing);
   });
 
-  testWidgets('a refused commit is at the top of the form and scrolls with '
-      'it', (tester) async {
+  testWidgets('a refused commit is at the top of the form and waits there '
+      'while the form scrolls', (tester) async {
     store.refuseWrites = StateError('denied');
 
     await openReview(tester);
@@ -342,25 +367,28 @@ void main() {
       ..devicePixelRatio = 1;
     await tester.pumpAndSettle();
 
-    await tester.scrollUntilVisible(
-      find.text('Add to Ledger'),
-      200,
-      // The form's own scroll view. Every TextField holds one too, and the
-      // outermost is the one this drags.
-      scrollable: find.byType(Scrollable).first,
-    );
+    // Down among the rows, which is where somebody who has just filled the
+    // form in is standing. The button does not have to be scrolled to any
+    // more — it is under the form rather than at the end of it — so what this
+    // asserts is that committing from there does not drag the reader back to
+    // the top to read the answer.
+    //
+    // The form's own scroll view. Every TextField holds one too, and the
+    // outermost is the one this drags.
+    final form = find.byType(Scrollable).first;
+    await tester.drag(form, const Offset(0, -400));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Add to Ledger'));
+
+    await tester.tap(markSaying('Add to Ledger'));
     await tester.pumpAndSettle();
 
     expect(
       find.textContaining('was not saved'),
       findsNothing,
-      reason:
-          'the form is scrolled to its button, and the notice is at its top',
+      reason: 'the notice is at the top of the form, which is scrolled away',
     );
 
-    await tester.drag(find.text('Add to Ledger'), const Offset(0, 900));
+    await tester.drag(form, const Offset(0, 900));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('was not saved'), findsOneWidget);
@@ -380,11 +408,11 @@ void main() {
     );
     expect(
       saying.top,
-      greaterThan(rectOf(tester, find.text('Line Items')).bottom),
+      greaterThan(rectOf(tester, markSaying('Line Items')).bottom),
     );
     expect(
       saying.bottom,
-      lessThan(rectOf(tester, find.text('Description')).top),
+      lessThan(rectOf(tester, markSaying('Description')).top),
       reason: 'against the set of rows, above the first of them',
     );
   });
@@ -406,7 +434,7 @@ void main() {
     );
     expect(
       rectOf(tester, find.text('Line arithmetic off')).bottom,
-      lessThan(rectOf(tester, find.text('Description')).top),
+      lessThan(rectOf(tester, markSaying('Description')).top),
     );
   });
 
@@ -433,11 +461,11 @@ void main() {
     expect(find.text('Unknown item category'), findsOneWidget);
     expect(
       rectOf(tester, find.text('Unknown item category')).top,
-      greaterThan(rectOf(tester, find.text('Line Items')).bottom),
+      greaterThan(rectOf(tester, markSaying('Line Items')).bottom),
     );
     expect(
       rectOf(tester, find.text('Unknown item category')).bottom,
-      lessThan(rectOf(tester, find.text('Description')).top),
+      lessThan(rectOf(tester, markSaying('Description')).top),
     );
   });
 
@@ -477,17 +505,17 @@ void main() {
   testWidgets('a Line Item can be added and removed again', (tester) async {
     await openReview(tester);
 
-    expect(find.text('Description'), findsNothing);
+    expect(markSaying('Description'), findsNothing);
 
     await tester.tap(find.text('Add a Line Item'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Description'), findsOneWidget);
+    expect(markSaying('Description'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Remove this Line Item'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Description'), findsNothing);
+    expect(markSaying('Description'), findsNothing);
   });
 
   testWidgets('the Category is chosen from the taxonomy, never typed', (
@@ -513,10 +541,10 @@ void main() {
     await openReview(tester);
     await fillIn(tester);
 
-    await tester.tap(find.text('Add to Ledger'));
+    await tester.tap(markSaying('Add to Ledger'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Ledger'), findsOneWidget);
+    expect(markSaying('Ledger'), findsOneWidget);
     expect(store.contents, hasLength(1));
     expect(find.text('Kopitiam SS2'), findsOneWidget);
   });
@@ -536,7 +564,7 @@ void main() {
 
     expect(find.text('Date in the future'), findsNothing);
 
-    await tester.tap(find.text('Add to Ledger'));
+    await tester.tap(markSaying('Add to Ledger'));
     await tester.pumpAndSettle();
 
     expect(store.contents, hasLength(1));
@@ -611,7 +639,7 @@ void main() {
 
     await tester.pageBack();
     await tester.pumpAndSettle();
-    expect(find.text('Add an Expense'), findsNothing);
+    expect(markSaying('Add an Expense'), findsNothing);
 
     await tester.tap(find.byTooltip('Add an Expense by hand'));
     await tester.pumpAndSettle();
@@ -626,7 +654,7 @@ void main() {
 
     await openReview(tester);
     await fillIn(tester);
-    await tester.tap(find.text('Add to Ledger'));
+    await tester.tap(markSaying('Add to Ledger'));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('was not saved'), findsOneWidget);

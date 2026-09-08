@@ -81,7 +81,14 @@
   "reviewClean": "这张收据上的数字都对得上。对照照片核实一遍，然后加进账本。",
   "reviewRefused": "这笔支出没有保存。你刚才输入的内容还在。",
 
+  "reviewToCheck": "{count, plural, other{{count} 项待核对}}",
+
+  "reviewSectionWhatThisWas": "这是什么",
+  "reviewSectionWhatItCost": "花了多少",
+
   "reviewPickDate": "选择日期",
+
+  "reviewTypeItIn": "在这里输入",
   "reviewCategoryReason": "模型这样归类的理由：{reason}",
 
   "reviewLineDescription": "说明",
@@ -149,6 +156,9 @@
   "reviewFindingReasonSeparator": "；",
   "ledgerTitle": "账本",
 
+  "ledgerColumnMerchant": "商家",
+  "ledgerColumnAmount": "金额",
+
   "ledgerAddByHand": "手动添加一笔支出",
   "ledgerPhotograph": "拍一张收据",
   "ledgerTakeAPhoto": "拍照",
@@ -156,8 +166,6 @@
   "ledgerCharts": "图表",
   "ledgerInbox": "待处理",
   "ledgerInboxWaiting": "{count, plural, other{待处理，{count} 张等着}}",
-  "ledgerPreviousMonth": "上一个月",
-  "ledgerNextMonth": "下一个月",
   "ledgerUnreadable": "读不到你的账本。",
   "ledgerEmpty": "这里还什么都没有。\n用下面的按钮加一笔。",
   "ledgerNothingInMonth": "{month}没有记录。",

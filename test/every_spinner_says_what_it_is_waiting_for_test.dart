@@ -14,6 +14,7 @@ import 'fakes/fake_sign_in_gateway.dart';
 import 'fakes/in_memory_device_preferences.dart';
 import 'fakes/in_memory_ledger_store.dart';
 import 'scan/inbox_bloc_test.dart' show photograph;
+import 'as_drawn.dart';
 
 /// What a screen reader is given while a screen is still loading. A bare
 /// `CircularProgressIndicator` contributes no semantics node at all, so a
@@ -153,7 +154,7 @@ void main() {
     store.holdLedger = Completer<void>();
 
     await open(tester);
-    await reach(tester, find.text('Ledger'));
+    await reach(tester, markSaying('Ledger'));
 
     expect(find.bySemanticsLabel('Opening your Ledger'), findsOneWidget);
 

@@ -35,7 +35,8 @@ void main() {
 
   blocTest<SessionBloc, SessionState>(
     'backing out of the account picker explains nothing, because nothing failed',
-    build: () => SessionBloc(FakeSignInGateway()..refuse = const SignInAbandoned()),
+    build: () =>
+        SessionBloc(FakeSignInGateway()..refuse = const SignInAbandoned()),
     act: (bloc) async {
       bloc.add(const SessionOpened());
       await Future<void>.delayed(Duration.zero);
@@ -64,9 +65,8 @@ void main() {
   blocTest<SessionBloc, SessionState>(
     'signing out ends the session even when Google will not forget the account',
     build: () {
-      final gateway = FakeSignInGateway(
-        alreadySignedIn: FakeSignInGateway.kai,
-      )..refuseSignOut = StateError('no play services');
+      final gateway = FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai)
+        ..refuseSignOut = StateError('no play services');
       return SessionBloc(gateway);
     },
     act: (bloc) async {

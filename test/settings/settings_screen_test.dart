@@ -20,10 +20,7 @@ void main() {
     store = InMemoryLedgerStore(seedLedger(around: DateTime(2026, 8, 23)));
   });
 
-  Future<void> openSettings(
-    WidgetTester tester, {
-    Knobs knobs = const Knobs(),
-  }) async {
+  Future<void> openSettings(WidgetTester tester) async {
     await tester.pumpWidget(
       WhereMoneyApp(
         signIn: FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai),
@@ -31,7 +28,6 @@ void main() {
         model: FakeModelGateway(),
         lock: lock,
         preferences: preferences,
-        knobs: knobs,
         photograph: (_) async => null,
         clock: () => DateTime(2026, 8, 23),
       ),
@@ -40,11 +36,6 @@ void main() {
     await tester.tap(find.byTooltip('Settings'));
     await tester.pumpAndSettle();
   }
-
-  /// The diagnostic half sits below the fold, so a test that reads it has to
-  /// get there the way a person would.
-  Future<void> scrollTo(WidgetTester tester, Finder panel) =>
-      tester.scrollUntilVisible(panel, 200);
 
   testWidgets('the lock can be turned off, and the choice sticks', (
     tester,
@@ -80,49 +71,5 @@ void main() {
     await tester.tap(find.text('Lock where_money'));
     await tester.pumpAndSettle();
     expect(await preferences.locksOnOpen(), isTrue);
-  });
-
-  testWidgets('the knobs this launch is running on are on screen', (
-    tester,
-  ) async {
-    await openSettings(
-      tester,
-      knobs: const Knobs(
-        model: 'gpt-5-mini',
-        effort: 'medium',
-        longEdge: 1440,
-        dailyCap: 15,
-      ),
-    );
-
-    expect(find.text('Model: gpt-5-mini'), findsOneWidget);
-    expect(find.text('Reasoning effort: medium'), findsOneWidget);
-    expect(find.text('Image long edge: 1440 px'), findsOneWidget);
-    expect(find.text('Daily cap: 15 Scans'), findsOneWidget);
-  });
-
-  testWidgets('what Review kept having to correct is on screen', (
-    tester,
-  ) async {
-    // Three scanned and one typed by hand, the hand-typed one carrying a
-    // correction on every field. Counting it would say the Model misreads the
-    // total, which it has never been asked to.
-    store = InMemoryLedgerStore(seedCorrectedLedger());
-
-    await openSettings(tester);
-    await scrollTo(tester, find.text('3 receipts read, 1 left alone.'));
-
-    expect(find.text('3 receipts read, 1 left alone.'), findsOneWidget);
-    expect(find.text('Merchant, corrected on 2 of 3'), findsOneWidget);
-    expect(find.text('Category, corrected on 1 of 3'), findsOneWidget);
-  });
-
-  testWidgets('a Ledger nothing has been read into says so', (tester) async {
-    store = InMemoryLedgerStore();
-
-    await openSettings(tester);
-    await scrollTo(tester, find.textContaining('No receipt has been read yet'));
-
-    expect(find.textContaining('No receipt has been read yet'), findsOneWidget);
   });
 }

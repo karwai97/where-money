@@ -82,7 +82,11 @@ void main() {
 
       expect(find.text('账本'), findsOneWidget);
       expect(find.text(thisMonth), findsOneWidget);
-      expect(find.byTooltip('上一个月'), findsOneWidget);
+      // The heads over the list, which the header put there. Upper-casing
+      // them is a no-op in Chinese, so they read as the message file wrote
+      // them.
+      expect(find.text('商家'), findsOneWidget);
+      expect(find.text('金额'), findsOneWidget);
       expect(find.byTooltip('手动添加一笔支出'), findsOneWidget);
     },
   );

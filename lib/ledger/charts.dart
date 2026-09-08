@@ -7,15 +7,31 @@
 /// trend's numbers are on the bars for a screen reader.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:where_money_core/where_money_core.dart';
 
 import '../l10n/app_localizations.dart';
+import '../settings/themes.dart';
 import '../on_screen.dart';
 
 const double _barThickness = 10;
 const double _columnWidth = 20;
 const double _plotHeight = 140;
+
+/// Between a bar and the month under it.
+const double _labelGap = 6;
+
+/// How many lines a month label may take before it is ellipsised. Two,
+/// because at large text sizes a three-letter month is wider than a sixth of
+/// a phone and there is nowhere sideways for it to go.
+const int _labelLines = 2;
+
+/// The least a bar is worth drawing at. Direction C's 40px trend is this plus
+/// [_labelGap] plus one line of label at ordinary text size, which is why the
+/// header still measures exactly 40 there.
+const double _minimumBar = 18;
 
 /// What each Category cost this month, biggest first.
 class CategoryBreakdown extends StatelessWidget {
@@ -53,7 +69,10 @@ class CategoryBreakdown extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(child: Text(category.labelIn(words))),
-                      Text(asMoney(rollup.homeCurrency, category.amount)),
+                      Text(
+                        asMoney(rollup.homeCurrency, category.amount),
+                        style: asFigures(DefaultTextStyle.of(context).style),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 6),
@@ -119,16 +138,29 @@ class _Track extends StatelessWidget {
 /// against. The month on screen is the only one in the accent colour: the
 /// others are context, and colouring them all would bury the point.
 class MonthTrend extends StatelessWidget {
-  const MonthTrend(this.months, {super.key});
+  const MonthTrend(
+    this.months, {
+    required this.showing,
+    required this.onPicked,
+    super.key,
+  });
 
   final List<Rollup> months;
+
+  /// The month the screen is on. The window can reach past it, so which month
+  /// this trend is about has to be said rather than read off the end.
+  final Rollup showing;
+
+  /// What a tapped column means. A callback rather than an event because this
+  /// file draws Rollups and knows nothing else — the screen that has a bloc
+  /// decides what a tap is worth.
+  final void Function(Rollup month) onPicked;
 
   @override
   Widget build(BuildContext context) {
     if (months.isEmpty) return const SizedBox.shrink();
 
     final theme = Theme.of(context);
-    final showing = months.last;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,25 +169,124 @@ class MonthTrend extends StatelessWidget {
         // bar would be read by nobody.
         Text(
           asMoney(showing.homeCurrency, showing.total),
-          style: theme.textTheme.titleSmall,
+          style: asFigures(theme.textTheme.titleSmall),
         ),
         const SizedBox(height: 8),
-        SizedBox(height: _plotHeight, child: _Columns(months, showing)),
+        MonthColumns(months, showing: showing, onPicked: onPicked),
       ],
     );
   }
 }
 
+/// The bars on their own. Pulled out of [MonthTrend] because the Ledger's
+/// header draws the same trend without a number above it — the total is
+/// already the headline there — and shorter, so it can sit above the list
+/// rather than fill a screen.
+class MonthColumns extends StatelessWidget {
+  const MonthColumns(
+    this.months, {
+    required this.showing,
+    required this.onPicked,
+    this.height = _plotHeight,
+    super.key,
+  });
+
+  final List<Rollup> months;
+
+  /// The month the screen is on, and so the one column in the accent. Named
+  /// rather than taken as the last of [months]: the Ledger's header windows
+  /// its trend so there are months after the one on screen, which is what
+  /// gives a reader who has stepped back a way forward again.
+  final Rollup showing;
+
+  final void Function(Rollup month) onPicked;
+
+  /// The height the trend is drawn at where the labels fit in it — direction
+  /// C's 40 above the Ledger's list, the plot's own 140 on the chart detail.
+  /// A floor rather than the last word: see [build].
+  final double height;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, space) {
+      // The labels are measured rather than assumed, and the trend takes
+      // whatever they turn out to need. At 200% text a month label wraps to
+      // two lines inside a sixth of a phone, which is 30px more than the
+      // Ledger's 40px trend has to give — and a Column cannot give a child
+      // more room than it has, so the label was clipped and the bar above it
+      // squeezed to nothing. This is the one control that changes month, so
+      // it grows instead.
+      final labels = _labelExtent(
+        context,
+        months,
+        space.maxWidth / math.max(months.length, 1),
+      );
+
+      return SizedBox(
+        height: math.max(height, _minimumBar + _labelGap + labels),
+        child: _Columns(months, showing, onPicked),
+      );
+    },
+  );
+}
+
+/// The tallest a month label lays out in [columnWidth], at the text size the
+/// phone is set to. Measured against [_showingStyle] because that is the
+/// heavier and more widely tracked of the two, and so the first to wrap.
+double _labelExtent(
+  BuildContext context,
+  List<Rollup> months,
+  double columnWidth,
+) {
+  final words = AppLocalizations.of(context);
+  final style = _showingStyle(Theme.of(context));
+  final scaler = MediaQuery.textScalerOf(context);
+  var tallest = 0.0;
+
+  for (final month in months) {
+    final painter = TextPainter(
+      text: TextSpan(text: _labelOf(month, words), style: style),
+      textScaler: scaler,
+      textDirection: Directionality.of(context),
+      maxLines: _labelLines,
+      ellipsis: '…',
+    )..layout(maxWidth: columnWidth);
+    tallest = math.max(tallest, painter.height);
+    painter.dispose();
+  }
+
+  return tallest;
+}
+
+/// Upper case is typography, not wording — the message files hold the month
+/// names as they are written, and this is a no-op in a language whose months
+/// are not cased.
+String _labelOf(Rollup month, AppLocalizations words) =>
+    month.shortMonthLabel(words).toUpperCase();
+
+/// The label of the month the screen is on. It carries the accent as well as
+/// the bar, because a month nobody spent anything in draws a bar of no height
+/// — so on the months where knowing where you are matters most, the bar alone
+/// says nothing.
+TextStyle? _showingStyle(ThemeData theme) => atItsWeight(
+  theme.textTheme.labelSmall?.copyWith(
+    color: theme.colorScheme.primary,
+    fontWeight: FontWeight.w600,
+  ),
+);
+
+TextStyle? _contextStyle(ThemeData theme) =>
+    theme.textTheme.labelSmall?.copyWith(letterSpacing: 0.6);
+
 class _Columns extends StatelessWidget {
-  const _Columns(this.months, this.showing);
+  const _Columns(this.months, this.showing, this.onPicked);
 
   final List<Rollup> months;
   final Rollup showing;
+  final void Function(Rollup month) onPicked;
 
   @override
   Widget build(BuildContext context) {
-    final words = AppLocalizations.of(context);
-    final theme = Theme.of(context);
     final tallest = months.map((r) => r.total).reduce((a, b) => a > b ? a : b);
 
     return Row(
@@ -163,49 +294,136 @@ class _Columns extends StatelessWidget {
       children: [
         for (final month in months)
           Expanded(
-            child: Semantics(
-              label: words.chartsMonthTotal(
-                month.monthLabel(words),
-                asMoney(month.homeCurrency, month.total),
-              ),
-              container: true,
-              excludeSemantics: true,
-              child: Column(
-                children: [
-                  Expanded(
-                    child: FractionallySizedBox(
-                      heightFactor: tallest == 0
-                          ? 0
-                          : (month.total / tallest).clamp(0.0, 1.0),
-                      alignment: Alignment.bottomCenter,
-                      child: Align(
-                        alignment: Alignment.bottomCenter,
-                        child: Container(
-                          width: _columnWidth,
-                          decoration: BoxDecoration(
-                            color:
-                                month.year == showing.year &&
-                                    month.month == showing.month
-                                ? theme.colorScheme.primary
-                                : theme.colorScheme.surfaceContainerHighest,
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(4),
-                            ),
-                          ),
+            child: _MonthColumn(
+              month,
+              // A month is drawn against the tallest in the window rather than
+              // its own total, or every column would be full height and the
+              // trend would have no shape.
+              fraction: tallest == 0
+                  ? 0
+                  : (month.total / tallest).clamp(0.0, 1.0),
+              isShowing:
+                  month.year == showing.year && month.month == showing.month,
+              onTap: () => onPicked(month),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _MonthColumn extends StatefulWidget {
+  const _MonthColumn(
+    this.month, {
+    required this.fraction,
+    required this.isShowing,
+    required this.onTap,
+  });
+
+  final Rollup month;
+  final double fraction;
+
+  /// Whether this is the month the screen is on, which is the only one in the
+  /// accent colour.
+  final bool isShowing;
+
+  final VoidCallback onTap;
+
+  @override
+  State<_MonthColumn> createState() => _MonthColumnState();
+}
+
+class _MonthColumnState extends State<_MonthColumn> {
+  /// Held because the focus ring is drawn rather than washed on. A tenth of
+  /// the accent over a container barely lighter than the ground — Material's
+  /// default — measures 1.17:1 on the Ledger's header, and even at a quarter
+  /// it only reaches 1.6:1. The accent itself is 5.8:1 there, so the mark
+  /// that says where focus is is a line in it.
+  bool _focused = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final month = widget.month;
+    final onTap = widget.onTap;
+    final words = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+
+    // The InkWell is the outer one, and the label is published inside it.
+    // The other way round — a Semantics that excluded its whole subtree and
+    // republished the tap — cost the column its focus: everything focusable
+    // lived in the excluded subtree, so the node offered a tap and a button
+    // flag and no focus action at all. Switch access, an external keyboard
+    // and anything else that moves platform focus could not reach the one
+    // control on this screen that changes month, and the focus highlight was
+    // never drawn because focus never landed there.
+    return InkWell(
+      // The whole column, label and all — a month that cost nothing draws no
+      // bar, and a target you can only hit where there is ink is a target
+      // that disappears exactly when the trend is most worth stepping into.
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(4),
+      onFocusChange: (focused) => setState(() => _focused = focused),
+      child: Semantics(
+        label: words.chartsMonthTotal(
+          month.monthLabel(words),
+          asMoney(month.homeCurrency, month.total),
+        ),
+        button: true,
+        // The bars and the month under them are said once, as the label
+        // above, rather than as a drawing and a word a reader has to put
+        // back together.
+        excludeSemantics: true,
+        child: Container(
+          // Painted in front of the column rather than around it, so the
+          // trend does not shift by four pixels the moment focus arrives —
+          // and so the ring costs the bar no height in a header measured to
+          // the pixel.
+          foregroundDecoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(
+              color: _focused ? theme.colorScheme.primary : Colors.transparent,
+              width: 2,
+            ),
+          ),
+          child: Column(
+            children: [
+              Expanded(
+                child: FractionallySizedBox(
+                  heightFactor: widget.fraction,
+                  alignment: Alignment.bottomCenter,
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      width: _columnWidth,
+                      decoration: BoxDecoration(
+                        color: widget.isShowing
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.surfaceContainerHighest,
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(4),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    month.shortMonthLabel(words),
-                    style: theme.textTheme.labelSmall,
-                  ),
-                ],
+                ),
               ),
-            ),
+              const SizedBox(height: _labelGap),
+              Text(
+                _labelOf(month, words),
+                textAlign: TextAlign.center,
+                // Held to what [_labelExtent] measured room for. Without
+                // these a third line at some text size the trend was not
+                // sized for would clip again.
+                maxLines: _labelLines,
+                overflow: TextOverflow.ellipsis,
+                style: widget.isShowing
+                    ? _showingStyle(theme)
+                    : _contextStyle(theme),
+              ),
+            ],
           ),
-      ],
+        ),
+      ),
     );
   }
 }

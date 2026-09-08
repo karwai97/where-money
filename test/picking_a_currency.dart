@@ -13,8 +13,21 @@ Finder inTheCurrencySheet(Finder matching) =>
 Future<void> pickCurrency(WidgetTester tester, String from, String code) async {
   // The row or the field rather than the words in it: a label sits inside the
   // thing that opens the sheet, and tapping the words alone warns about it.
+  //
+  // Matched whatever case the label is drawn in. Review sets a field's name as
+  // a tracked upper case mark and Settings sets the same word as a heading, and
+  // both of them open this sheet.
   await tester.tap(
-    find.ancestor(of: find.text(from), matching: find.byType(InkWell)).first,
+    find
+        .ancestor(
+          of: find.byWidgetPredicate(
+            (widget) =>
+                widget is Text &&
+                (widget.data ?? '').toUpperCase() == from.toUpperCase(),
+          ),
+          matching: find.byType(InkWell),
+        )
+        .first,
   );
   await tester.pumpAndSettle();
 

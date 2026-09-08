@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:where_money/app.dart';
 import 'package:where_money_core/where_money_core.dart';
@@ -30,6 +31,12 @@ void main() {
   final now = DateTime.now();
   final thisMonth = short[now.month - 1];
   final lastMonth = short[DateTime(now.year, now.month - 1).month - 1];
+  final nextMonth = short[DateTime(now.year, now.month + 1).month - 1];
+
+  /// A month as the trend draws it. The columns are upper case, which is
+  /// typography rather than wording — elsewhere the same month is read from a
+  /// sentence, so the two spellings are kept apart here rather than merged.
+  String column(String month) => month.toUpperCase();
 
   late InMemoryLedgerStore store;
   final model = FakeModelGateway();
@@ -96,10 +103,14 @@ void main() {
     expect(find.text('AirAsia'), findsNothing);
   });
 
-  testWidgets('stepping back shows the month before it and nothing from this '
-      'one', (tester) async {
+  // The trend in the Ledger's header is the way through the months: the
+  // chevrons direction C replaced it with are gone, and a column knows which
+  // month it drew.
+  testWidgets('tapping the month before this one moves the list onto it', (
+    tester,
+  ) async {
     await openLedger(tester);
-    await tester.tap(find.byTooltip('Previous month'));
+    await tester.tap(find.text(column(lastMonth)));
     await tester.pumpAndSettle();
 
     expect(find.text('AirAsia'), findsWidgets);
@@ -110,10 +121,86 @@ void main() {
     tester,
   ) async {
     await openLedger(tester);
-    await tester.tap(find.byTooltip('Next month'));
+
+    // Nothing to tap that leads past the month the app opened in: the trend
+    // ends there, so there is no forward step to shut off.
+    expect(find.text(column(thisMonth)), findsWidgets);
+    expect(find.text(column(nextMonth)), findsNothing);
+    expect(find.text('Ikea Damansara'), findsWidgets);
+  });
+
+  // The two lines of a row are not equals. Material paints both in the one
+  // ink, which left a date and a category reading as loudly as the merchant
+  // they belong to.
+  testWidgets('a row says the merchant louder than what it was for', (
+    tester,
+  ) async {
+    await openLedger(tester);
+
+    final merchant = tester.widget<Text>(find.text('Ikea Damansara'));
+    final under = tester.widget<Text>(find.textContaining('· Home'));
+
+    expect(
+      merchant.style?.fontWeight,
+      FontWeight.w500,
+      reason: 'the merchant carries the weight',
+    );
+    expect(
+      under.style?.color,
+      isNot(merchant.style?.color),
+      reason: 'and the line under it is a tier down in ink',
+    );
+  });
+
+  // A bar of no height marks nothing, and the months worth stepping back to
+  // are often the empty ones.
+  testWidgets('the month on screen is named in the accent even when it drew '
+      'no bar', (tester) async {
+    store = InMemoryLedgerStore();
+    await openLedger(tester);
+
+    final label = tester.widget<Text>(find.text(column(thisMonth)));
+
+    expect(
+      label.style?.color,
+      isNotNull,
+      reason: 'the showing month carries a colour of its own',
+    );
+    expect(
+      label.style?.color,
+      isNot(tester.widget<Text>(find.text(column(lastMonth))).style?.color),
+    );
+  });
+
+  // The complaint this was built for: the trend used to end at the month on
+  // screen, so walking back put that month against the right-hand edge and
+  // left nothing on screen leading forward. Restarting the app was the only
+  // way back to today.
+  testWidgets('walking back down the trend leaves a way forward again', (
+    tester,
+  ) async {
+    store = InMemoryLedgerStore(seedLedger(around: DateTime(2026, 8, 23)));
+    await openLedger(tester, on: DateTime(2026, 8, 23));
+
+    // The oldest column the trend opens on, six months back from August.
+    await tester.tap(find.text(column('Mar')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Ikea Damansara'), findsWidgets);
+    expect(
+      find.text(column('Apr')),
+      findsWidgets,
+      reason: 'a month later than March',
+    );
+
+    await tester.tap(find.text(column('Apr')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('AirAsia'), findsNothing, reason: 'off March, not on it');
+    expect(
+      find.text(column('May')),
+      findsWidgets,
+      reason: 'and still going forward',
+    );
   });
 
   testWidgets('a month with nothing in it says so rather than showing a stale '
@@ -121,7 +208,56 @@ void main() {
     store = InMemoryLedgerStore();
     await openLedger(tester);
 
-    expect(find.textContaining('Nothing'), findsOneWidget);
+    expect(find.textContaining('Nothing here yet'), findsOneWidget);
+  });
+
+  // Found by running the app, not by reading it. The trend is the only way
+  // through the months now, so hiding it on a month with no spending — which
+  // the chart detail is right to do — left the reader on a dead screen with
+  // nothing to tap.
+  testWidgets('a month with nothing in it still has a way out of it', (
+    tester,
+  ) async {
+    store = InMemoryLedgerStore();
+    await openLedger(tester);
+
+    expect(
+      find.text(column(lastMonth)),
+      findsWidgets,
+      reason:
+          'an empty month draws no bar, but its column is still the way '
+          'back',
+    );
+
+    await tester.tap(find.text(column(lastMonth)));
+    await tester.pumpAndSettle();
+
+    // The badge over the total, which names the month it landed on. Upper
+    // case like the column it was tapped: on an empty Ledger there is no
+    // sentence naming the month to find instead.
+    expect(find.textContaining(column(lastMonth)), findsWidgets);
+  });
+
+  // Direction C folds the total into the Ledger's own header. Before that the
+  // screen a user opens on could not say what the month came to at all — the
+  // figure was a tap away on the charts.
+  testWidgets('the Ledger says what the month came to, not only what it went '
+      'on', (tester) async {
+    await openLedger(tester);
+
+    expect(find.text('MYR 1806.75'), findsOneWidget);
+    expect(find.textContaining('than'), findsWidgets);
+  });
+
+  testWidgets('the Ledger owns up to what its own total leaves out', (
+    tester,
+  ) async {
+    await openLedger(tester);
+
+    // The seeded month spends USD, which is not the Home Currency and so is
+    // not in the figure above the list (ADR-0006). The charts said so; the
+    // screen holding the total now has to say it too.
+    expect(find.textContaining('not in these totals'), findsOneWidget);
   });
 
   testWidgets('the charts break the month down by category', (tester) async {
@@ -138,9 +274,159 @@ void main() {
   ) async {
     await openCharts(tester);
 
-    expect(find.text(thisMonth), findsOneWidget);
-    expect(find.text(lastMonth), findsOneWidget);
+    expect(find.text(column(thisMonth)), findsOneWidget);
+    expect(find.text(column(lastMonth)), findsOneWidget);
     expect(find.textContaining('MYR 1806.75'), findsWidgets);
+  });
+
+  testWidgets('tapping a month in the trend moves the whole screen onto it', (
+    tester,
+  ) async {
+    await openCharts(tester);
+    expect(find.text('Home'), findsOneWidget);
+
+    await tester.tap(find.text(column(lastMonth)));
+    await tester.pumpAndSettle();
+
+    // The title, the breakdown and the trend all read from one Rollup, so a
+    // breakdown that is now last month's is the whole screen having moved.
+    expect(find.widgetWithText(AppBar, thisMonth), findsNothing);
+    expect(find.text('Travel'), findsOneWidget);
+    expect(find.text('Home'), findsNothing);
+  });
+
+  testWidgets('the Ledger behind the charts is on the month the trend was '
+      'left on', (tester) async {
+    await openCharts(tester);
+
+    await tester.tap(find.text(column(lastMonth)));
+    await tester.pumpAndSettle();
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    expect(find.text('AirAsia'), findsWidgets);
+    expect(find.text('Ikea Damansara'), findsNothing);
+  });
+
+  // The trend now reaches past the month on screen, so the charts cannot take
+  // the end of it for the month they are about — the title would name one
+  // month and the figure above the bars another.
+  testWidgets('the charts are about the month on screen, not the end of the '
+      'trend', (tester) async {
+    store = InMemoryLedgerStore(seedLedger(around: DateTime(2026, 8, 23)));
+    await openLedger(tester, on: DateTime(2026, 8, 23));
+
+    await tester.tap(find.text(column('Mar')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Charts'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('March 2026'), findsOneWidget);
+    expect(find.textContaining('August'), findsNothing);
+  });
+
+  testWidgets('a month in the trend is a button, not just a drawing', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    await openCharts(tester);
+
+    expect(
+      tester.getSemantics(find.text(column(lastMonth))),
+      // Focusable as well as tappable. A tap action alone is only a button
+      // for a finger: switch access and an external keyboard move platform
+      // focus, and for a while this column was the one control on the Ledger
+      // they could not reach, because the node that carried the label
+      // excluded the subtree the focus lived in.
+      isSemantics(
+        hasTapAction: true,
+        isButton: true,
+        isFocusable: true,
+        hasFocusAction: true,
+      ),
+    );
+    semantics.dispose();
+  });
+
+  // The same move as 'tapping the month before this one', made the way switch
+  // access and an external keyboard make it: focus onto the column, then
+  // activate what is focused. A finger was never the problem.
+  testWidgets('focus can land on a month and pick it', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await openLedger(tester);
+
+    // The trend labels a column with the month spelled out and its total, and
+    // every abbreviation this file works in is a prefix of the long name.
+    final node = find.semantics.byLabel(RegExp('^$lastMonth'));
+
+    tester.semantics.performAction(node, SemanticsAction.focus);
+    await tester.pumpAndSettle();
+
+    // Asked of the node afterwards as well, not only of the call. Both halves
+    // earn their keep: `performAction` refuses an action the node does not
+    // offer, and this says focus actually landed rather than being accepted
+    // and dropped.
+    expect(
+      tester.getSemantics(find.text(column(lastMonth))),
+      isSemantics(isFocused: true),
+    );
+    expect(
+      find.text('Ikea Damansara'),
+      findsWidgets,
+      reason: 'focus alone moves nothing — the month changes on activation',
+    );
+
+    tester.semantics.tap(node);
+    await tester.pumpAndSettle();
+    expect(find.text('AirAsia'), findsWidgets);
+    expect(find.text('Ikea Damansara'), findsNothing);
+
+    semantics.dispose();
+  });
+
+  // Reachable is half of it. Material's default focus wash is a tenth of the
+  // accent over the header's own container, which measures 1.17:1 there and
+  // is no mark at all — so the column draws a ring in the accent, which is
+  // 5.8:1 on that ground.
+  testWidgets('a focused month is ringed in the accent', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await openLedger(tester);
+
+    Border? ringAround(String month) {
+      final box = find
+          .ancestor(
+            of: find.text(column(month)),
+            matching: find.byType(Container),
+          )
+          .evaluate()
+          .map((element) => element.widget as Container)
+          .firstWhere((container) => container.foregroundDecoration != null);
+      return (box.foregroundDecoration! as BoxDecoration).border as Border?;
+    }
+
+    expect(
+      ringAround(lastMonth)?.top.color,
+      const Color(0x00000000),
+      reason: 'nothing is ringed until focus arrives',
+    );
+
+    tester.semantics.performAction(
+      find.semantics.byLabel(RegExp('^$lastMonth')),
+      SemanticsAction.focus,
+    );
+    await tester.pumpAndSettle();
+
+    final accent = Theme.of(
+      tester.element(find.text(column(lastMonth))),
+    ).colorScheme.primary;
+    expect(ringAround(lastMonth)?.top.color, accent);
+    expect(
+      ringAround(thisMonth)?.top.color,
+      const Color(0x00000000),
+      reason: 'and only the focused one',
+    );
+
+    semantics.dispose();
   });
 
   testWidgets('spending in another currency is named as left out rather than '
@@ -190,7 +476,7 @@ void main() {
 
     expect(find.text('Groceries'), findsOneWidget);
     expect(find.text('MYR 423.10'), findsOneWidget);
-    expect(find.text(thisMonth), findsOneWidget);
+    expect(find.text(column(thisMonth)), findsOneWidget);
   });
 
   // Geometry rather than text, unlike everything else here, because the defect

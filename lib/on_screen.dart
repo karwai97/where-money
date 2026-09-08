@@ -27,7 +27,14 @@ String asMoment(AppLocalizations words, DateTime at) =>
 /// Home Currency rule (ADR-0006) depends on a foreign-currency Expense looking
 /// foreign. So an amount keeps its explicit ISO code in every language.
 String asMoney(String currency, double amount) =>
-    '$currency ${amount.toStringAsFixed(2)}';
+    '$currency ${asAmount(amount)}';
+
+/// The figure with no code in front of it, for the one caller that prints the
+/// code itself: the Ledger sets the ISO code smaller and beside the number, so
+/// a column of amounts lines up on its digits. Kept here, and used by
+/// [asMoney], so there is one answer to how many decimals an amount has and
+/// whether it ever carries a thousands separator. It does not.
+String asAmount(double amount) => amount.toStringAsFixed(2);
 
 /// When an Expense happened and what it was for, on one line. The Ledger and
 /// an opened Expense both print it, and the separator is punctuation rather
@@ -135,4 +142,27 @@ extension RollupLabels on Rollup {
   String previousMonthLabel(AppLocalizations words) => DateFormat.yMMMM(
     words.localeName,
   ).format(DateTime(previousYear, previousMonth));
+
+  /// The month and year small enough to sit beside a total. Not
+  /// [shortMonthLabel] with a year stuck on: the order of the two parts is the
+  /// locale's business, not this app's.
+  String shortMonthAndYearLabel(AppLocalizations words) =>
+      DateFormat.yMMM(words.localeName).format(DateTime(year, month));
+
+  /// How the month reads against the one before it. Printed by the Ledger's
+  /// header and by the chart detail, so the rounding and the three ways it can
+  /// come out are settled once — a month that spent 0.4% more says "about the
+  /// same" on both screens rather than "0% more" on one of them.
+  String comparedWithPreviousMonth(AppLocalizations words) {
+    final previous = previousMonthLabel(words);
+    final change = percentChange;
+
+    if (change == null) return words.rollupNothingToCompare(previous);
+    if (change.abs() < 0.5) return words.rollupAboutTheSame(previous);
+
+    final percent = change.abs().round();
+    return change > 0
+        ? words.rollupMoreThan(percent, previous)
+        : words.rollupLessThan(percent, previous);
+  }
 }

@@ -96,7 +96,6 @@ class WhereMoneyApp extends StatelessWidget {
         SessionUnknown() => const _Opening(),
         SignedOut() || SigningIn() => SignInScreen(state: state),
         SignedIn() => LedgerScreen(
-          knobs: knobs,
           photograph:
               photograph ??
               (from) => photographWithDevice(from, longEdge: knobs.longEdge),
