@@ -136,11 +136,12 @@ void main() {
     await tester.pumpWidget(app(language: 'zh'));
     await openSettings(tester);
 
-    // Asked for as the message files hold them and matched as the screen
-    // draws them: every one of these is a tracked mark, and the app's own name
-    // inside "锁定 Where Money" is cased with the rest of the label.
+    // Exactly as the message files hold them. Every one of these is drawn as
+    // a tracked mark, and a mark in a language with no upper case to go to is
+    // not cased at all — otherwise the app's own name inside "锁定 Where
+    // Money" would be the only shouting on the screen.
     for (final chinese in ['设置', '主题', '语言', '锁定 Where Money', '主货币', '退出登录']) {
-      expect(markSaying(chinese), findsWidgets, reason: '$chinese is missing');
+      expect(find.text(chinese), findsWidgets, reason: '$chinese is missing');
     }
 
     for (final english in [

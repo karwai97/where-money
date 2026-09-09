@@ -12,6 +12,28 @@ import 'package:where_money_core/where_money_core.dart';
 
 import 'l10n/app_localizations.dart';
 
+/// A mark in the case the screen draws it rather than the case the message
+/// files hold it in. The design shouts the name of a screen, of a field, of a
+/// column head and of the one action a screen exists for, and that is
+/// typography rather than wording — so the casing happens here and the ARB
+/// files stay in sentence case (ADR-0007).
+///
+/// Only where the language has an upper case to go to. `toUpperCase()` on
+/// Chinese looks like a no-op and is not one: it leaves the characters alone
+/// and shouts whatever Latin the string carries. "锁定 Where Money" came out
+/// "锁定 WHERE MONEY", beside three marks that read as written. The app's own
+/// name, "PIN", "Android", "Google" and "ISO" all sit inside Chinese copy, so
+/// this is a class of thing rather than the one label that caught it.
+String cased(AppLocalizations words, String text) =>
+    _withoutLetterCase.contains(words.localeName.split('_').first)
+    ? text
+    : text.toUpperCase();
+
+/// The languages this app can be read in whose script has no upper case to go
+/// to. A language added to `languages` belongs in here only if the same is
+/// true of it.
+const _withoutLetterCase = {'zh'};
+
 /// Dates are the one set of words this app does not write. The names of the
 /// months and the order the parts go in come out of the CLDR data
 /// `flutter_localizations` loads for the locale on the `MaterialApp`, which is

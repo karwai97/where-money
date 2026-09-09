@@ -506,7 +506,7 @@ class _Commit extends StatelessWidget {
                 tracking: 1.2,
               ),
             ),
-            child: Text(label.toUpperCase()),
+            child: Text(cased(AppLocalizations.of(context), label)),
           ),
         ),
       ),
@@ -559,7 +559,7 @@ class _TotalSoFar extends StatelessWidget {
               // overflowing when the text size is turned up.
               if (standing > 0)
                 Text(
-                  words.reviewToCheck(standing).toUpperCase(),
+                  cased(words, words.reviewToCheck(standing)),
                   style: asTrackedMark(
                     theme.textTheme.labelSmall?.copyWith(
                       color: colours.primary,

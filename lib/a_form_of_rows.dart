@@ -14,13 +14,16 @@ library;
 import 'package:flutter/material.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import 'l10n/app_localizations.dart';
+import 'on_screen.dart';
+
 import 'settings/themes.dart';
 
 /// The bar the Ledger wears, so every screen reads as one app: the name of
 /// the screen as a tracked upper case mark rather than as a heading.
 AppBar barNamed(BuildContext context, String title) => AppBar(
   title: Text(
-    title.toUpperCase(),
+    cased(AppLocalizations.of(context), title),
     style: asScreenName(Theme.of(context).textTheme.labelLarge),
   ),
 );
@@ -107,7 +110,7 @@ Widget inTheLabelColumn(BuildContext context, String label, {Color? colour}) =>
       child: SizedBox(
         width: labelWidth(context),
         child: Text(
-          label.toUpperCase(),
+          cased(AppLocalizations.of(context), label),
           maxLines: 2,
           style: asAMark(Theme.of(context), colour: colour),
         ),
@@ -199,7 +202,7 @@ InputDecoration asACell(BuildContext context, String label) {
   final style = asAMark(theme);
 
   return InputDecoration(
-    labelText: label.toUpperCase(),
+    labelText: cased(AppLocalizations.of(context), label),
     // Always up, and at the size it is written: Material floats a label at
     // three quarters of its style, and a mark this small cannot spare it.
     floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -319,10 +322,12 @@ class Head extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Upper case here is typography, not wording, which is why the
-          // message files hold these in sentence case. It is a no-op in
-          // Chinese, where the heads read as written.
-          Expanded(child: Text(text.toUpperCase(), style: style)),
+          Expanded(
+            child: Text(
+              cased(AppLocalizations.of(context), text),
+              style: style,
+            ),
+          ),
           if (trailing case final String count)
             Text(count, style: asFigures(style)),
         ],

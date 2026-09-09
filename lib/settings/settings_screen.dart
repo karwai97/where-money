@@ -7,6 +7,7 @@ import '../choosing_a_currency.dart';
 import '../data/device_preferences.dart';
 import '../l10n/app_localizations.dart';
 import '../ledger/ledger_bloc.dart';
+import '../on_screen.dart';
 import '../lock/device_lock.dart';
 import '../session/session_bloc.dart';
 import 'settings_cubit.dart';
@@ -293,6 +294,7 @@ class _SignOut extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final words = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final colours = theme.colorScheme;
 
@@ -311,7 +313,7 @@ class _SignOut extends StatelessWidget {
           textStyle: asScreenName(theme.textTheme.labelLarge, tracking: 1.2),
         ),
         icon: const Icon(Icons.logout, size: 18),
-        label: Text(AppLocalizations.of(context).settingsSignOut.toUpperCase()),
+        label: Text(cased(words, words.settingsSignOut)),
       ),
     );
   }
