@@ -25,9 +25,9 @@ class SignInScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               // The product's own name, which is the same word in every
-              // language.
+              // language; both ARB files carry it.
               Text(
-                'where_money',
+                words.appName,
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               const SizedBox(height: 8),

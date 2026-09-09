@@ -29,7 +29,7 @@
   "settingsHomeCurrencyNone": "Your first expense will set this.",
   "settingsHomeCurrencyGoverns": "Totals and Recaps are worked out in it. Spending in other currencies is listed but not counted.",
 
-  "settingsLock": "Lock where_money",
+  "settingsLock": "Lock Where Money",
   "settingsLockBiometrics": "Ask for your fingerprint or face, or this phone’s PIN, before showing your spending.",
   "settingsLockDeviceCredential": "No fingerprint is set up on this phone, so it asks for your PIN before showing your spending.",
   "settingsLockUnavailable": "This phone has no screen lock. Set one in Android settings to use this.",
@@ -620,7 +620,7 @@
   "receiptTitle": "The receipt",
   "receiptBackToTheFields": "Back to the fields",
 
-  "openingWait": "Opening where_money",
+  "openingWait": "Opening Where Money",
   "@openingWait": {
     "description": "The first frame, before the app knows whether anybody is signed in. There is nothing on it but a spinner, so this is what a screen reader is given to say. The product keeps its name in every language."
   },
@@ -642,7 +642,7 @@
     }
   },
 
-  "lockTitle": "where_money is locked",
+  "lockTitle": "Where Money is locked",
   "lockWhy": "Your spending is on this phone. Unlock it to read it.",
   "lockRefused": "That did not unlock it.",
   "lockUnlock": "Unlock",
@@ -651,9 +651,14 @@
   "@lockWaiting": {
     "description": "The gap between the app asking for a fingerprint and the phone putting its own prompt up. For a screen reader only, and the platform prompt that follows is worded by lockReason."
   },
-  "lockReason": "Unlock where_money to see your spending.",
+  "lockReason": "Unlock Where Money to see your spending.",
   "@lockReason": {
     "description": "Read out by the phone's own prompt rather than by this app, which is why it is a whole sentence where the rest of this screen is not. The three availability states are named in settingsLock*: this screen shows the same words whichever of them the phone is in."
+  },
+
+  "appName": "Where Money",
+  "@appName": {
+    "description": "The product's own name, read on the sign-in screen and used as the task title the phone shows beside the app. A brand is not translated, so both ARB files carry the same value; it lives here rather than in a widget because it is still a word a user reads, and the prefix is the thing named rather than a screen, as with merchantUnknown."
   },
 
   "merchantUnknown": "Unknown merchant",

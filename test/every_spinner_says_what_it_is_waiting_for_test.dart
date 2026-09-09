@@ -208,7 +208,7 @@ void main() {
     lock.holdsThePrompt = Completer<void>();
 
     await open(tester, lockIt: true);
-    await reach(tester, find.text('where_money is locked'));
+    await reach(tester, find.text('Where Money is locked'));
 
     // The Lock is a `Column` of Texts and this spinner, and the whole of it
     // merges into one utterance — so the label is asserted as the line it
@@ -216,7 +216,7 @@ void main() {
     // label the utterance ends at "read it." and says nothing about waiting.
     expect(
       find.bySemanticsLabel(
-        'where_money is locked\n'
+        'Where Money is locked\n'
         'Your spending is on this phone. Unlock it to read it.\n'
         'Waiting for the phone to ask',
       ),

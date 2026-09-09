@@ -42,7 +42,7 @@ void main() {
   ) async {
     await openSettings(tester);
 
-    await tester.tap(find.text('Lock where_money'));
+    await tester.tap(find.text('Lock Where Money'));
     await tester.pumpAndSettle();
 
     expect(await preferences.locksOnOpen(), isFalse);
@@ -68,7 +68,7 @@ void main() {
     expect(find.textContaining('no screen lock'), findsOneWidget);
 
     // Nothing to switch on: there is no question this phone could ask.
-    await tester.tap(find.text('Lock where_money'));
+    await tester.tap(find.text('Lock Where Money'));
     await tester.pumpAndSettle();
     expect(await preferences.locksOnOpen(), isTrue);
   });

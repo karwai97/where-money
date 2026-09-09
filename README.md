@@ -1,4 +1,4 @@
-# where_money
+# Where Money
 
 Photograph a receipt, put the phone away. The photo becomes a categorised ledger
 entry, and a month of entries becomes a short written account of where the money

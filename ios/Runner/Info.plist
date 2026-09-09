@@ -5,9 +5,9 @@
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>where_money uses the camera to photograph receipts.</string>
+	<string>Where Money uses the camera to photograph receipts.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>where_money reads photographs of receipts you choose.</string>
+	<string>Where Money reads photographs of receipts you choose.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -19,7 +19,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>where_money</string>
+	<string>Where Money</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

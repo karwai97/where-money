@@ -137,7 +137,11 @@ class WhereMoneyApp extends StatelessWidget {
           clock: clock,
           child: BlocBuilder<SettingsCubit, Settings>(
             builder: (context, settings) => MaterialApp(
-              title: 'where_money',
+              // `onGenerateTitle` rather than `title`, because the name is an
+              // ARB key and the delegate that reads it is installed by this
+              // same MaterialApp.
+              onGenerateTitle: (context) =>
+                  AppLocalizations.of(context).appName,
               locale: Locale(settings.language),
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,

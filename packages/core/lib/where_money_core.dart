@@ -1,4 +1,4 @@
-/// The where_money domain: types, the Check, the Rollup, the Model response
+/// The Where Money domain: types, the Check, the Rollup, the Model response
 /// shapes, and the vision cost maths.
 ///
 /// This package must never depend on Flutter. The pubspec has no Flutter

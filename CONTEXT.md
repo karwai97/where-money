@@ -1,4 +1,4 @@
-# where_money
+# Where Money
 
 A personal expense tracker for a single user. A photographed receipt becomes a
 categorised ledger entry, and a month of entries becomes a short written account
