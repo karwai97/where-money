@@ -350,6 +350,7 @@ class Closed<T> extends StatelessWidget {
     required this.label,
     required this.value,
     required this.options,
+    required this.whenUnrecognised,
     required this.copy,
     required this.onChosen,
     this.marked,
@@ -364,12 +365,21 @@ class Closed<T> extends StatelessWidget {
   /// cells across a phone have no room for a column each.
   final bool cell;
 
-  /// The field's wire name, which is what the key is built from. The label
-  /// would do the same job until somebody changed language mid-form.
+  /// What this field is called in the code rather than in front of a reader:
+  /// the Review field's wire name, or the Setting's own. It is what the key is
+  /// built from, so it has to be the one part of a row that does not change
+  /// when somebody changes language mid-form — which rules the label out.
   final String name;
   final String label;
   final T value;
   final List<T> options;
+
+  /// What to show when [value] is not one of [options] — a Category the Model
+  /// invented, or a language stored by a build that knew more of them than
+  /// this one does. Said by the caller because only the caller knows: a
+  /// taxonomy has a catch-all to fall to, and a preference has a default.
+  final T whenUnrecognised;
+
   final String Function(T) copy;
   final void Function(T) onChosen;
 
@@ -383,7 +393,7 @@ class Closed<T> extends StatelessWidget {
         // Seeded rather than driven, so the key is what keeps what is shown in
         // step with the Extraction after a Line Item above it is removed.
         key: ValueKey('$name:$value'),
-        initialValue: options.contains(value) ? value : options.last,
+        initialValue: options.contains(value) ? value : whenUnrecognised,
         // Said out loud because the default is worse than it looks: a dropdown
         // lays its options out in an IndexedStack and takes the width of the
         // widest one, not of the one selected. At 200% text "Fees & charges"

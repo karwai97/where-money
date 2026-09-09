@@ -225,6 +225,7 @@ class _FormState extends State<_Form> {
                           label: ReviewField.category.labelIn(words),
                           value: state.extraction.category,
                           options: categories,
+                          whenUnrecognised: 'other',
                           copy: (slug) => categoryLabel(words, slug),
                           marked: _worstOf(noted[ReviewField.category]),
                           onChosen: (value) => _bloc.add(
@@ -243,6 +244,7 @@ class _FormState extends State<_Form> {
                         label: ReviewField.paymentMethod.labelIn(words),
                         value: state.extraction.paymentMethod,
                         options: paymentMethods,
+                        whenUnrecognised: 'unknown',
                         copy: (slug) => paymentMethodLabel(words, slug),
                         marked: _worstOf(noted[ReviewField.paymentMethod]),
                         onChosen: (value) => _bloc.add(
@@ -942,6 +944,7 @@ class _Row extends StatelessWidget {
                 label: ReviewField.category.labelIn(words),
                 value: category,
                 options: categories,
+                whenUnrecognised: 'other',
                 copy: (slug) => categoryLabel(words, slug),
                 cell: true,
                 onChosen: (value) => onCorrected(LineItemField.category, value),

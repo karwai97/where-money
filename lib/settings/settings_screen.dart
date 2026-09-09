@@ -100,6 +100,9 @@ class _ThemeChoice extends StatelessWidget {
         // Material's own order, which is also the order of the choice: follow
         // the phone, or override it one way or the other.
         options: ThemeMode.values,
+        // Exhaustive, so this is never reached — but the Theme still has a
+        // default, and it is the same one the Settings start on.
+        whenUnrecognised: ThemeMode.system,
         copy: (theme) => switch (theme) {
           ThemeMode.system => words.settingsThemeSystem,
           ThemeMode.light => words.settingsThemeLight,
@@ -139,6 +142,9 @@ class _LanguageChoice extends StatelessWidget {
         // The order is the domain's closed set, so a third language is a list
         // entry there and nothing here.
         options: languages,
+        // A language this build does not have is read in the one it falls back
+        // to, which is the language it is already being read in.
+        whenUnrecognised: defaultLanguage,
         copy: (language) => _named(words, language),
         onChosen: context.read<SettingsCubit>().chooseLanguage,
       ),

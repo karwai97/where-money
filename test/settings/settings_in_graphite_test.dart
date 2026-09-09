@@ -15,8 +15,9 @@ import '../fakes/in_memory_ledger_store.dart';
 
 /// Settings drawn in Review's hand rather than in Material's defaults: the
 /// Setting's name in the tracked label column, its value in a filled cell
-/// beside it, the sentence about it indented under the cell, and a filled head
-/// strip over each group.
+/// beside it, the sentence about it indented under the cell, and a hairline
+/// between rows. No head strips — `settings_screen.dart` says why the design's
+/// two came back off.
 ///
 /// What the screen says and does is the rest of `test/settings`, which did not
 /// change. This file is about how it is drawn, because that is the only thing
