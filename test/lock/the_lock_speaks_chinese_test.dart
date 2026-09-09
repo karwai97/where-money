@@ -45,7 +45,7 @@ void main() {
 
     await open(tester);
 
-    expect(find.text('where_money 已锁定'), findsOneWidget);
+    expect(find.text('Where Money 已锁定'), findsOneWidget);
     expect(find.text('你的消费记录在这台手机上。解锁之后才能读。'), findsOneWidget);
   });
 
@@ -68,7 +68,7 @@ void main() {
     await tester.tap(find.text('解锁'));
     await tester.pumpAndSettle();
 
-    expect(find.text('where_money 已锁定'), findsNothing);
+    expect(find.text('Where Money 已锁定'), findsNothing);
     expect(find.text('账本'), findsOneWidget);
   });
 
@@ -81,13 +81,13 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('用 Google 继续'), findsOneWidget);
-    expect(find.text('where_money 已锁定'), findsNothing);
+    expect(find.text('Where Money 已锁定'), findsNothing);
   });
 
   testWidgets("the phone's own prompt asks in Chinese", (tester) async {
     await open(tester);
 
-    expect(lock.reason, '解锁 where_money 查看你的消费记录。');
+    expect(lock.reason, '解锁 Where Money 查看你的消费记录。');
   });
 
   testWidgets('nothing on the Lock is left in English', (tester) async {
@@ -96,7 +96,7 @@ void main() {
     await open(tester);
 
     for (final english in const [
-      'where_money is locked',
+      'Where Money is locked',
       'Your spending is on this phone. Unlock it to read it.',
       'That did not unlock it.',
       'Unlock',
@@ -110,7 +110,7 @@ void main() {
     }
     expect(
       lock.reason,
-      isNot(contains('Unlock where_money')),
+      isNot(contains('Unlock Where Money')),
       reason: "the platform's own prompt did not move",
     );
   });

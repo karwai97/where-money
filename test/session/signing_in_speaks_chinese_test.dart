@@ -55,7 +55,7 @@ void main() {
     await open(tester);
     await tester.pumpAndSettle();
 
-    expect(find.text('where_money'), findsOneWidget);
+    expect(find.text('Where Money'), findsOneWidget);
   });
 
   testWidgets('a sign-in that failed is explained in Chinese, and still says '
@@ -95,8 +95,8 @@ void main() {
     await open(tester, gateway: _StillReading());
     await tester.pump();
 
-    expect(find.bySemanticsLabel('正在打开 where_money'), findsOneWidget);
-    expect(find.bySemanticsLabel('Opening where_money'), findsNothing);
+    expect(find.bySemanticsLabel('正在打开 Where Money'), findsOneWidget);
+    expect(find.bySemanticsLabel('Opening Where Money'), findsNothing);
     expect(find.text('用 Google 继续'), findsNothing);
   });
 }

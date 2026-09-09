@@ -50,7 +50,7 @@ void main() {
 
     await open(tester);
 
-    expect(find.text('where_money is locked'), findsOneWidget);
+    expect(find.text('Where Money is locked'), findsOneWidget);
     // Still mounted underneath, so that unlocking puts the user back where
     // they were — but covered, and out of reach.
     expect(find.text('Ikea Damansara').hitTestable(), findsNothing);
@@ -64,7 +64,7 @@ void main() {
     await tester.tap(find.text('Unlock'));
     await tester.pumpAndSettle();
 
-    expect(find.text('where_money is locked'), findsNothing);
+    expect(find.text('Where Money is locked'), findsNothing);
     expect(find.text('Ikea Damansara'), findsWidgets);
   });
 
@@ -78,7 +78,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Continue with Google'), findsOneWidget);
-    expect(find.text('where_money is locked'), findsNothing);
+    expect(find.text('Where Money is locked'), findsNothing);
   });
 
   testWidgets('a phone with no screen lock is never asked', (tester) async {

@@ -17,7 +17,7 @@
   "settingsHomeCurrencyNone": "你的第一笔支出会定下这一项。",
   "settingsHomeCurrencyGoverns": "总额和月度回顾都按它来算。其他货币的支出会列出来，但不计入总额。",
 
-  "settingsLock": "锁定 where_money",
+  "settingsLock": "锁定 Where Money",
   "settingsLockBiometrics": "显示你的消费记录之前，先要求指纹、面容，或本机的 PIN 码。",
   "settingsLockDeviceCredential": "本机没有设置指纹，因此显示你的消费记录之前会要求 PIN 码。",
   "settingsLockUnavailable": "本机没有设置屏幕锁。先到 Android 设置里设一个才能用这项。",
@@ -271,20 +271,22 @@
   "receiptTitle": "这张收据",
   "receiptBackToTheFields": "返回各项字段",
 
-  "openingWait": "正在打开 where_money",
+  "openingWait": "正在打开 Where Money",
 
   "signInTagline": "拍下收据，然后就可以把手机收起来。",
   "signInWithGoogle": "用 Google 继续",
   "signInInFlight": "正在登录",
   "signInFailed": "登录没有成功。{detail}",
 
-  "lockTitle": "where_money 已锁定",
+  "lockTitle": "Where Money 已锁定",
   "lockWhy": "你的消费记录在这台手机上。解锁之后才能读。",
   "lockRefused": "这次没有解开。",
   "lockUnlock": "解锁",
   "lockSignOutInstead": "改为退出登录",
   "lockWaiting": "正在等手机来问",
-  "lockReason": "解锁 where_money 查看你的消费记录。",
+  "lockReason": "解锁 Where Money 查看你的消费记录。",
+
+  "appName": "Where Money",
 
   "merchantUnknown": "商家不明",
 

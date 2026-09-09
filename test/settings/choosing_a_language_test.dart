@@ -135,7 +135,7 @@ void main() {
     await tester.pumpWidget(app(language: 'zh'));
     await openSettings(tester);
 
-    for (final chinese in ['设置', '主题', '语言', '主货币', '锁定 where_money', '退出登录']) {
+    for (final chinese in ['设置', '主题', '语言', '主货币', '锁定 Where Money', '退出登录']) {
       expect(find.text(chinese), findsWidgets, reason: '$chinese is missing');
     }
 
@@ -143,7 +143,7 @@ void main() {
       'Settings',
       'Theme',
       'Language',
-      'Lock where_money',
+      'Lock Where Money',
       'Sign out',
     ]) {
       expect(

@@ -1,4 +1,4 @@
-# where_money
+# Where Money
 
 ## Agent skills
 
