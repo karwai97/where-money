@@ -24,6 +24,12 @@ A pub workspace of two Dart packages:
   them by `flutter pub get` and by every build, so it is gitignored: an analyze
   or a test run on a fresh clone wants that `pub get` first.
 
+- **[tools/launcher-icon](tools/launcher-icon)** — the launcher icon, drawn
+  once as a few paths and written out as Android vector drawables, the legacy
+  Android PNGs and the iOS icon set. Node, not Dart. Nothing under `android/`
+  or `ios/` that it writes is edited by hand; change `make.mjs` and run
+  `npm install && npm run make` there.
+
 - **[worker](worker)** — the Cloudflare Worker that holds the OpenAI key
   (ADR-0001). TypeScript, not a Dart package, deployed separately. It is the
   only place the key exists, and it owns the prompt, the schema and the daily
@@ -107,7 +113,8 @@ deployment target is 15.0, which is `firebase_core`'s floor. Known gaps for
 whoever picks it up: `GoogleService-Info.plist` has to be fetched the same way as
 the Android config (template alongside it) and then added to the Xcode project,
 which takes Xcode; and there is no `Podfile` yet, since Flutter writes one on the
-first macOS build.
+first macOS build. The app icon set is drawn at every size the asset catalogue
+lists, but like everything else here it has never been through Xcode.
 
 There is no web build, and there won't be — the camera pipeline is the point.
 
