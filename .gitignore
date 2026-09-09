@@ -71,11 +71,14 @@ ui-debug.log
 /l10n-untranslated.json
 
 # Agent scratch: per-machine, per-session, and nothing to do with the app.
-# CONTEXT.md is not in this list — it is the project's own vocabulary, it is
-# referenced by CLAUDE.md and the ADRs, and it stays tracked.
+#
+# Two things are deliberately not in this list. CONTEXT.md is the project's
+# own vocabulary, referenced by CLAUDE.md and the ADRs. `.scratch/` is the
+# issue tracker CLAUDE.md and docs/agents/issue-tracker.md both point at — the
+# spec a change was written from, which a reviewer has to be able to open.
+# Both stay tracked.
 .claude/settings.local.json
 .claude/*.local.json
 # A second checkout of this repo, made by an agent to work off to one side.
 .claude/worktrees/
 *-handoff.md
-.scratch/
