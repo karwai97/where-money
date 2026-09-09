@@ -220,7 +220,7 @@ void main() {
     await openLedger(tester, homeCurrency: 'MYR');
     await openSettings(tester);
 
-    expect(find.text('Home Currency'), findsOneWidget);
+    expect(markSaying('Home Currency'), findsOneWidget);
     expect(find.text('MYR'), findsOneWidget);
     expect(find.text('Taken from your first expense.'), findsOneWidget);
     expect(

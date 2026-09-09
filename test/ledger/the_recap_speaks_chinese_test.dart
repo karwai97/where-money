@@ -67,7 +67,7 @@ void main() {
   Future<void> chooseChinese(WidgetTester tester) async {
     await tester.tap(find.byIcon(Icons.settings_outlined));
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(DropdownButton<String>));
+    await tester.tap(find.byType(DropdownButtonFormField<String>));
     await tester.pumpAndSettle();
     await tester.tap(find.text('中文').last);
     await tester.pumpAndSettle();
@@ -130,7 +130,7 @@ void main() {
     model.recapAnswer = FakeModelGateway.wrote('A third nobody asked for.');
     await tester.tap(find.byIcon(Icons.settings_outlined));
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(DropdownButton<String>));
+    await tester.tap(find.byType(DropdownButtonFormField<String>));
     await tester.pumpAndSettle();
     await tester.tap(find.text('English').last);
     await tester.pumpAndSettle();

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:where_money/app.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import '../as_drawn.dart';
 import '../fakes/fake_device_lock.dart';
 import '../fakes/fake_model_gateway.dart';
 import '../fakes/fake_sign_in_gateway.dart';
@@ -38,7 +39,7 @@ void main() {
   }
 
   Future<void> choose(WidgetTester tester, String option) async {
-    await tester.tap(find.byType(DropdownButton<String>));
+    await tester.tap(find.byType(DropdownButtonFormField<String>));
     await tester.pumpAndSettle();
     await tester.tap(find.text(option).last);
     await tester.pumpAndSettle();
@@ -50,7 +51,7 @@ void main() {
     await tester.pumpWidget(app());
     await openSettings(tester);
 
-    await tester.tap(find.byType(DropdownButton<String>));
+    await tester.tap(find.byType(DropdownButtonFormField<String>));
     await tester.pumpAndSettle();
 
     // Named in its own language either way round, so somebody can find theirs
@@ -65,7 +66,7 @@ void main() {
     await tester.pumpWidget(app());
     await openSettings(tester);
 
-    await tester.tap(find.byType(DropdownButton<String>));
+    await tester.tap(find.byType(DropdownButtonFormField<String>));
     await tester.pumpAndSettle();
 
     // A language added to the closed set with no name beside it would print as
@@ -85,7 +86,7 @@ void main() {
     await tester.pumpWidget(app());
     await openSettings(tester);
 
-    expect(find.text('Settings'), findsWidgets);
+    expect(markSaying('Settings'), findsWidgets);
     expect(await preferences.language(), 'en');
   });
 
@@ -95,8 +96,8 @@ void main() {
 
     await choose(tester, '中文');
 
-    expect(find.text('设置'), findsWidgets);
-    expect(find.text('Settings'), findsNothing);
+    expect(markSaying('设置'), findsWidgets);
+    expect(markSaying('Settings'), findsNothing);
   });
 
   testWidgets('and the choice is kept on the phone', (tester) async {
@@ -135,7 +136,11 @@ void main() {
     await tester.pumpWidget(app(language: 'zh'));
     await openSettings(tester);
 
-    for (final chinese in ['设置', '主题', '语言', '主货币', '锁定 Where Money', '退出登录']) {
+    // Exactly as the message files hold them. Every one of these is drawn as
+    // a tracked mark, and a mark in a language with no upper case to go to is
+    // not cased at all — otherwise the app's own name inside "锁定 Where
+    // Money" would be the only shouting on the screen.
+    for (final chinese in ['设置', '主题', '语言', '锁定 Where Money', '主货币', '退出登录']) {
       expect(find.text(chinese), findsWidgets, reason: '$chinese is missing');
     }
 
@@ -144,12 +149,20 @@ void main() {
       'Theme',
       'Language',
       'Lock Where Money',
+      'Home Currency',
       'Sign out',
     ]) {
+      // Both cases, because only the marks are drawn upper: English left in a
+      // sentence under a row would slip past a finder that asks for shouting.
       expect(
         find.text(english),
         findsNothing,
         reason: '$english is still here',
+      );
+      expect(
+        markSaying(english),
+        findsNothing,
+        reason: '$english is still here, in the case a mark is drawn in',
       );
     }
   });

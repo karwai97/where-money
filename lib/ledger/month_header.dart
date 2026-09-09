@@ -55,7 +55,7 @@ class MonthHeader extends StatelessWidget {
               children: [
                 Expanded(child: _Total(rollup)),
                 Text(
-                  rollup.shortMonthAndYearLabel(words).toUpperCase(),
+                  cased(words, rollup.shortMonthAndYearLabel(words)),
                   style: atItsWeight(
                     theme.textTheme.labelSmall?.copyWith(
                       color: colours.primary,

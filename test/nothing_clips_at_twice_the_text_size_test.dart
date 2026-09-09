@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:where_money/app.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import 'as_drawn.dart';
 import 'fakes/fake_device_lock.dart';
 import 'fakes/fake_model_gateway.dart';
 import 'fakes/fake_sign_in_gateway.dart';
@@ -99,6 +100,34 @@ void main() {
       await tester.tap(find.byTooltip('Add an Expense by hand'));
       await tester.pumpAndSettle();
       expectNothingClipped(tester, 'Review at $scale');
+    });
+
+    testWidgets('Settings fits at $scale', (tester) async {
+      await openLedger(tester, scale);
+      tester.takeException();
+
+      await tester.tap(find.byTooltip('Settings'));
+      await tester.pumpAndSettle();
+      expectNothingClipped(tester, 'Settings at $scale');
+
+      // The two rows that wrap to two lines in the 88px column, and the one
+      // the scaled label column has to leave room for a switch beside.
+      expect(markSaying('Lock Where Money'), findsOneWidget);
+      expect(markSaying('Home Currency'), findsOneWidget);
+      expect(find.byType(Switch), findsOneWidget);
+
+      // And the foot of it, which at 200% is past the fold. A `ListView` never
+      // lays out what nobody has scrolled to, so without this the Home
+      // Currency's two sentences and the sign-out button are never measured at
+      // the scale most likely to break them.
+      //
+      // Reaching the button is all this can say about the button itself: a
+      // Material button ellipsises its label rather than reporting an
+      // overflow, so its own height is not a thing a frame complains about.
+      await tester.scrollUntilVisible(markSaying('Sign out'), 200);
+      await tester.pumpAndSettle();
+      expectNothingClipped(tester, 'the foot of Settings at $scale');
+      expect(markSaying('Sign out'), findsOneWidget);
     });
   }
 }

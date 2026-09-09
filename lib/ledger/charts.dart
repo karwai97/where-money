@@ -262,7 +262,7 @@ double _labelExtent(
 /// names as they are written, and this is a no-op in a language whose months
 /// are not cased.
 String _labelOf(Rollup month, AppLocalizations words) =>
-    month.shortMonthLabel(words).toUpperCase();
+    cased(words, month.shortMonthLabel(words));
 
 /// The label of the month the screen is on. It carries the accent as well as
 /// the bar, because a month nobody spent anything in draws a bar of no height

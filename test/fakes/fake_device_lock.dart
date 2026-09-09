@@ -17,6 +17,11 @@ class FakeDeviceLock implements DeviceLock {
   /// registered or a platform channel that is not there.
   Object? broken;
 
+  /// Set this to never say what this phone can ask, standing in for a platform
+  /// call that is taking its time. Settings draws the Lock's row named and
+  /// empty until the answer arrives, and this is how a test holds it there.
+  Completer<void>? holdsTheAnswer;
+
   /// Set this to leave the prompt up without an answer, standing in for a
   /// finger that has not been put on the sensor yet. That wait is the only
   /// time the Lock's spinner is on screen.
@@ -30,6 +35,7 @@ class FakeDeviceLock implements DeviceLock {
   @override
   Future<LockAvailability> availability() async {
     if (broken case final failure?) throw failure;
+    await holdsTheAnswer?.future;
     return available;
   }
 

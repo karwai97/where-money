@@ -32,10 +32,8 @@ class LedgerScreen extends StatelessWidget {
     return _SaysThePhotosStayedBehind(
       child: Scaffold(
         appBar: AppBar(
-          // Upper case here is typography, not wording, which is why the
-          // message files hold it in sentence case.
           title: Text(
-            words.ledgerTitle.toUpperCase(),
+            cased(words, words.ledgerTitle),
             style: asScreenName(Theme.of(context).textTheme.labelLarge),
           ),
           actions: [
@@ -289,9 +287,9 @@ class _ColumnHeads extends StatelessWidget {
           // message files hold these in sentence case. It is a no-op in
           // Chinese, where the heads read as written.
           Expanded(
-            child: Text(words.ledgerColumnMerchant.toUpperCase(), style: style),
+            child: Text(cased(words, words.ledgerColumnMerchant), style: style),
           ),
-          Text(words.ledgerColumnAmount.toUpperCase(), style: style),
+          Text(cased(words, words.ledgerColumnAmount), style: style),
         ],
       ),
     );
