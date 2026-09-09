@@ -1,0 +1,12 @@
+{
+  "name": "where-money-launcher-icon",
+  "private": true,
+  "type": "module",
+  "description": "Draws the launcher icon into android/ and ios/ from one set of shapes. Not part of the Dart workspace.",
+  "scripts": {
+    "make": "node make.mjs"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2"
+  }
+}
