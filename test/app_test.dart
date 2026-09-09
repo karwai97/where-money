@@ -75,7 +75,7 @@ void main() {
 
     await tester.tap(find.byTooltip('Settings'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Sign out'));
+    await tester.tap(markSaying('Sign out'));
     await tester.pumpAndSettle();
 
     expect(find.text('Ikea Damansara'), findsNothing);

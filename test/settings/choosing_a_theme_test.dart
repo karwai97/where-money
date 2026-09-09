@@ -43,7 +43,7 @@ void main() {
   }
 
   Future<void> choose(WidgetTester tester, String option) async {
-    await tester.tap(find.byType(DropdownButton<ThemeMode>));
+    await tester.tap(find.byType(DropdownButtonFormField<ThemeMode>));
     await tester.pumpAndSettle();
     await tester.tap(find.text(option).last);
     await tester.pumpAndSettle();
@@ -53,7 +53,7 @@ void main() {
     await tester.pumpWidget(app());
     await openSettings(tester);
 
-    await tester.tap(find.byType(DropdownButton<ThemeMode>));
+    await tester.tap(find.byType(DropdownButtonFormField<ThemeMode>));
     await tester.pumpAndSettle();
 
     expect(find.text('System'), findsWidgets);

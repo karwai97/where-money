@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:where_money/app.dart';
 import 'package:where_money/lock/device_lock.dart';
@@ -42,7 +43,9 @@ void main() {
   ) async {
     await openSettings(tester);
 
-    await tester.tap(find.text('Lock Where Money'));
+    // The switch rather than the words beside it: the label sits in the row's
+    // own column now, not inside the control.
+    await tester.tap(find.byType(Switch));
     await tester.pumpAndSettle();
 
     expect(await preferences.locksOnOpen(), isFalse);
@@ -68,7 +71,7 @@ void main() {
     expect(find.textContaining('no screen lock'), findsOneWidget);
 
     // Nothing to switch on: there is no question this phone could ask.
-    await tester.tap(find.text('Lock Where Money'));
+    await tester.tap(find.byType(Switch), warnIfMissed: false);
     await tester.pumpAndSettle();
     expect(await preferences.locksOnOpen(), isTrue);
   });
