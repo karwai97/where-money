@@ -293,13 +293,16 @@ void main() {
       // The row a guest gets and the sentence under it, which is the longest
       // supporting line on the screen and sits below the fold at 200%.
       await tester.scrollUntilVisible(
-        markSaying('Sign in to keep this ledger'),
+        markSaying('Sign in to keep this Ledger'),
         200,
       );
       await tester.pumpAndSettle();
       expectNothingClipped(tester, 'Settings as a guest at $scale');
       expect(
-        find.text('This ledger lives on this phone only. Signing in keeps it.'),
+        find.text(
+          'This Ledger has no account behind it, so it goes when this phone '
+          'does. Signing in keeps it.',
+        ),
         findsOneWidget,
       );
 
@@ -313,13 +316,13 @@ void main() {
 
       // And the one the collision opens, which is longer still. It waits
       // over a spinning row, so nothing settles while it is up.
-      await tester.tap(markSaying('Sign in to keep this ledger'));
+      await tester.tap(markSaying('Sign in to keep this Ledger'));
       for (var frame = 0; frame < 5; frame++) {
         await tester.pump(const Duration(milliseconds: 50));
       }
       expectNothingClipped(tester, 'the other-ledger dialog at $scale');
       expect(
-        find.textContaining('That account already has a ledger'),
+        find.textContaining('That account already has a Ledger'),
         findsOneWidget,
       );
     });

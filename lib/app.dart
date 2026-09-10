@@ -217,9 +217,6 @@ class WhereMoneyApp extends StatelessWidget {
   }
 }
 
-/// The first frame, before the app knows whether anybody is signed in. It has
-/// nothing to show, so the words it carries are the ones a screen reader is
-/// given rather than any a user reads.
 /// A Ledger a guest asked to be rid of, and a phone that killed the app
 /// before it was. The record of it is read once on launch and finished before
 /// anything else is drawn, so the user lands where they meant to rather than
@@ -269,15 +266,23 @@ class _FinishingAnErasureState extends State<_FinishingAnErasure> {
     if (session is! SessionUnknown) _finish(session);
   }
 
-  /// Signed in as anybody but the uid in the record — or as nobody, which is
-  /// what an interruption after the account was deleted looks like — there is
-  /// nothing left to do but forget the record.
+  /// Signed in as anybody but the guest the record names — or as nobody,
+  /// which is what an interruption after the account was deleted looks like —
+  /// there is nothing left to do but forget the record.
+  ///
+  /// Still a guest is half of that test and not a formality. Keeping a Ledger
+  /// leaves the uid exactly as it was and only stops it being a guest's, so a
+  /// record matched on the uid alone would erase the very Ledger the user
+  /// signed in to save.
   Future<void> _finish(SessionState session) async {
     if (_started) return;
     _started = true;
     final erasing = widget.erasing;
 
-    final signedIn = session is SignedIn && session.user.uid == erasing;
+    final signedIn =
+        session is SignedIn &&
+        session.user.uid == erasing &&
+        session.user.guest;
     try {
       if (signedIn) {
         await widget.erasesFor(erasing).erase();
@@ -306,6 +311,9 @@ class _FinishingAnErasureState extends State<_FinishingAnErasure> {
   }
 }
 
+/// The first frame, before the app knows whether anybody is signed in. It has
+/// nothing to show, so the words it carries are the ones a screen reader is
+/// given rather than any a user reads.
 class _Opening extends StatelessWidget {
   const _Opening();
 

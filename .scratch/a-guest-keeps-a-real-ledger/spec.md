@@ -1,6 +1,7 @@
 # A guest keeps a real ledger
 
-**Status:** ready-for-agent
+**Status:** built. Three decisions below were overturned during
+implementation, each marked **Amended** with what replaced it and why.
 
 The sign-in screen's "Continue as guest" button is drawn, wired and localised;
 `GuestRequested` reaches `SessionBloc`, which calls
@@ -85,8 +86,7 @@ through.
     want to be told that before anything happens, so that I am not surprised by
     which Ledger I end up in.
 18. As that guest, I want the warning to say that this Ledger and its Receipts
-    will be deleted from the phone, so that I can decide with the consequence in
-    front of me.
+    will be deleted, so that I can decide with the consequence in front of me.
 19. As that guest, once I confirm, I want to end up signed into the Google
     account and looking at its Ledger, so that the thing I asked for happened.
 20. As that guest, I do not want to be asked to pick the same Google account a
@@ -256,30 +256,61 @@ The flows the cubit runs:
 
 ### Interrupted erasure
 
-The record written in step 1 is read on launch, in the state the app already
-shows while it does not yet know who the user is. Any erasure it names is
-finished before the app draws anything else. Nothing is said about it: the user
+~~The record written in step 1 is read on launch, in the state the app already
+shows while it does not yet know who the user is.~~
+
+**Amended.** The record is read in the composition root before the first
+frame, alongside the theme, the language and the Home Currency, and handed
+down as a plain value — the idiom this app already uses for what the first
+frame has to know. Reading it inside the widget tree meant an asynchronous gap
+before anything was drawn, which broke three existing tests: the notice that
+says a restored Ledger's photos stayed behind is driven by a listener that
+fires on *changes*, so delaying the Ledger's mount past its first arrival lost
+the notice silently. Only the local read moved early; the erasure still runs
+in the app, for the reason below. The wrapper that finishes an erasure is in
+the tree only when there is one to finish.
+
+Any erasure the record names is finished before the app draws anything else. Nothing is said about it: the user
 confirmed a deletion and is about to land on the sign-in screen, which is the
-outcome they asked for. A resumed erasure that fails leaves the record in place
-for the next launch.
+outcome they asked for. **Amended:** a refused erasure — resumed or user-initiated — clears the record
+rather than leaving it. The record means "started, and nobody knows whether it
+finished", which is true of an app that was killed and false of a refusal this
+code caught and reported. Left set after a refusal it becomes a landmine:
+keeping a Ledger leaves the uid exactly as it was and only stops it being a
+guest's, so a record matched on the uid alone would, on some later launch,
+delete the very Ledger the user signed in to save. The resume also now
+requires the restored user to still be a guest. Both guards are pinned.
 
 It is not done before the app starts: blocking startup on a network delete gives
 a guest on a bad connection a black screen with no way past it.
 
 ### Strings
 
-Seven new keys in both ARB files, following the existing register — sentences
-that name the thing, verbs as button labels:
+Nine new keys in both ARB files, following the existing register — sentences
+that name the thing, verbs as button labels. Two are additions this spec did
+not foresee: the modal spinner needs something to say to a screen reader, and
+the collision dialog cannot confirm with "Sign out" when what it does is sign
+the user in.
+
+The copy below is also corrected. The draft said a guest's Ledger "lives on
+this phone only" and that leaving deletes it "from this phone", and both are
+false: a guest's Expenses are in Firestore under a real uid, and ADR-0003
+scopes the stays-on-device claim to images alone. The app's own
+`ledgerPhotosStayedBehindBody` already draws the line correctly. "Ledger" is
+also capitalised throughout, as every other user-facing string in the file
+does — it is a domain word.
 
 | Key | English |
 | --- | --- |
-| `settingsKeepThisLedger` | Sign in to keep this ledger |
-| `settingsKeepThisLedgerHint` | This ledger lives on this phone only. Signing in keeps it. |
-| `settingsSignOutAsGuestTitle` | Sign out of this ledger? |
-| `settingsSignOutAsGuestBody` | Your ledger and its receipts will be deleted from this phone and cannot be recovered. |
+| `settingsKeepThisLedger` | Sign in to keep this Ledger |
+| `settingsKeepThisLedgerHint` | This Ledger has no account behind it, so it goes when this phone does. Signing in keeps it. |
+| `settingsSignOutAsGuestTitle` | Sign out of this Ledger? |
+| `settingsSignOutAsGuestBody` | Your Ledger and its receipts will be deleted, and cannot be recovered. |
 | `settingsSignOutKeep` | Keep it |
 | `settingsSignOutConfirm` | Sign out |
-| `settingsAccountInUseBody` | That account already has a ledger. Signing in opens it, and this ledger and its receipts will be deleted from this phone. |
+| `settingsAccountInUseConfirm` | Sign in |
+| `settingsErasingInFlight` | Deleting this Ledger |
+| `settingsAccountInUseBody` | That account already has a Ledger. Signing in opens it, and this Ledger and its receipts will be deleted. |
 
 Neither dialog names a count. A number means the dialog waits on a read that can
 fail or hang, for a figure that changes nobody's mind — the sentence that stops
@@ -317,9 +348,14 @@ Widened in place, no new seams:
   gateway and one for a refused guest sign-in becoming a failure. Nothing else
   moves down to this level.
 
-One new seam, mirroring the per-uid stores factory: a per-uid eraser factory on
-the root widget, faked in tests with one that records what it was asked to erase
-and can be told to refuse.
+~~One new seam, mirroring the per-uid stores factory: a per-uid eraser factory
+on the root widget, faked in tests with one that records what it was asked to
+erase and can be told to refuse.~~
+
+**Amended: no new seam.** With the stores doing the deleting, the in-memory
+store erases for real, so the app-seam tests assert that the Ledger and the
+Scans are actually empty rather than that a collaborator was called. It grew
+two refusal knobs beside its existing ones, and the preferences fake one more.
 
 ### What gets pinned
 

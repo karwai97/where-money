@@ -132,15 +132,13 @@ screen lock has no Lock, and is shown the Ledger rather than shut out of it.
 _Avoid_: Passcode, auth, security, biometrics as a noun for the feature
 
 **Guest**:
-Somebody using the app without an account behind them. Named here because the
-sign-in screen offers it, and the code says it in four places — but what a
-guest *is* is not settled: the Ledger, the Receipts directory and the Worker's
-token are all keyed by uid, so a guest needs one, and an anonymous account that
-can later be linked to Google is the likely shape. What such a user is told
-they keep and give up, and whether Settings grows a row that trades the session
-for an account, is an open question and an ADR of its own. Until it lands
-`GoogleSignInGateway.continueAsGuest` refuses rather than creating accounts
-whose meaning nobody has decided.
+Somebody using the app without an account behind them. An anonymous account,
+so the uid is real and the Ledger, the Receipts directory, the Worker's token
+and the daily cap all work exactly as they do for anyone else (ADR-0010).
+Two things follow. It can be kept: signing in later links the account to the
+same uid, so the Ledger does not move. And it cannot be recovered — nobody
+signs into an anonymous uid twice — so leaving deletes the Ledger, the
+Receipts and the account, and the app says so before it happens.
 _Avoid_: Anonymous user, trial, unregistered, logged-out user for this
 
 ### Operating it

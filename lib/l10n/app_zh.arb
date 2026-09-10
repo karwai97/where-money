@@ -37,13 +37,14 @@
   "settingsSignOut": "退出登录",
 
   "settingsKeepThisLedger": "登录以保留此账本",
-  "settingsKeepThisLedgerHint": "此账本仅存在于这部手机上。登录即可保留。",
+  "settingsKeepThisLedgerHint": "此账本没有账号，会随这部手机一起消失。登录即可保留。",
   "settingsSignOutAsGuestTitle": "退出此账本？",
-  "settingsSignOutAsGuestBody": "你的账本及其收据将从这部手机上删除，且无法恢复。",
+  "settingsSignOutAsGuestBody": "你的账本及其收据将被删除，且无法恢复。",
   "settingsSignOutKeep": "保留",
   "settingsSignOutConfirm": "退出登录",
   "settingsErasingInFlight": "正在删除此账本",
-  "settingsAccountInUseBody": "该账号已有账本。登录后将打开该账本，此账本及其收据将从这部手机上删除。",
+  "settingsAccountInUseConfirm": "登录",
+  "settingsAccountInUseBody": "该账号已有账本。登录后将打开该账本，此账本及其收据将被删除。",
 
   "settingsScansHeading": "每次扫描请求的设置",
   "settingsScansModel": "模型：{model}",

@@ -36,6 +36,11 @@ class InMemoryLedgerStore implements LedgerStore, ScanStore, ReceiptStore {
   /// is the all-or-nothing one.
   Object? refuseErasing;
 
+  /// Set to have the Scans refuse, standing in for a phone that will not
+  /// delete a directory. Its own half of an erasure is best effort, and this
+  /// is what lets a test say so.
+  Object? refuseErasingScans;
+
   /// Thrown by [add] *after* the Expense has gone in, which is the one thing
   /// [refuseWrites] cannot say: Firestore acknowledges over a network, so a
   /// write that landed and an answer that never came back look identical to
@@ -154,6 +159,7 @@ class InMemoryLedgerStore implements LedgerStore, ScanStore, ReceiptStore {
   /// collection, and only one of them is the promise.
   @override
   Future<void> eraseEveryScan() async {
+    if (refuseErasingScans case final failure?) throw failure;
     _scans.clear();
     _receipts.clear();
     _inbox.add(_waiting);

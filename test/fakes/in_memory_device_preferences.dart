@@ -27,6 +27,10 @@ class InMemoryDevicePreferences implements DevicePreferences {
   /// an erasure reached the preferences as well as the Ledger.
   final forgotten = <String>{};
 
+  /// Set to have [forget] refuse. Best effort like the Scans are, and for
+  /// the same reason: what a phone remembers is local and invisible.
+  Object? refuseForgetting;
+
   @override
   Future<ThemeMode> theme() async => _mode;
 
@@ -80,6 +84,7 @@ class InMemoryDevicePreferences implements DevicePreferences {
 
   @override
   Future<void> forget(String uid) async {
+    if (refuseForgetting case final failure?) throw failure;
     forgotten.add(uid);
     _explained.remove(uid);
     _allowance = null;

@@ -54,7 +54,19 @@ class ErasingWhatAUidOwns implements ErasingALedger {
   Future<void> erase() async {
     await preferences.rememberErasureUnderWay(uid);
 
-    await stores.ledger.eraseTheLedger();
+    try {
+      await stores.ledger.eraseTheLedger();
+    } catch (_) {
+      // The record means "started, and nobody knows whether it finished".
+      // A refusal caught here is not that: this code is still running and
+      // does know. Leaving it set would arm the next launch to erase a
+      // Ledger the user may by then have kept — linking leaves the uid
+      // exactly as it was, so a record matched on uid alone would still
+      // match. They stay signed in and are told; trying again is theirs to
+      // ask for.
+      await preferences.forgetErasureUnderWay();
+      rethrow;
+    }
 
     // From here on, failures are swallowed. Everything above was the promise;
     // everything below is tidying, and a phone that refuses to delete a

@@ -68,6 +68,14 @@ owns the directory it lives in. Both are enforced mechanically by the suite,
 and an eraser that reached past them would have broken both. What sits above
 those two calls owns the order and nothing else.
 
+The record that says an erasure is owed survives the app being killed and not
+a refusal. A refusal is caught by code that is still running and does know the
+outcome, so it clears the record and tells the user; only a death leaves it
+set. This matters more than it sounds: keeping a Ledger leaves the uid exactly
+as it was and only stops it being a guest's, so a record matched on the uid
+alone would, on some later launch, delete the very Ledger the user signed in
+to save. Resuming also requires the restored user to still be a guest.
+
 Two Ledgers cannot be merged. A guest who signs in to a Google account that
 already has one is told, before anything is deleted, that the account's Ledger
 is the one being opened and this one is going. Merging would be a cross-uid

@@ -29,11 +29,18 @@ final class NoTrade extends Trade {
   const NoTrade();
 }
 
-/// A link or an erasure is in flight. What the screen draws for this differs
-/// between the two — a spinner in the row for one, a modal over the screen
-/// for the other — which is the screen's business rather than this one's.
-final class TradeUnderWay extends Trade {
-  const TradeUnderWay();
+/// An account is being put behind the Ledger. The row it was asked from
+/// waits in place.
+final class Linking extends Trade {
+  const Linking();
+}
+
+/// A Ledger is being deleted. Separate from [Linking] rather than one state
+/// for both, because the two are told apart on screen: this one runs under a
+/// modal and says what it is deleting, and a row that spun "Signing in"
+/// underneath it would be saying the opposite of what is happening.
+final class Erasing extends Trade {
+  const Erasing();
 }
 
 final class TradeRefused extends Trade {
@@ -67,7 +74,7 @@ class TradingAGuestForAnAccount extends Cubit<Trade> {
     String uid,
     AsksAboutTheOtherLedger askAboutTheOtherLedger,
   ) async {
-    emit(const TradeUnderWay());
+    emit(const Linking());
     try {
       await identity.linkWithGoogle();
       // Kept. The row goes when the gateway's stream says this uid is no
@@ -89,17 +96,7 @@ class TradingAGuestForAnAccount extends Cubit<Trade> {
   ///
   /// The caller confirms first. This does not ask, because the two callers
   /// ask different questions.
-  Future<void> leave(String uid) async {
-    emit(const TradeUnderWay());
-    try {
-      await erases(uid).erase();
-      emit(const NoTrade());
-    } catch (error) {
-      // Still signed in, and told. Anything else would break the promise the
-      // dialog made and take away the only identity that could try again.
-      emit(TradeRefused(error.toString()));
-    }
-  }
+  Future<void> leave(String uid) => _erase(uid);
 
   /// Two Ledgers and one user. The guest's goes, and the account they chose
   /// is signed into with the credential the refusal carried — so they are not
@@ -115,9 +112,18 @@ class TradingAGuestForAnAccount extends Cubit<Trade> {
       return;
     }
 
+    await _erase(uid, andThen: () => identity.signInWith(credential));
+  }
+
+  /// The destructive half, which both exits share: under a modal, all or
+  /// nothing, and on a refusal the user is still signed in and told why.
+  /// Anything else would break the promise the dialog made and take away the
+  /// only identity that could try again.
+  Future<void> _erase(String uid, {Future<void> Function()? andThen}) async {
+    emit(const Erasing());
     try {
       await erases(uid).erase();
-      await identity.signInWith(credential);
+      await andThen?.call();
       emit(const NoTrade());
     } catch (error) {
       emit(TradeRefused(error.toString()));

@@ -102,7 +102,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
     if (!agreed || !mounted) return;
 
-    await _under(() => context.read<TradingAGuestForAnAccount>().leave(guest));
+    await _whileTheScreenIsHeld(
+      () => context.read<TradingAGuestForAnAccount>().leave(guest),
+    );
   }
 
   /// The guest's uid, or null when the user has an account. Read off the
@@ -134,7 +136,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final words = AppLocalizations.of(context);
       final agreed = await _asked(
         body: words.settingsAccountInUseBody,
-        going: words.settingsSignOutConfirm,
+        going: words.settingsAccountInUseConfirm,
         staying: words.settingsSignOutKeep,
       );
       destructive = agreed;
@@ -177,7 +179,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   /// A deletion, held under a modal for as long as it takes. The register
   /// changes at the point something is about to be destroyed, which is the
   /// one place in this flow the user should feel it.
-  Future<void> _under(Future<void> Function() doing) async {
+  Future<void> _whileTheScreenIsHeld(Future<void> Function() doing) async {
     _holdTheScreen();
     try {
       await doing();
@@ -628,7 +630,7 @@ class _KeepThisLedger extends StatelessWidget {
           children: [
             // The spinner takes the button's slot at the button's height, so
             // the sentence under it and the row under that do not move.
-            if (trade is TradeUnderWay)
+            if (trade is Linking)
               SizedBox(
                 height: 48,
                 child: Center(

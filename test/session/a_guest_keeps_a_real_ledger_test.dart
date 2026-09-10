@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:where_money/app.dart';
 import 'package:where_money/session/sign_in_gateway.dart';
@@ -42,9 +43,14 @@ void main() {
     preferences = InMemoryDevicePreferences(locksOnOpen: false);
   });
 
-  Future<void> open(WidgetTester tester, {String? erasureUnderWay}) async {
+  Future<void> open(
+    WidgetTester tester, {
+    String? erasureUnderWay,
+    String language = 'en',
+  }) async {
     await tester.pumpWidget(
       WhereMoneyApp(
+        language: language,
         signIn: signIn,
         storesFor: (_) => store.stores,
         model: FakeModelGateway(),
@@ -63,12 +69,30 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> openSettings(WidgetTester tester) async {
-    await tester.tap(find.byTooltip('Settings'));
+  /// The app opened again from cold, carrying whatever the phone now
+  /// remembers. Pumping the app a second time on its own would keep the
+  /// element tree and the pushed Settings route with it, which is not what a
+  /// launch is; the blank frame in between is what makes it one.
+  Future<void> relaunch(WidgetTester tester) async {
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+    await open(tester, erasureUnderWay: await preferences.erasureUnderWay());
+  }
+
+  Future<void> openSettings(
+    WidgetTester tester, {
+    String named = 'Settings',
+  }) async {
+    await tester.tap(find.byTooltip(named));
     await tester.pumpAndSettle();
   }
 
+  /// Scrolled to before it is tapped. The foot of Settings sits below the
+  /// fold once a guest's row is on it, and a tap dispatched at an offset
+  /// outside the viewport lands on nothing at all rather than failing.
   Future<void> tapOn(WidgetTester tester, Finder what) async {
+    await tester.ensureVisible(what);
+    await tester.pumpAndSettle();
     await tester.tap(what);
     await tester.pumpAndSettle();
   }
@@ -78,6 +102,8 @@ void main() {
   /// the row's spinner never would, and neither would the modal a deletion
   /// runs under.
   Future<void> tapAndWait(WidgetTester tester, Finder what) async {
+    await tester.ensureVisible(what);
+    await tester.pump();
     await tester.tap(what);
     for (var frame = 0; frame < 5; frame++) {
       await tester.pump(const Duration(milliseconds: 50));
@@ -95,6 +121,20 @@ void main() {
       expect(find.text('Village Grocer'), findsWidgets);
     });
 
+    testWidgets('a guest commits an Expense like anyone else', (tester) async {
+      store = InMemoryLedgerStore();
+
+      await open(tester);
+      await continueAsGuest(tester);
+      await store.add(onTheLedger);
+      await tester.pumpAndSettle();
+
+      // Nothing about the Ledger is withheld from a guest: the uid is real,
+      // so the seam an Expense is written through is the same one.
+      expect(find.text('Village Grocer'), findsWidgets);
+      expect(store.contents, [onTheLedger]);
+    });
+
     testWidgets('a guest sign-in that failed is explained, and both ways in '
         'come back', (tester) async {
       signIn.refuseGuest = StateError('no network');
@@ -108,6 +148,27 @@ void main() {
     });
   });
 
+  group('in Chinese', () {
+    testWidgets('a guest is offered the row and warned in their own '
+        'language', (tester) async {
+      await open(tester, language: 'zh');
+      await tester.tap(find.text('以访客身份继续'));
+      await tester.pumpAndSettle();
+      await openSettings(tester, named: '设置');
+
+      // `cased` is a no-op for zh, so the row reads as it is written.
+      expect(find.text('登录以保留此账本'), findsOneWidget);
+      expect(find.text('此账本没有账号，会随这部手机一起消失。登录即可保留。'), findsOneWidget);
+
+      await tapOn(tester, find.text('退出登录'));
+      expect(find.text('退出此账本？'), findsOneWidget);
+      expect(find.text('你的账本及其收据将被删除，且无法恢复。'), findsOneWidget);
+      // The moment a user is warned about losing data is the worst possible
+      // moment for the app to switch language.
+      expect(find.textContaining('cannot be recovered'), findsNothing);
+    });
+  });
+
   group('keeping it', () {
     testWidgets('a guest is offered a way to keep the Ledger, and told what '
         'happens if they do not', (tester) async {
@@ -115,9 +176,12 @@ void main() {
       await continueAsGuest(tester);
       await openSettings(tester);
 
-      expect(markSaying('Sign in to keep this ledger'), findsOneWidget);
+      expect(markSaying('Sign in to keep this Ledger'), findsOneWidget);
       expect(
-        find.text('This ledger lives on this phone only. Signing in keeps it.'),
+        find.text(
+          'This Ledger has no account behind it, so it goes when this phone '
+          'does. Signing in keeps it.',
+        ),
         findsOneWidget,
       );
     });
@@ -130,7 +194,7 @@ void main() {
       await open(tester);
       await openSettings(tester);
 
-      expect(markSaying('Sign in to keep this ledger'), findsNothing);
+      expect(markSaying('Sign in to keep this Ledger'), findsNothing);
       expect(markSaying('Sign out'), findsOneWidget);
     });
 
@@ -140,9 +204,9 @@ void main() {
       await open(tester);
       await continueAsGuest(tester);
       await openSettings(tester);
-      await tapOn(tester, markSaying('Sign in to keep this ledger'));
+      await tapOn(tester, markSaying('Sign in to keep this Ledger'));
 
-      expect(markSaying('Sign in to keep this ledger'), findsNothing);
+      expect(markSaying('Sign in to keep this Ledger'), findsNothing);
 
       // Nothing moved: the uid did not change, so neither did the Ledger.
       await tapOn(tester, find.byTooltip('Back'));
@@ -157,9 +221,9 @@ void main() {
       await open(tester);
       await continueAsGuest(tester);
       await openSettings(tester);
-      await tapOn(tester, markSaying('Sign in to keep this ledger'));
+      await tapOn(tester, markSaying('Sign in to keep this Ledger'));
 
-      expect(markSaying('Sign in to keep this ledger'), findsOneWidget);
+      expect(markSaying('Sign in to keep this Ledger'), findsOneWidget);
       expect(find.textContaining('Bad state'), findsNothing);
     });
 
@@ -170,10 +234,10 @@ void main() {
       await open(tester);
       await continueAsGuest(tester);
       await openSettings(tester);
-      await tapOn(tester, markSaying('Sign in to keep this ledger'));
+      await tapOn(tester, markSaying('Sign in to keep this Ledger'));
 
       expect(find.textContaining('no network'), findsOneWidget);
-      expect(markSaying('Sign in to keep this ledger'), findsOneWidget);
+      expect(markSaying('Sign in to keep this Ledger'), findsOneWidget);
       expect(store.contents, [onTheLedger]);
       expect(signIn.deleted, isFalse);
     });
@@ -186,10 +250,10 @@ void main() {
       await open(tester);
       await continueAsGuest(tester);
       await openSettings(tester);
-      await tapAndWait(tester, markSaying('Sign in to keep this ledger'));
+      await tapAndWait(tester, markSaying('Sign in to keep this Ledger'));
 
       expect(
-        find.textContaining('That account already has a ledger'),
+        find.textContaining('That account already has a Ledger'),
         findsOneWidget,
       );
       expect(store.contents, [onTheLedger]);
@@ -201,10 +265,13 @@ void main() {
       await open(tester);
       await continueAsGuest(tester);
       await openSettings(tester);
-      await tapAndWait(tester, markSaying('Sign in to keep this ledger'));
-      await tapOn(tester, find.text('Keep it'));
+      await tapAndWait(tester, markSaying('Sign in to keep this Ledger'));
+      // Declining leaves the row's spinner to stop on its own, so this
+      // cannot settle until the cubit is back at rest.
+      await tapAndWait(tester, find.text('Keep it'));
+      await tester.pumpAndSettle();
 
-      expect(markSaying('Sign in to keep this ledger'), findsOneWidget);
+      expect(markSaying('Sign in to keep this Ledger'), findsOneWidget);
       expect(store.contents, [onTheLedger]);
       expect(signIn.deleted, isFalse);
     });
@@ -214,8 +281,10 @@ void main() {
       await open(tester);
       await continueAsGuest(tester);
       await openSettings(tester);
-      await tapAndWait(tester, markSaying('Sign in to keep this ledger'));
-      await tapAndWait(tester, find.text('Sign out'));
+      await tapAndWait(tester, markSaying('Sign in to keep this Ledger'));
+      // "Sign in", not "Sign out": this dialog signs the user in to the
+      // other account, and the button has to say what it does.
+      await tapAndWait(tester, find.text('Sign in'));
       await tester.pumpAndSettle();
 
       expect(store.contents, isEmpty);
@@ -233,7 +302,7 @@ void main() {
       await openSettings(tester);
       await tapOn(tester, markSaying('Sign out'));
 
-      expect(find.text('Sign out of this ledger?'), findsOneWidget);
+      expect(find.text('Sign out of this Ledger?'), findsOneWidget);
       expect(find.textContaining('cannot be recovered'), findsOneWidget);
       expect(store.contents, [onTheLedger]);
     });
@@ -247,8 +316,8 @@ void main() {
       await tapOn(tester, markSaying('Sign out'));
       await tapOn(tester, find.text('Keep it'));
 
-      expect(find.text('Sign out of this ledger?'), findsNothing);
-      expect(markSaying('Sign in to keep this ledger'), findsOneWidget);
+      expect(find.text('Sign out of this Ledger?'), findsNothing);
+      expect(markSaying('Sign in to keep this Ledger'), findsOneWidget);
       expect(store.contents, [onTheLedger]);
       expect(signIn.deleted, isFalse);
     });
@@ -289,7 +358,7 @@ void main() {
       expect(signIn.deleted, isFalse);
       // Still theirs to try again from, which is the whole reason a failed
       // erasure does not sign anybody out.
-      expect(markSaying('Sign in to keep this ledger'), findsOneWidget);
+      expect(markSaying('Sign in to keep this Ledger'), findsOneWidget);
     });
 
     testWidgets('an account holder still leaves in one tap', (tester) async {
@@ -299,7 +368,7 @@ void main() {
       await openSettings(tester);
       await tapOn(tester, markSaying('Sign out'));
 
-      expect(find.text('Sign out of this ledger?'), findsNothing);
+      expect(find.text('Sign out of this Ledger?'), findsNothing);
       expect(markSaying('Continue with Google'), findsOneWidget);
       // Their Ledger waits for them. Nothing was erased on the way out.
       expect(store.contents, [onTheLedger]);
@@ -333,15 +402,49 @@ void main() {
       expect(find.text('Village Grocer'), findsWidgets);
     });
 
-    testWidgets('that fails is left for the next launch', (tester) async {
+    testWidgets('is never resumed against a Ledger the guest went on to keep', (
+      tester,
+    ) async {
+      // The sequence that makes this the worst bug in the feature: an
+      // erasure is refused, so the user stays a guest and is told; they then
+      // keep the Ledger by signing in, which leaves the uid exactly as it
+      // was. A record matched on uid alone would erase, on the next launch,
+      // the Ledger they just signed in to save.
+      store.refuseErasing = StateError('no network');
+
+      await open(tester);
+      await continueAsGuest(tester);
+      await openSettings(tester);
+      await tapOn(tester, markSaying('Sign out'));
+      await tapAndWait(tester, find.textContaining('Sign out').last);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('no network'), findsOneWidget);
+
+      store.refuseErasing = null;
+      await tapOn(tester, markSaying('Sign in to keep this Ledger'));
+      expect(markSaying('Sign in to keep this Ledger'), findsNothing);
+
+      await relaunch(tester);
+
+      expect(store.contents, [onTheLedger]);
+      expect(find.text('Village Grocer'), findsWidgets);
+    });
+
+    testWidgets('that is refused does not arm the launch after it', (
+      tester,
+    ) async {
       signIn = FakeSignInGateway(alreadySignedIn: FakeSignInGateway.guest);
       store.refuseErasing = StateError('no network');
 
       await open(tester, erasureUnderWay: FakeSignInGateway.guest.uid);
 
-      expect(await preferences.erasureUnderWay(), FakeSignInGateway.guest.uid);
+      // The record survives the app being killed, which is what it is for,
+      // and not a refusal — this code was still running and does know the
+      // outcome. Left set, it would delete a Ledger on some later launch
+      // without asking again, which is not something to do quietly.
+      expect(await preferences.erasureUnderWay(), isNull);
       // Shown their Ledger in the meantime, which is the truth: it is still
-      // there.
+      // there, and signing out again is how they ask a second time.
       expect(find.text('Village Grocer'), findsWidgets);
     });
   });

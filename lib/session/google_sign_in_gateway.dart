@@ -51,13 +51,12 @@ class GoogleSignInGateway implements SignInGateway {
   @override
   Future<void> linkWithGoogle() async {
     final credential = await _credential();
+    // Only ever called from a row drawn for a signed-in guest. Being asked
+    // to keep a Ledger nobody owns is a bug in the caller, and signing
+    // somebody in instead would hide it.
     final user = _auth.currentUser;
     if (user == null) {
-      // Nobody to link to. Not reachable from the row that calls this, which
-      // is only drawn for a signed-in guest, but signing in is the honest
-      // answer to being asked to keep a Ledger that has no owner.
-      await _auth.signInWithCredential(credential);
-      return;
+      throw StateError('There is no Ledger to keep: nobody is signed in.');
     }
 
     try {
