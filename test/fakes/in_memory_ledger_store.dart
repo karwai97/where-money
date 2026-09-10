@@ -31,6 +31,11 @@ class InMemoryLedgerStore implements LedgerStore, ScanStore, ReceiptStore {
   Object? refuseReads;
   Object? refuseWrites;
 
+  /// Set to have a Ledger refuse to be erased, standing in for a Firestore
+  /// that will not answer. The Scans erase either way: only the Ledger's half
+  /// is the all-or-nothing one.
+  Object? refuseErasing;
+
   /// Thrown by [add] *after* the Expense has gone in, which is the one thing
   /// [refuseWrites] cannot say: Firestore acknowledges over a network, so a
   /// write that landed and an answer that never came back look identical to
@@ -78,6 +83,13 @@ class InMemoryLedgerStore implements LedgerStore, ScanStore, ReceiptStore {
   Future<void> remove(String expenseId) async {
     if (refuseWrites case final failure?) throw failure;
     _expenses.removeWhere((held) => held.id == expenseId);
+    _changes.add(_newestFirst);
+  }
+
+  @override
+  Future<void> eraseTheLedger() async {
+    if (refuseErasing case final failure?) throw failure;
+    _expenses.clear();
     _changes.add(_newestFirst);
   }
 
@@ -134,6 +146,16 @@ class InMemoryLedgerStore implements LedgerStore, ScanStore, ReceiptStore {
   Future<void> abandon(String scanId) async {
     _scans.remove(scanId);
     _receipts.remove(receiptPathFor(scanId));
+    _inbox.add(_waiting);
+  }
+
+  /// The Scans half of an erasure. Separate from the Ledger's, the way the
+  /// two are separate on a real phone: one is a directory, the other is a
+  /// collection, and only one of them is the promise.
+  @override
+  Future<void> eraseEveryScan() async {
+    _scans.clear();
+    _receipts.clear();
     _inbox.add(_waiting);
   }
 

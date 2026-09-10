@@ -124,5 +124,14 @@ class _StillReading implements SignInGateway {
   Future<void> continueAsGuest() async {}
 
   @override
+  Future<void> linkWithGoogle() async {}
+
+  @override
+  Future<void> signInWith(Object credential) async {}
+
+  @override
+  Future<void> deleteAccount() async {}
+
+  @override
   Future<void> signOut() async {}
 }

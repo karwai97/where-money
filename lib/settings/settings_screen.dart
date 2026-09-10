@@ -11,6 +11,7 @@ import '../ledger/ledger_bloc.dart';
 import '../on_screen.dart';
 import '../lock/device_lock.dart';
 import '../session/session_bloc.dart';
+import '../session/trading_a_guest_for_an_account.dart';
 import 'settings_cubit.dart';
 import 'themes.dart';
 
@@ -78,11 +79,125 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await context.read<DevicePreferences>().setLocksOnOpen(locks);
   }
 
-  void _signOut() {
+  /// An account holder leaves in one tap: their Ledger waits for them, and
+  /// nothing about that is worth confirming. A guest's Ledger does not wait,
+  /// so a guest is asked, and this screen stays put while the erasure runs —
+  /// it can fail, and a popped screen has nowhere to say so.
+  Future<void> _signOut() async {
     final session = context.read<SessionBloc>();
-    Navigator.of(context).pop();
-    session.add(const SignOutRequested());
+    final guest = _guestNow;
+
+    if (guest == null) {
+      Navigator.of(context).pop();
+      session.add(const SignOutRequested());
+      return;
+    }
+
+    final words = AppLocalizations.of(context);
+    final agreed = await _asked(
+      title: words.settingsSignOutAsGuestTitle,
+      body: words.settingsSignOutAsGuestBody,
+      going: words.settingsSignOutConfirm,
+      staying: words.settingsSignOutKeep,
+    );
+    if (!agreed || !mounted) return;
+
+    await _under(() => context.read<TradingAGuestForAnAccount>().leave(guest));
   }
+
+  /// The guest's uid, or null when the user has an account. Read off the
+  /// session rather than held, so the row and the dialog cannot disagree with
+  /// each other about who is signed in.
+  ///
+  /// [_guestNow] for the handlers and [_guestDrawn] for the drawing: a
+  /// handler must not subscribe, and the row has to be redrawn the moment a
+  /// guest stops being one — which is what keeping the Ledger does.
+  String? get _guestNow => _guestIn(context.read<SessionBloc>().state);
+
+  String? get _guestDrawn => _guestIn(context.watch<SessionBloc>().state);
+
+  String? _guestIn(SessionState session) =>
+      session is SignedIn && session.user.guest ? session.user.uid : null;
+
+  /// Keeping the Ledger. Drawn in the row rather than over the screen: it is
+  /// a small thing, and a modal over it would be heavy. The collision it may
+  /// run into is destructive from its confirmation onward, and takes the
+  /// modal from there.
+  Future<void> _keep() async {
+    final guest = _guestNow;
+    if (guest == null) return;
+
+    final trading = context.read<TradingAGuestForAnAccount>();
+    var destructive = false;
+
+    await trading.keep(guest, () async {
+      final words = AppLocalizations.of(context);
+      final agreed = await _asked(
+        body: words.settingsAccountInUseBody,
+        going: words.settingsSignOutConfirm,
+        staying: words.settingsSignOutKeep,
+      );
+      destructive = agreed;
+      if (agreed && mounted) _holdTheScreen();
+      return agreed;
+    });
+
+    if (destructive && mounted) {
+      Navigator.of(context, rootNavigator: true).pop();
+    }
+  }
+
+  /// The question, in the shape the Inbox and an Expense already ask one.
+  Future<bool> _asked({
+    String? title,
+    required String body,
+    required String going,
+    required String staying,
+  }) async {
+    final agreed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: title == null ? null : Text(title),
+        content: Text(body),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(staying),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(going),
+          ),
+        ],
+      ),
+    );
+    return agreed ?? false;
+  }
+
+  /// A deletion, held under a modal for as long as it takes. The register
+  /// changes at the point something is about to be destroyed, which is the
+  /// one place in this flow the user should feel it.
+  Future<void> _under(Future<void> Function() doing) async {
+    _holdTheScreen();
+    try {
+      await doing();
+    } finally {
+      if (mounted) Navigator.of(context, rootNavigator: true).pop();
+    }
+  }
+
+  void _holdTheScreen() => showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => PopScope(
+      canPop: false,
+      child: Center(
+        child: CircularProgressIndicator(
+          semanticsLabel: AppLocalizations.of(context).settingsErasingInFlight,
+        ),
+      ),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -104,6 +219,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           // The one gap on the screen. Everything above it is a table and is
           // ruled rather than spaced; this is not part of the table.
           const SizedBox(height: 24),
+          if (_guestDrawn != null) _KeepThisLedger(onPressed: _keep),
           _SignOut(onPressed: _signOut),
         ],
       ),
@@ -484,6 +600,84 @@ class _Figure extends StatelessWidget {
         const SizedBox(width: 6),
         Flexible(child: Text(word, style: theme.textTheme.bodySmall)),
       ],
+    );
+  }
+}
+
+/// The way a guest keeps what they have made: the same shape as signing out
+/// beside it, because both are ways out of being a guest, with the sentence
+/// under it saying what happens if it is declined. The label alone does not.
+///
+/// Drawn only for a guest. An account holder is not offered what they have.
+class _KeepThisLedger extends StatelessWidget {
+  const _KeepThisLedger({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final words = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+
+    return BlocBuilder<TradingAGuestForAnAccount, Trade>(
+      builder: (context, trade) => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // The spinner takes the button's slot at the button's height, so
+            // the sentence under it and the row under that do not move.
+            if (trade is TradeUnderWay)
+              SizedBox(
+                height: 48,
+                child: Center(
+                  child: SizedBox.square(
+                    dimension: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 3,
+                      semanticsLabel: words.signInInFlight,
+                    ),
+                  ),
+                ),
+              )
+            else
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: onPressed,
+                  style: asTheWayRound(theme),
+                  icon: const Icon(Icons.login, size: 18),
+                  label: Text(cased(words, words.settingsKeepThisLedger)),
+                ),
+              ),
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                words.settingsKeepThisLedgerHint,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            if (trade is TradeRefused)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Semantics(
+                  // Announced when it appears, so a screen reader is not left
+                  // to hunt for what changed.
+                  liveRegion: true,
+                  child: Text(
+                    trade.detail,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.error,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -51,6 +51,22 @@ abstract interface class DevicePreferences {
   Future<Allowance?> scanAllowance(String uid);
 
   Future<void> rememberScanAllowance(String uid, Allowance allowance);
+
+  /// The uid whose Ledger is part-way through being erased, or null when none
+  /// is. Written before the first thing is deleted and cleared after the last,
+  /// so a phone that kills the app mid-erasure has somewhere to read that an
+  /// erasure was promised and not finished.
+  Future<String?> erasureUnderWay();
+
+  Future<void> rememberErasureUnderWay(String uid);
+
+  Future<void> forgetErasureUnderWay();
+
+  /// Everything this phone remembers about [uid], gone. The Home Currency
+  /// goes with it, even though it is not keyed by uid: it was learned from
+  /// the Ledger being erased, and leaving it behind would hand it to whoever
+  /// signs in next (see `.scratch/the-home-currency-belongs-to-a-ledger`).
+  Future<void> forget(String uid);
 }
 
 class StoredDevicePreferences implements DevicePreferences {
@@ -146,6 +162,25 @@ class StoredDevicePreferences implements DevicePreferences {
           'resetsAt': allowance.resetsAt.toIso8601String(),
         }),
       );
+
+  @override
+  Future<String?> erasureUnderWay() => _preferences.getString(_erasure);
+
+  @override
+  Future<void> rememberErasureUnderWay(String uid) =>
+      _preferences.setString(_erasure, uid);
+
+  @override
+  Future<void> forgetErasureUnderWay() => _preferences.remove(_erasure);
+
+  @override
+  Future<void> forget(String uid) async {
+    await _preferences.remove(_missingPhotos(uid));
+    await _preferences.remove(_scanAllowance(uid));
+    await _preferences.remove('homeCurrency');
+  }
+
+  static const _erasure = 'erasureUnderWay';
 
   static String _missingPhotos(String uid) => 'explainedMissingPhotos:$uid';
 

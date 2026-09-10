@@ -19,19 +19,68 @@ class GoogleSignInGateway implements SignInGateway {
 
   Future<void> initialize() => _google.initialize();
 
+  /// `userChanges` rather than `authStateChanges`: a guest linking an account
+  /// keeps their uid, so the auth *state* does not change and that stream
+  /// never fires — the app would go on believing a linked user is a guest.
+  ///
+  /// The extra emissions this brings, a token refresh among them, cost
+  /// nothing: [SignedInUser] is an `Equatable` of four fields, so an unchanged
+  /// user emits an equal value and no state changes.
   @override
-  Stream<SignedInUser?> changes() => _auth.authStateChanges().map(
+  Stream<SignedInUser?> changes() => _auth.userChanges().map(
     (user) => user == null
         ? null
         : SignedInUser(
             uid: user.uid,
             name: user.displayName,
             email: user.email,
+            guest: user.isAnonymous,
           ),
   );
 
   @override
   Future<void> signIn() async {
+    await _auth.signInWithCredential(await _credential());
+  }
+
+  @override
+  Future<void> continueAsGuest() async {
+    await _auth.signInAnonymously();
+  }
+
+  @override
+  Future<void> linkWithGoogle() async {
+    final credential = await _credential();
+    final user = _auth.currentUser;
+    if (user == null) {
+      // Nobody to link to. Not reachable from the row that calls this, which
+      // is only drawn for a signed-in guest, but signing in is the honest
+      // answer to being asked to keep a Ledger that has no owner.
+      await _auth.signInWithCredential(credential);
+      return;
+    }
+
+    try {
+      await user.linkWithCredential(credential);
+    } on FirebaseAuthException catch (error) {
+      if (error.code == 'credential-already-in-use' ||
+          error.code == 'email-already-in-use') {
+        // Firebase hands back a refreshed credential with the error where it
+        // has one, and a single-use credential is not worth betting against.
+        throw AccountAlreadyHasALedger(error.credential ?? credential);
+      }
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> signInWith(Object credential) async {
+    await _auth.signInWithCredential(credential as AuthCredential);
+  }
+
+  /// The account picker, and the token it hands back. Shared by signing in and
+  /// by linking, which differ only in what they do with the answer.
+  Future<AuthCredential> _credential() async {
     final GoogleSignInAccount account;
     try {
       account = await _google.authenticate();
@@ -47,26 +96,12 @@ class GoogleSignInGateway implements SignInGateway {
       throw StateError('Google signed $account in without an ID token.');
     }
 
-    await _auth.signInWithCredential(
-      GoogleAuthProvider.credential(idToken: idToken),
-    );
+    return GoogleAuthProvider.credential(idToken: idToken);
   }
 
   @override
-  Future<void> continueAsGuest() async {
-    // Not `signInAnonymously()`, though that is the shape this will almost
-    // certainly take: an anonymous account keeps every seam keyed by uid
-    // working and can be linked to Google later without the Ledger moving.
-    //
-    // What is not settled is what a guest is told they keep and give up, and
-    // whether Settings grows a row that trades the guest session for an
-    // account. Until that ADR lands, this refuses rather than creating real
-    // accounts nobody has decided the meaning of — the screen surfaces the
-    // refusal the way it surfaces Google's.
-    throw UnimplementedError(
-      'Continuing as a guest is not built yet: what a guest keeps is still '
-      'being decided.',
-    );
+  Future<void> deleteAccount() async {
+    await _auth.currentUser?.delete();
   }
 
   @override

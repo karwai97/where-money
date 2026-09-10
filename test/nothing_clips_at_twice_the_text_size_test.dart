@@ -278,5 +278,50 @@ void main() {
       expect(markSaying('Daily cap'), findsOneWidget);
       expect(find.text('12 / 20'), findsOneWidget);
     });
+
+    testWidgets('the Settings a guest sees, and both of the dialogs it can '
+        'open, '
+        'fit at $scale', (tester) async {
+      final signIn = FakeSignInGateway(alreadySignedIn: FakeSignInGateway.guest)
+        ..collides = true;
+      await openApp(tester, scale, signIn: signIn);
+      tester.takeException();
+
+      await tester.tap(find.byTooltip('Settings'));
+      await tester.pumpAndSettle();
+
+      // The row a guest gets and the sentence under it, which is the longest
+      // supporting line on the screen and sits below the fold at 200%.
+      await tester.scrollUntilVisible(
+        markSaying('Sign in to keep this ledger'),
+        200,
+      );
+      await tester.pumpAndSettle();
+      expectNothingClipped(tester, 'Settings as a guest at $scale');
+      expect(
+        find.text('This ledger lives on this phone only. Signing in keeps it.'),
+        findsOneWidget,
+      );
+
+      // Leaving asks first, in the longest sentence either dialog carries.
+      await tester.tap(markSaying('Sign out'));
+      await tester.pumpAndSettle();
+      expectNothingClipped(tester, 'the leaving dialog at $scale');
+      expect(find.textContaining('cannot be recovered'), findsOneWidget);
+      await tester.tap(find.text('Keep it'));
+      await tester.pumpAndSettle();
+
+      // And the one the collision opens, which is longer still. It waits
+      // over a spinning row, so nothing settles while it is up.
+      await tester.tap(markSaying('Sign in to keep this ledger'));
+      for (var frame = 0; frame < 5; frame++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      expectNothingClipped(tester, 'the other-ledger dialog at $scale');
+      expect(
+        find.textContaining('That account already has a ledger'),
+        findsOneWidget,
+      );
+    });
   }
 }

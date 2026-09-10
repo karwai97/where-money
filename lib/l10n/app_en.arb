@@ -61,6 +61,39 @@
 
   "settingsSignOut": "Sign out",
 
+  "settingsKeepThisLedger": "Sign in to keep this ledger",
+  "@settingsKeepThisLedger": {
+    "description": "The row a guest is offered in Settings, trading their session for a Google account. Drawn only for a guest: an account holder already has what it offers."
+  },
+  "settingsKeepThisLedgerHint": "This ledger lives on this phone only. Signing in keeps it.",
+  "@settingsKeepThisLedgerHint": {
+    "description": "Under the row above, in the place this app says what a Setting is for. Says what happens if the offer is declined, which the label alone does not."
+  },
+  "settingsSignOutAsGuestTitle": "Sign out of this ledger?",
+  "@settingsSignOutAsGuestTitle": {
+    "description": "Asked before a guest signs out, which deletes their Ledger. An account holder is not asked: their Ledger waits for them."
+  },
+  "settingsSignOutAsGuestBody": "Your ledger and its receipts will be deleted from this phone and cannot be recovered.",
+  "@settingsSignOutAsGuestBody": {
+    "description": "Names the loss rather than counting it: no number changes the decision, and reading one would make the dialog wait on the Ledger."
+  },
+  "settingsSignOutKeep": "Keep it",
+  "@settingsSignOutKeep": {
+    "description": "Backing out of the dialog above. The verb the Inbox and an Expense already decline with."
+  },
+  "settingsSignOutConfirm": "Sign out",
+  "@settingsSignOutConfirm": {
+    "description": "Going through with it. The same words as the row, because it is the same act."
+  },
+  "settingsErasingInFlight": "Deleting this ledger",
+  "@settingsErasingInFlight": {
+    "description": "What the spinner over Settings is waiting for while a guest's Ledger is erased. Not a sign-in: nothing is being signed into, and `signInInFlight` would say the wrong thing."
+  },
+  "settingsAccountInUseBody": "That account already has a ledger. Signing in opens it, and this ledger and its receipts will be deleted from this phone.",
+  "@settingsAccountInUseBody": {
+    "description": "A guest chose a Google account that is already somebody. Two Ledgers cannot be made one, so this says which is kept before anything is deleted."
+  },
+
   "settingsScansHeading": "What each Scan asks for",
   "settingsScansModel": "Model: {model}",
   "@settingsScansModel": {

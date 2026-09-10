@@ -35,4 +35,10 @@ abstract interface class ScanStore {
   /// the same file as a ReceiptStore read of `receiptPathFor` is a fact about
   /// the directory, and it stays down there.
   Future<Uint8List?> receiptFor(String scanId);
+
+  /// Every Scan and every Receipt on this phone, gone. The counterpart of
+  /// [abandon] for a user leaving rather than for one photo they did not
+  /// want, and here for the same reason [abandon] is: an image lives in a
+  /// directory this store owns, and nothing above it can name a file.
+  Future<void> eraseEveryScan();
 }

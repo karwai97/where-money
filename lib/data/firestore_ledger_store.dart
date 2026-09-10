@@ -34,4 +34,22 @@ class FirestoreLedgerStore implements LedgerStore {
 
   @override
   Future<void> remove(String expenseId) => _expenses.doc(expenseId).delete();
+
+  @override
+  Future<void> eraseTheLedger() async {
+    // A page at a time, so a long Ledger is neither held in memory to be
+    // deleted nor pushed past the 500 writes a batch takes.
+    while (true) {
+      final page = await _expenses.limit(_perErasedBatch).get();
+      if (page.docs.isEmpty) return;
+
+      final batch = _expenses.firestore.batch();
+      for (final document in page.docs) {
+        batch.delete(document.reference);
+      }
+      await batch.commit();
+    }
+  }
+
+  static const _perErasedBatch = 200;
 }
