@@ -222,6 +222,7 @@
   "currencySearch": "搜索代码",
   "currencyYours": "你用过的",
   "currencyAll": "全部货币",
+  "currencyHome": "主货币",
   "currencyNoMatch": "没有代码匹配 {query}。",
 
   "rollupLoading": "正在打开这个月",

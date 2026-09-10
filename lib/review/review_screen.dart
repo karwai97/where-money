@@ -265,7 +265,10 @@ class _FormState extends State<_Form> {
                         value: state.extraction.currency,
                         marked: _worstOf(noted[ReviewField.currency]),
                         onTap: () async {
-                          final chosen = await chooseACurrency(context);
+                          final chosen = await chooseACurrency(
+                            context,
+                            current: state.extraction.currency,
+                          );
                           if (chosen != null) {
                             _bloc.add(
                               FieldCorrected(ReviewField.currency, chosen),

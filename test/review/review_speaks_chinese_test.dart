@@ -304,7 +304,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      inTheCurrencySheet(find.widgetWithText(ListTile, 'MYR')),
+      inTheCurrencySheet(currencyRow('MYR')),
       findsOne,
       reason: 'a code is already the word in every language',
     );
