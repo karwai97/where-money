@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:where_money/a_form_of_rows.dart';
 import 'package:where_money/app.dart';
 import 'package:where_money_core/where_money_core.dart';
 
@@ -516,6 +517,44 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(markSaying('Description'), findsNothing);
+  });
+
+  testWidgets('a Line Item row is spaced like the rest of the form', (
+    tester,
+  ) async {
+    await openReview(tester);
+
+    await tester.tap(find.text('Add a Line Item'));
+    await tester.pumpAndSettle();
+
+    // Measured on the cells rather than the fields inside them: a cell carries
+    // padding of its own, so two fields read as further apart than the boxes
+    // the user actually sees.
+    Rect cellUnder(String label) => tester.getRect(
+      find
+          .ancestor(of: fieldCalled(label), matching: find.byType(Celled))
+          .first,
+    );
+
+    final description = cellUnder('Description');
+    final quantity = cellUnder('Qty');
+
+    // The gap the row already keeps under its figures, on the way to the
+    // Category, is the gap the figures should sit below the Description by.
+    final category = tester.getRect(
+      find
+          .ancestor(
+            of: markSaying('Category').last,
+            matching: find.byType(Celled),
+          )
+          .first,
+    );
+
+    expect(
+      quantity.top - description.bottom,
+      closeTo(category.top - quantity.bottom, 1.5),
+      reason: 'the Description and the figures under it are not spaced apart',
+    );
   });
 
   testWidgets('the Category is chosen from the taxonomy, never typed', (
