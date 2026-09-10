@@ -107,7 +107,9 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
     Knobs knobs = const Knobs(),
     Duration readAgainAfter = _defaultWait,
     this._language = defaultLanguage,
-  }) : _longEdge = knobs.longEdge,
+    void Function(Allowance)? remembers,
+  }) : _remember = remembers,
+       _longEdge = knobs.longEdge,
        _firstWait = readAgainAfter,
        _wait = readAgainAfter,
        super(const InboxLoading()) {
@@ -134,6 +136,12 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
 
   final ScanStore _scans;
   final ModelGateway _model;
+
+  /// Where an answer's allowance is written down, bound to the account by
+  /// whatever built this: the allowance is the account's, and this bloc is
+  /// deliberately wordless about who is signed in. Null where nothing is
+  /// remembering, which is every test that is not about this.
+  final void Function(Allowance)? _remember;
 
   /// The language the Model is asked to write its own words in — the reason it
   /// gives for a Category, and anything it wants Reviewed. The Setting keeps it
@@ -247,6 +255,14 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
         _nextSweep?.cancel();
       }
 
+      // What the Worker says about the day is news even when the answer it
+      // came with is a refusal, and it is the only place the phone hears it.
+      // An answer carrying none leaves the last one alone: an older Worker
+      // going quiet is not evidence that nothing has been spent.
+      if (_allowanceCarriedBy(answer) case final Allowance allowance) {
+        _remember?.call(allowance);
+      }
+
       // Abandoning is the user's, and they may have done it while the Model
       // was reading. `put` is what keeps that decision.
       await _scans.put(_after(scan, answer));
@@ -305,6 +321,14 @@ Scan _after(Scan scan, ScanAnswer answer) => switch (answer) {
   ModelUnavailable() => _failed(scan, ScanFailure.modelUnavailable),
   TokenRefused() => _failed(scan, ScanFailure.tokenRefused),
   ImageNotAccepted() => _failed(scan, ScanFailure.imageNotAccepted),
+};
+
+/// The two answers that can carry one. Everything else never reached the
+/// allowance or never heard back about it.
+Allowance? _allowanceCarriedBy(ScanAnswer answer) => switch (answer) {
+  ModelAnswered(:final allowance) => allowance,
+  AllowanceSpent(:final allowance) => allowance,
+  _ => null,
 };
 
 Scan _failed(Scan scan, ScanFailure failure) =>

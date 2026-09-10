@@ -71,6 +71,20 @@ to parse in Dart. On failure the body is `{"error": ..., "message": ...}`:
 | 429 | `cap_reached` | Today's allowance for that endpoint is used up; `resets_at` says when it is not |
 | 502 | `model_unavailable` | The model could not be reached or refused the request |
 
+Every answer the allowance was checked for — the 200, the `cap_reached`
+refusal, and a `model_unavailable` that got that far — carries how much of the
+day is gone:
+
+| Header | Means |
+|---|---|
+| `x-allowance-used` | Scans (or Recaps) spent today, including this one |
+| `x-allowance-limit` | The cap actually enforced, after the ceiling clamps what the client asked for |
+| `x-allowance-resets-at` | ISO 8601, when the counter goes back to zero |
+
+The counter is approximate by design — `src/allowance.ts` says why — so these
+are what the Worker last saw rather than an exact quota. A refusal made before
+the allowance was checked carries none of them.
+
 `GET /health` answers without a token, so "is it deployed" is one curl.
 
 ## Running the tests

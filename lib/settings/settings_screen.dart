@@ -4,6 +4,7 @@ import 'package:where_money_core/where_money_core.dart';
 
 import '../a_form_of_rows.dart';
 import '../choosing_a_currency.dart';
+import '../clock.dart';
 import '../data/device_preferences.dart';
 import '../l10n/app_localizations.dart';
 import '../ledger/ledger_bloc.dart';
@@ -24,7 +25,18 @@ import 'themes.dart';
 /// Setting is for is under the row it is about, which is where this app says
 /// things.
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  const SettingsScreen({
+    super.key,
+    required this.dailyCap,
+    required this.clock,
+  });
+
+  /// The Scans a day the app asks for, and what time it is. Handed down as
+  /// plain values like the Knobs they came from, because this screen is a
+  /// pushed route: a route is a sibling of the screen that pushed it, so the
+  /// one thing that can reach it is the constructor.
+  final int dailyCap;
+  final Clock clock;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -33,6 +45,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   LockAvailability? _availability;
   bool? _locks;
+  Allowance? _allowance;
 
   @override
   void initState() {
@@ -42,12 +55,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _read() async {
     final preferences = context.read<DevicePreferences>();
+    final session = context.read<SessionBloc>().state;
     final availability = await context.read<DeviceLock>().availability();
     final locks = await preferences.locksOnOpen();
+    // The allowance is the account's, so a second account on this phone has
+    // its own. This screen is only reachable from a signed-in Ledger, so the
+    // other lane is arithmetic rather than a state anybody sees.
+    final allowance = session is SignedIn
+        ? await preferences.scanAllowance(session.user.uid)
+        : null;
     if (mounted) {
       setState(() {
         _availability = availability;
         _locks = locks;
+        _allowance = allowance;
       });
     }
   }
@@ -75,6 +96,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const _LanguageChoice(),
           _Lock(availability: _availability, locks: _locks, onWanted: _want),
           const _HomeCurrencyChoice(),
+          _DailyCap(
+            allowance: _allowance,
+            requestedCap: widget.dailyCap,
+            now: widget.clock(),
+          ),
           // The one gap on the screen. Everything above it is a table and is
           // ruled rather than spaced; this is not part of the table.
           const SizedBox(height: 24),
@@ -285,6 +311,179 @@ class _HomeCurrencyChoice extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// The day's Scans against the cap. Not a Setting: there is no way to change
+/// the cap from the phone, and nothing here answers a tap. It sits with the
+/// Settings because the sentence under it is the kind of thing this screen
+/// says, and it is drawn read-only — no cell, no fill, nothing to land on.
+///
+/// Every figure came from the Worker. The cap the app *asks* for is a Knob and
+/// the cap the Worker *enforces* is that clamped under the deployment's
+/// ceiling, which is why the row shows the requested one only until the Worker
+/// has answered once on this phone — and why the number can drop when it does.
+class _DailyCap extends StatelessWidget {
+  const _DailyCap({
+    required this.allowance,
+    required this.requestedCap,
+    required this.now,
+  });
+
+  /// What was last heard, or null while the read is still out and on a phone
+  /// the Worker has never answered on. Both draw the same thing, the way the
+  /// Lock's row draws its name while its own read is out: a figure arriving in
+  /// place beats a spinner.
+  final Allowance? allowance;
+
+  /// The cap the app asks for, drawn until the Worker has said what it
+  /// actually enforces. A Knob, handed down as a plain value.
+  final int requestedCap;
+
+  /// What time it is, asked of the clock this app was handed rather than of
+  /// the machine, so a test that pins a day is not left reading the calendar.
+  final DateTime now;
+
+  @override
+  Widget build(BuildContext context) {
+    final words = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final colours = theme.colorScheme;
+
+    // The day rolls over in UTC, which is midnight nowhere this app is read,
+    // so `resetsAt` is the only clock that counts and nothing here works one
+    // out for itself. That rule is [Allowance]'s; this only draws the answer.
+    final heard = allowance;
+    final counted = heard != null;
+    final cap = heard?.limit ?? requestedCap;
+    final used = heard?.usedAt(now) ?? 0;
+    // The figure is what the Worker said, unclamped: the counter is
+    // approximate and hiding that would be the lie. The track is what does not
+    // run past its end.
+    final spent = counted && used >= cap;
+
+    return Ruled(
+      // One thing to a screen reader: the name, the figure and the sentence
+      // are one fact and are read as one.
+      child: MergeSemantics(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                inTheLabelColumn(context, words.settingsDailyCap),
+                const SizedBox(width: labelGap),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // The row's own vertical padding, so the figure sits on
+                      // the line the cells above it sit on.
+                      const SizedBox(height: 8),
+                      _Figure(
+                        figure: counted ? '$used / $cap' : '$cap',
+                        // "12 / 20" read aloud is "twelve slash twenty". The
+                        // figure is language-neutral on purpose; how it is
+                        // said is not. A cap on its own reads as itself.
+                        spoken: counted
+                            ? words.settingsDailyCapSpoken(used, cap)
+                            : null,
+                        word: counted
+                            ? words.settingsDailyCapScansToday
+                            : words.settingsDailyCapScansADay,
+                      ),
+                      if (heard != null) ...[
+                        const SizedBox(height: 8),
+                        // Decorative, and excluded: the figure beside it
+                        // already says this.
+                        ExcludeSemantics(
+                          child: ClipRRect(
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(2),
+                            ),
+                            child: LinearProgressIndicator(
+                              value: heard.spentAt(now),
+                              minHeight: 3,
+                              backgroundColor: colours.surfaceContainerHighest,
+                              color: colours.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 8),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: EdgeInsets.only(left: sayingIndent(context)),
+              // The Inbox's own words for the same news once the day is spent,
+              // so the two screens say one thing rather than two.
+              child: Text(
+                spent
+                    ? '${words.inboxCapped} '
+                          '${words.inboxMoreScansAt(asMoment(words, heard.resetsAt))}'
+                    : words.settingsDailyCapGoverns,
+                style: theme.textTheme.bodySmall,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The figure and the word beside it: the face `Chosen` sets a currency code
+/// in, with the word a size down and on its baseline. The word is [Flexible]
+/// so that at twice the text size it wraps rather than running off the column.
+class _Figure extends StatelessWidget {
+  const _Figure({
+    required this.figure,
+    required this.spoken,
+    required this.word,
+  });
+
+  final String figure;
+
+  /// How the figure is read out, or null where it reads as itself.
+  final String? spoken;
+
+  final String word;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: [
+        // Both flexible, so the column's width is what decides where the line
+        // breaks. A figure and the word beside it fit side by side at every
+        // size the type ramp reaches; a reader at twice the text size gets a
+        // wrapped line rather than a clipped one.
+        Flexible(
+          child: Text(
+            figure,
+            semanticsLabel: spoken,
+            style: asFigures(
+              theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurface,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0.4,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 6),
+        Flexible(child: Text(word, style: theme.textTheme.bodySmall)),
+      ],
     );
   }
 }

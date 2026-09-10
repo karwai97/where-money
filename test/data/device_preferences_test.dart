@@ -80,4 +80,49 @@ void main() {
       isNull,
     );
   });
+
+  test(
+    'a phone that has never heard from the Worker remembers no allowance',
+    () async {
+      expect(await preferencesHolding({}).scanAllowance('kai'), isNull);
+    },
+  );
+
+  test('a remembered allowance survives a restart', () async {
+    final allowance = Allowance(
+      used: 12,
+      limit: 20,
+      resetsAt: DateTime.utc(2026, 8, 26),
+    );
+    await preferencesHolding({}).rememberScanAllowance('kai', allowance);
+
+    expect(
+      await StoredDevicePreferences(
+        SharedPreferencesAsync(),
+      ).scanAllowance('kai'),
+      allowance,
+    );
+  });
+
+  test('one account on a phone cannot read what another was told', () async {
+    final preferences = preferencesHolding({});
+    await preferences.rememberScanAllowance(
+      'kai',
+      Allowance(used: 12, limit: 20, resetsAt: DateTime.utc(2026, 8, 26)),
+    );
+
+    expect(await preferences.scanAllowance('mei'), isNull);
+  });
+
+  test(
+    'an allowance stored by a version that wrote it differently is gone',
+    () async {
+      expect(
+        await preferencesHolding({
+          'scanAllowance:kai': 'not json',
+        }).scanAllowance('kai'),
+        isNull,
+      );
+    },
+  );
 }

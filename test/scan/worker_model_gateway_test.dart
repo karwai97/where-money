@@ -143,6 +143,75 @@ void main() {
     expect((answer as AllowanceSpent).resetsAt, DateTime.utc(2026, 8, 26));
   });
 
+  test('an answer says how much of the day is gone', () async {
+    final recorded = File(
+      'worker/test/fixtures/model-response.json',
+    ).readAsStringSync();
+
+    final answer = await gateway(
+      (_) async => http.Response(
+        recorded,
+        200,
+        headers: {
+          'x-allowance-used': '12',
+          'x-allowance-limit': '20',
+          'x-allowance-resets-at': '2026-08-26T00:00:00.000Z',
+        },
+      ),
+    ).extract(receipt, language: 'en');
+
+    expect(
+      (answer as ModelAnswered).allowance,
+      Allowance(used: 12, limit: 20, resetsAt: DateTime.utc(2026, 8, 26)),
+    );
+  });
+
+  test('a refusal for the cap carries the same figures', () async {
+    final answer = await gateway(
+      (_) async => http.Response(
+        jsonEncode({'error': 'cap_reached'}),
+        429,
+        headers: {
+          'x-allowance-used': '20',
+          'x-allowance-limit': '20',
+          'x-allowance-resets-at': '2026-08-26T00:00:00.000Z',
+        },
+      ),
+    ).extract(receipt, language: 'en');
+
+    expect(
+      (answer as AllowanceSpent).allowance,
+      Allowance(used: 20, limit: 20, resetsAt: DateTime.utc(2026, 8, 26)),
+    );
+  });
+
+  test('a Worker that sends no such headers is not a failure', () async {
+    final answer = await gateway(
+      (_) async => http.Response('{}', 200),
+    ).extract(receipt, language: 'en');
+
+    expect((answer as ModelAnswered).allowance, isNull);
+  });
+
+  test(
+    'a header that is not a number is read as no allowance at all',
+    () async {
+      final answer = await gateway(
+        (_) async => http.Response(
+          '{}',
+          200,
+          headers: {
+            'x-allowance-used': 'lots',
+            'x-allowance-limit': '20',
+            'x-allowance-resets-at': '2026-08-26T00:00:00.000Z',
+          },
+        ),
+      ).extract(receipt, language: 'en');
+
+      expect((answer as ModelAnswered).allowance, isNull);
+    },
+  );
+
   test('a token the Worker will not take says which way', () async {
     final answer = await gateway(
       (_) async =>

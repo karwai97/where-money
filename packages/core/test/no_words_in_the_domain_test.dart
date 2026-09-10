@@ -38,6 +38,7 @@ const _allowed = {
   r'Expected a JSON object, got ${decoded.runtimeType}.',
   r'Knobs(model: $model, effort: $effort, longEdge: $longEdge, ',
   r'dailyCap: $dailyCap)',
+  r'Allowance(used: $used, limit: $limit, resetsAt: $resetsAt)',
   // Currency aliases: what a receipt prints where a code belongs. Machine-
   // readable in the same sense a code is — the app never chose these words,
   // and it does not translate them either.

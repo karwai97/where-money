@@ -61,6 +61,58 @@ void main() {
     return settled(bloc, scan.id);
   }
 
+  group('what the Worker said about the allowance', () {
+    final allowance = Allowance(
+      used: 12,
+      limit: 20,
+      resetsAt: DateTime.utc(2026, 8, 26),
+    );
+
+    test('is written down when an answer carries one', () async {
+      final remembered = <Allowance>[];
+      model.answer = ModelAnswered(
+        (FakeModelGateway.reading(cleanExtraction) as ModelAnswered).outcome,
+        allowance: allowance,
+      );
+      final bloc = InboxBloc(store, model, remembers: remembered.add)
+        ..add(const InboxOpened());
+
+      await readOne(bloc);
+
+      expect(remembered, [allowance]);
+      await bloc.close();
+    });
+
+    test('is written down when the cap is what refused the Scan', () async {
+      final remembered = <Allowance>[];
+      model.answer = AllowanceSpent(
+        resetsAt: allowance.resetsAt,
+        allowance: allowance,
+      );
+      final bloc = InboxBloc(store, model, remembers: remembered.add)
+        ..add(const InboxOpened());
+
+      await readOne(bloc);
+
+      expect(remembered, [allowance]);
+      await bloc.close();
+    });
+
+    test(
+      'leaves what was remembered alone when an answer carries none',
+      () async {
+        final remembered = <Allowance>[];
+        final bloc = InboxBloc(store, model, remembers: remembered.add)
+          ..add(const InboxOpened());
+
+        await readOne(bloc);
+
+        expect(remembered, isEmpty);
+        await bloc.close();
+      },
+    );
+  });
+
   test('the Model is asked to read in the language the app is in', () async {
     final bloc = InboxBloc(store, model, language: 'zh')
       ..add(const InboxOpened());

@@ -5,6 +5,8 @@
 /// they never chose it for.
 library;
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:where_money_core/where_money_core.dart';
@@ -41,6 +43,14 @@ abstract interface class DevicePreferences {
   Future<bool> hasExplainedMissingPhotos(String uid);
 
   Future<void> rememberExplainingMissingPhotos(String uid);
+
+  /// What the Worker last told [uid] about the day's Scans, or null before it
+  /// has ever answered on this phone. Per account like
+  /// [hasExplainedMissingPhotos]: the allowance is the account's, and a second
+  /// account on the same phone has its own.
+  Future<Allowance?> scanAllowance(String uid);
+
+  Future<void> rememberScanAllowance(String uid, Allowance allowance);
 }
 
 class StoredDevicePreferences implements DevicePreferences {
@@ -105,5 +115,39 @@ class StoredDevicePreferences implements DevicePreferences {
   Future<void> rememberExplainingMissingPhotos(String uid) =>
       _preferences.setBool(_missingPhotos(uid), true);
 
+  @override
+  Future<Allowance?> scanAllowance(String uid) async {
+    final stored = await _preferences.getString(_scanAllowance(uid));
+    if (stored == null) return null;
+
+    // One string rather than three keys, so a half-written allowance is not a
+    // state anything has to read. Anything that does not parse was written by
+    // a version that wrote it differently, and having none is a state the row
+    // already draws.
+    try {
+      final held = jsonDecode(stored) as Map<String, dynamic>;
+      return Allowance(
+        used: held['used'] as int,
+        limit: held['limit'] as int,
+        resetsAt: DateTime.parse(held['resetsAt'] as String),
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> rememberScanAllowance(String uid, Allowance allowance) =>
+      _preferences.setString(
+        _scanAllowance(uid),
+        jsonEncode({
+          'used': allowance.used,
+          'limit': allowance.limit,
+          'resetsAt': allowance.resetsAt.toIso8601String(),
+        }),
+      );
+
   static String _missingPhotos(String uid) => 'explainedMissingPhotos:$uid';
+
+  static String _scanAllowance(String uid) => 'scanAllowance:$uid';
 }

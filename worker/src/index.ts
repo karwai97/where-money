@@ -15,7 +15,7 @@
 // receipt into an Extraction, and /recap turns a month's Rollup into prose.
 
 import { reserve } from './allowance';
-import type { Counted } from './allowance';
+import type { Allowance, Counted } from './allowance';
 import { extractionBody, looksLikeBase64 } from './extraction_request';
 import { readKnobs } from './knobs';
 import { readLanguage } from './language';
@@ -123,10 +123,19 @@ async function extract(
 
   const knobs = readKnobs(url, env.DAILY_MODEL_CEILING);
 
-  const refusal = await spendAllowance(env, 'scans', uid, knobs.dailyCap);
-  if (refusal) return refusal;
+  const allowance = await reserve(env.MODEL_ALLOWANCE, {
+    counted: 'scans',
+    uid,
+    limit: knobs.dailyCap,
+    now: Date.now(),
+  });
+  if (!allowance.allowed) return capReached('scans', allowance);
 
-  return askTheModel(env, extractionBody(image, knobs, readLanguage(url)));
+  return askTheModel(
+    env,
+    extractionBody(image, knobs, readLanguage(url)),
+    allowance,
+  );
 }
 
 async function recap(
@@ -151,27 +160,22 @@ async function recap(
 
   const knobs = readKnobs(url, env.DAILY_MODEL_CEILING);
 
-  const refusal = await spendAllowance(env, 'recaps', uid, knobs.dailyCap);
-  if (refusal) return refusal;
-
-  return askTheModel(env, recapBody(rollup, knobs, readLanguage(url)));
-}
-
-// The refusal to send back, or nothing when there was allowance to spend.
-async function spendAllowance(
-  env: Env,
-  counted: Counted,
-  uid: string,
-  limit: number,
-): Promise<Response | null> {
   const allowance = await reserve(env.MODEL_ALLOWANCE, {
-    counted,
+    counted: 'recaps',
     uid,
-    limit,
+    limit: knobs.dailyCap,
     now: Date.now(),
   });
-  if (allowance.allowed) return null;
+  if (!allowance.allowed) return capReached('recaps', allowance);
 
+  return askTheModel(
+    env,
+    recapBody(rollup, knobs, readLanguage(url)),
+    allowance,
+  );
+}
+
+function capReached(counted: Counted, allowance: Allowance): Response {
   return failure(
     429,
     'cap_reached',
@@ -183,10 +187,26 @@ async function spendAllowance(
       limit: allowance.limit,
       resets_at: allowance.resetsAt,
     },
+    allowance,
   );
 }
 
-async function askTheModel(env: Env, body: string): Promise<Response> {
+// How much of the day's allowance is gone, said on every answer the allowance
+// was checked for rather than only on the refusal. The phone has no other way
+// to know: a 200 that carried nothing left it counting Scans for itself.
+function spent(allowance: Allowance): Record<string, string> {
+  return {
+    'x-allowance-used': String(allowance.used),
+    'x-allowance-limit': String(allowance.limit),
+    'x-allowance-resets-at': allowance.resetsAt,
+  };
+}
+
+async function askTheModel(
+  env: Env,
+  body: string,
+  allowance: Allowance,
+): Promise<Response> {
   let response: Response;
   try {
     response = await fetch(env.OPENAI_RESPONSES_URL, {
@@ -198,13 +218,23 @@ async function askTheModel(env: Env, body: string): Promise<Response> {
       body,
     });
   } catch {
-    return failure(502, 'model_unavailable', 'Could not reach the model.');
+    return failure(
+      502,
+      'model_unavailable',
+      'Could not reach the model.',
+      {},
+      allowance,
+    );
   }
 
   if (!response.ok) {
-    return failure(502, 'model_unavailable', 'The model refused the request.', {
-      upstream_status: response.status,
-    });
+    return failure(
+      502,
+      'model_unavailable',
+      'The model refused the request.',
+      { upstream_status: response.status },
+      allowance,
+    );
   }
 
   return new Response(response.body, {
@@ -212,6 +242,7 @@ async function askTheModel(env: Env, body: string): Promise<Response> {
     headers: {
       'content-type': 'application/json',
       'cache-control': 'no-store',
+      ...spent(allowance),
     },
   });
 }
@@ -226,16 +257,22 @@ function failure(
   error: string,
   message: string,
   detail: Record<string, unknown> = {},
+  allowance?: Allowance,
 ): Response {
-  return json(status, { error, message, ...detail });
+  return json(status, { error, message, ...detail }, allowance);
 }
 
-function json(status: number, body: Record<string, unknown>): Response {
+function json(
+  status: number,
+  body: Record<string, unknown>,
+  allowance?: Allowance,
+): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
       'content-type': 'application/json',
       'cache-control': 'no-store',
+      ...(allowance ? spent(allowance) : {}),
     },
   });
 }

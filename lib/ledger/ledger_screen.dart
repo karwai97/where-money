@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import '../clock.dart';
 import '../data/receipt_store.dart';
 import '../l10n/app_localizations.dart';
 import '../on_screen.dart';
@@ -21,9 +22,20 @@ import 'photos_stayed_behind.dart';
 import 'rollup_screen.dart';
 
 class LedgerScreen extends StatelessWidget {
-  const LedgerScreen({super.key, required this.photograph});
+  const LedgerScreen({
+    super.key,
+    required this.photograph,
+    required this.knobs,
+    required this.clock,
+  });
 
   final Photographer photograph;
+
+  /// Held only to hand on to the Settings, which the Ledger is the one way in
+  /// to. A Knob is a plain value passed down rather than something to go and
+  /// ask (CONTEXT.md), and a pushed route can only be handed one.
+  final Knobs knobs;
+  final Clock clock;
 
   @override
   Widget build(BuildContext context) {
@@ -133,9 +145,11 @@ class LedgerScreen extends StatelessWidget {
     // The screen it opens names itself the same thing, so it is one message.
     tooltip: AppLocalizations.of(context).settingsTitle,
     icon: const Icon(Icons.settings_outlined),
-    onPressed: () => Navigator.of(
-      context,
-    ).push(MaterialPageRoute<void>(builder: (_) => const SettingsScreen())),
+    onPressed: () => Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => SettingsScreen(dailyCap: knobs.dailyCap, clock: clock),
+      ),
+    ),
   );
 
   void _addByHand(BuildContext context) {
