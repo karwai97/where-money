@@ -63,6 +63,35 @@ void main() {
   );
 
   blocTest<SessionBloc, SessionState>(
+    'continuing as a guest is a session like any other',
+    build: () => SessionBloc(FakeSignInGateway()),
+    act: (bloc) async {
+      bloc.add(const SessionOpened());
+      await Future<void>.delayed(Duration.zero);
+      bloc.add(const GuestRequested());
+    },
+    skip: 1,
+    expect: () => [const SigningIn(), const SignedIn(FakeSignInGateway.guest)],
+  );
+
+  blocTest<SessionBloc, SessionState>(
+    "a guest session that failed says so, the same way Google's does",
+    build: () => SessionBloc(
+      FakeSignInGateway()..refuseGuest = StateError('no network'),
+    ),
+    act: (bloc) async {
+      bloc.add(const SessionOpened());
+      await Future<void>.delayed(Duration.zero);
+      bloc.add(const GuestRequested());
+    },
+    skip: 1,
+    expect: () => [
+      const SigningIn(),
+      isA<SignedOut>().having((state) => state.failure, 'failure', isNotNull),
+    ],
+  );
+
+  blocTest<SessionBloc, SessionState>(
     'signing out ends the session even when Google will not forget the account',
     build: () {
       final gateway = FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai)

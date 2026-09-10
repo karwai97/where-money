@@ -12,12 +12,16 @@ class FakeSignInGateway implements SignInGateway {
     email: 'kai@example.com',
   );
 
+  /// Who a guest is, which is a uid and nothing else — an anonymous account
+  /// has no name and no address to report.
+  static const guest = SignedInUser(uid: 'guest-uid');
+
   final _changes = StreamController<SignedInUser?>.broadcast();
   SignedInUser? _current;
 
-  /// Set either of these to have the matching call throw instead of
-  /// succeeding.
+  /// Set any of these to have the matching call throw instead of succeeding.
   Object? refuse;
+  Object? refuseGuest;
   Object? refuseSignOut;
 
   /// Set this to keep a sign-in in flight, so a test can hold the screen
@@ -35,6 +39,14 @@ class FakeSignInGateway implements SignInGateway {
     if (holds case final held?) await held.future;
     if (refuse case final failure?) throw failure;
     _current = kai;
+    _changes.add(_current);
+  }
+
+  @override
+  Future<void> continueAsGuest() async {
+    if (holds case final held?) await held.future;
+    if (refuseGuest case final failure?) throw failure;
+    _current = guest;
     _changes.add(_current);
   }
 

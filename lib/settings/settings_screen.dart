@@ -500,23 +500,12 @@ class _SignOut extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final words = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final colours = theme.colorScheme;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: OutlinedButton.icon(
         onPressed: onPressed,
-        style: OutlinedButton.styleFrom(
-          minimumSize: const Size.fromHeight(48),
-          backgroundColor: colours.surfaceContainer,
-          foregroundColor: colours.onSurfaceVariant,
-          side: BorderSide(color: colours.outlineVariant),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          textStyle: asScreenName(theme.textTheme.labelLarge, tracking: 1.2),
-        ),
+        style: asTheWayRound(Theme.of(context)),
         icon: const Icon(Icons.logout, size: 18),
         label: Text(cased(words, words.settingsSignOut)),
       ),

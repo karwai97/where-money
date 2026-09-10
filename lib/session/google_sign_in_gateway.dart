@@ -53,6 +53,23 @@ class GoogleSignInGateway implements SignInGateway {
   }
 
   @override
+  Future<void> continueAsGuest() async {
+    // Not `signInAnonymously()`, though that is the shape this will almost
+    // certainly take: an anonymous account keeps every seam keyed by uid
+    // working and can be linked to Google later without the Ledger moving.
+    //
+    // What is not settled is what a guest is told they keep and give up, and
+    // whether Settings grows a row that trades the guest session for an
+    // account. Until that ADR lands, this refuses rather than creating real
+    // accounts nobody has decided the meaning of — the screen surfaces the
+    // refusal the way it surfaces Google's.
+    throw UnimplementedError(
+      'Continuing as a guest is not built yet: what a guest keeps is still '
+      'being decided.',
+    );
+  }
+
+  @override
   Future<void> signOut() async {
     // Google first: signing Firebase out first would briefly show a signed-out
     // Ledger while the picker still remembers the account.

@@ -3,6 +3,7 @@ import 'package:where_money/app.dart';
 import 'package:where_money/lock/device_lock.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import '../as_drawn.dart';
 import '../fakes/fake_device_lock.dart';
 import '../fakes/fake_model_gateway.dart';
 import '../fakes/fake_sign_in_gateway.dart';
@@ -77,7 +78,7 @@ void main() {
     await tester.tap(find.text('Sign out instead'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Continue with Google'), findsOneWidget);
+    expect(markSaying('Continue with Google'), findsOneWidget);
     expect(find.text('Where Money is locked'), findsNothing);
   });
 
@@ -110,6 +111,6 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Continue with Google').hitTestable(), findsOneWidget);
+    expect(markSaying('Continue with Google').hitTestable(), findsOneWidget);
   });
 }

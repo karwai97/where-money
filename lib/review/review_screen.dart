@@ -489,31 +489,11 @@ class _Commit extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(color: theme.colorScheme.outlineVariant),
-        ),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-          child: FilledButton(
-            onPressed: committing ? null : onPressed,
-            style: FilledButton.styleFrom(
-              minimumSize: const Size.fromHeight(48),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              textStyle: asScreenName(
-                theme.textTheme.labelLarge,
-                tracking: 1.2,
-              ),
-            ),
-            child: Text(cased(AppLocalizations.of(context), label)),
-          ),
-        ),
+    return Foot(
+      child: FilledButton(
+        onPressed: committing ? null : onPressed,
+        style: asTheOneAction(theme),
+        child: Text(cased(AppLocalizations.of(context), label)),
       ),
     );
   }

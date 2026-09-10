@@ -20,6 +20,12 @@ final class SignInRequested extends SessionEvent {
   const SignInRequested();
 }
 
+/// The way round the account: a session with no Google behind it. What a
+/// guest keeps is not settled — see the gateway.
+final class GuestRequested extends SessionEvent {
+  const GuestRequested();
+}
+
 final class SignOutRequested extends SessionEvent {
   const SignOutRequested();
 }
@@ -73,6 +79,7 @@ class SessionBloc extends Bloc<SessionEvent, SessionState> {
   SessionBloc(this._gateway) : super(const SessionUnknown()) {
     on<SessionOpened>(_onOpened);
     on<SignInRequested>(_onSignInRequested);
+    on<GuestRequested>(_onGuestRequested);
     on<SignOutRequested>(_onSignOutRequested);
     on<_UserChanged>((event, emit) {
       final user = event.user;
@@ -105,10 +112,27 @@ class SessionBloc extends Bloc<SessionEvent, SessionState> {
   Future<void> _onSignInRequested(
     SignInRequested event,
     Emitter<SessionState> emit,
+  ) => _waitOn(_gateway.signIn, emit);
+
+  Future<void> _onGuestRequested(
+    GuestRequested event,
+    Emitter<SessionState> emit,
+  ) => _waitOn(_gateway.continueAsGuest, emit);
+
+  /// Either way in, waited on the same way: in flight until it answers, then
+  /// whatever the gateway's stream says, or the reason it will not.
+  ///
+  /// One [SigningIn] for both, deliberately. There is no guest-specific state
+  /// because the screen has nothing different to say while it waits, and a
+  /// guest has no picker to back out of — so [SignInAbandoned] simply never
+  /// comes from that side.
+  Future<void> _waitOn(
+    Future<void> Function() attempt,
+    Emitter<SessionState> emit,
   ) async {
     emit(const SigningIn());
     try {
-      await _gateway.signIn();
+      await attempt();
     } on SignInAbandoned {
       emit(const SignedOut());
     } catch (error) {

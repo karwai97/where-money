@@ -38,22 +38,23 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('a signed-out user is offered Google and nothing else', (
+  testWidgets('a signed-out user is offered the two ways in and no Ledger', (
     tester,
   ) async {
     await open(tester);
 
-    expect(find.text('Continue with Google'), findsOneWidget);
+    expect(markSaying('Continue with Google'), findsOneWidget);
+    expect(markSaying('Continue as guest'), findsOneWidget);
     expect(markSaying('Ledger'), findsNothing);
   });
 
   testWidgets('signing in shows the Ledger', (tester) async {
     await open(tester);
-    await tester.tap(find.text('Continue with Google'));
+    await tester.tap(markSaying('Continue with Google'));
     await tester.pumpAndSettle();
 
     expect(markSaying('Ledger'), findsOneWidget);
-    expect(find.text('Continue with Google'), findsNothing);
+    expect(markSaying('Continue with Google'), findsNothing);
   });
 
   testWidgets('a returning user goes straight to their Ledger', (tester) async {
@@ -62,7 +63,7 @@ void main() {
 
     await open(tester);
 
-    expect(find.text('Continue with Google'), findsNothing);
+    expect(markSaying('Continue with Google'), findsNothing);
     expect(find.text('Ikea Damansara'), findsWidgets);
   });
 
@@ -80,14 +81,14 @@ void main() {
 
     expect(find.text('Ikea Damansara'), findsNothing);
     expect(markSaying('Ledger'), findsNothing);
-    expect(find.text('Continue with Google'), findsOneWidget);
+    expect(markSaying('Continue with Google'), findsOneWidget);
   });
 
   testWidgets('an empty Ledger says so rather than sitting blank', (
     tester,
   ) async {
     await open(tester);
-    await tester.tap(find.text('Continue with Google'));
+    await tester.tap(markSaying('Continue with Google'));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Nothing here yet'), findsOneWidget);
@@ -99,10 +100,10 @@ void main() {
     signIn.refuse = StateError('no network');
 
     await open(tester);
-    await tester.tap(find.text('Continue with Google'));
+    await tester.tap(markSaying('Continue with Google'));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('no network'), findsOneWidget);
-    expect(find.text('Continue with Google'), findsOneWidget);
+    expect(markSaying('Continue with Google'), findsOneWidget);
   });
 }

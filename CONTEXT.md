@@ -131,6 +131,18 @@ allowance can be counted, and neither stands in for the other. A phone with no
 screen lock has no Lock, and is shown the Ledger rather than shut out of it.
 _Avoid_: Passcode, auth, security, biometrics as a noun for the feature
 
+**Guest**:
+Somebody using the app without an account behind them. Named here because the
+sign-in screen offers it, and the code says it in four places — but what a
+guest *is* is not settled: the Ledger, the Receipts directory and the Worker's
+token are all keyed by uid, so a guest needs one, and an anonymous account that
+can later be linked to Google is the likely shape. What such a user is told
+they keep and give up, and whether Settings grows a row that trades the session
+for an account, is an open question and an ADR of its own. Until it lands
+`GoogleSignInGateway.continueAsGuest` refuses rather than creating accounts
+whose meaning nobody has decided.
+_Avoid_: Anonymous user, trial, unregistered, logged-out user for this
+
 ### Operating it
 
 **Knobs**:

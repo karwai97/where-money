@@ -674,13 +674,17 @@
     "description": "The first frame, before the app knows whether anybody is signed in. There is nothing on it but a spinner, so this is what a screen reader is given to say. The product keeps its name in every language."
   },
 
-  "signInTagline": "Photograph a receipt, put the phone away.",
+  "signInTagline": "Photograph the receipt. See where the money went.",
   "@signInTagline": {
     "description": "The sign-in screen needs a language before the app knows whose account it is rendering, which is why the Language is a Setting on the phone rather than on the account."
   },
   "signInWithGoogle": "Continue with Google",
   "@signInWithGoogle": {
     "description": "Google is a proper name and stays as it is."
+  },
+  "signInAsGuest": "Continue as guest",
+  "@signInAsGuest": {
+    "description": "The way round the account, beside the way into one. What a guest keeps is ADR territory and not settled here."
   },
   "signInInFlight": "Signing in",
   "signInFailed": "Signing in did not work. {detail}",

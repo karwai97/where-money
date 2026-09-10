@@ -118,9 +118,7 @@ class _Badge extends StatelessWidget {
           // screen that costs the header height, and it buys the one control
           // that reaches a month the trend cannot.
           tapTargetSize: MaterialTapTargetSize.padded,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(6),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
         ),
         // Inside the button rather than around it: excluding the subtree from
         // above would take the focus node with it, which is the defect

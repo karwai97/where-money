@@ -23,6 +23,14 @@ abstract interface class SignInGateway {
   /// Throws [SignInAbandoned] if the user backs out of the account picker.
   Future<void> signIn();
 
+  /// A session with no account behind it. Still a uid, because the Ledger, the
+  /// Receipts directory and the Worker's token are all keyed by one — what a
+  /// guest is told they keep, and how they later trade it for an account, is
+  /// an open question and a ticket of its own.
+  ///
+  /// No abandoning to do: there is no picker to back out of.
+  Future<void> continueAsGuest();
+
   Future<void> signOut();
 }
 
