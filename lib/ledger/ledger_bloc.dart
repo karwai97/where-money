@@ -197,6 +197,7 @@ final class LedgerReady extends LedgerState {
     this.expenses, {
     required this.rollup,
     required this.trend,
+    required this.opened,
     required this.recap,
   });
 
@@ -212,6 +213,12 @@ final class LedgerReady extends LedgerState {
   /// months after it too, wherever there are any, because tapping a column is
   /// how the reader moves and a window that stopped at [rollup] only went back.
   final List<Rollup> trend;
+
+  /// The first of the month the app was opened in: the ceiling nothing can
+  /// move past, and so which months a reader is offered. Carried rather than
+  /// read off the end of [trend], which is not the same thing — the window
+  /// stops short of the opened month wherever the reader has walked back.
+  final DateTime opened;
 
   /// The same month said in words, or why it is not.
   final RecapState recap;
@@ -234,6 +241,7 @@ final class LedgerReady extends LedgerState {
     // away from.
     trend.last.year,
     trend.last.month,
+    opened,
     recap,
   ];
 }
@@ -396,6 +404,7 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
         months: trendMonths,
         homeCurrency: homeCurrency,
       ),
+      opened: _opened,
       recap: _recapFor(rollup),
     );
   }

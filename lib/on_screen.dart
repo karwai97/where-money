@@ -150,26 +150,38 @@ extension CategoryTotalLabel on CategoryTotal {
   String labelIn(AppLocalizations words) => categoryLabel(words, category);
 }
 
+/// A month spelled out. Takes a date rather than a Rollup because two of the
+/// three things that name a month have no Rollup to hand: the pill back to the
+/// month the app opened in, and the year over the sheet of months.
+String asMonth(AppLocalizations words, DateTime month) =>
+    DateFormat.yMMMM(words.localeName).format(month);
+
+/// The month and year small enough to sit beside a total. Not [asShortMonth]
+/// with a year stuck on: the order of the two parts is the locale's business,
+/// not this app's.
+String asShortMonthAndYear(AppLocalizations words, DateTime month) =>
+    DateFormat.yMMM(words.localeName).format(month);
+
+/// The year on its own, which in Chinese is `2026年` rather than `2026`.
+String asYear(AppLocalizations words, DateTime month) =>
+    DateFormat.y(words.localeName).format(month);
+
 /// The Rollup carries a year and a month; naming the month is the screen's job.
 extension RollupLabels on Rollup {
   String monthLabel(AppLocalizations words) =>
-      DateFormat.yMMMM(words.localeName).format(DateTime(year, month));
+      asMonth(words, DateTime(year, month));
 
-  /// Short enough for an axis on a phone. Not the first three letters of the
-  /// long name: that is an English coincidence, and in Chinese it cuts a
-  /// character off the middle of `8月`.
+  /// Short enough for an axis on a phone, or for a grid of twelve. Not the
+  /// first three letters of the long name: that is an English coincidence,
+  /// and in Chinese it cuts a character off the middle of `8月`.
   String shortMonthLabel(AppLocalizations words) =>
       DateFormat.MMM(words.localeName).format(DateTime(year, month));
 
-  String previousMonthLabel(AppLocalizations words) => DateFormat.yMMMM(
-    words.localeName,
-  ).format(DateTime(previousYear, previousMonth));
+  String previousMonthLabel(AppLocalizations words) =>
+      asMonth(words, DateTime(previousYear, previousMonth));
 
-  /// The month and year small enough to sit beside a total. Not
-  /// [shortMonthLabel] with a year stuck on: the order of the two parts is the
-  /// locale's business, not this app's.
   String shortMonthAndYearLabel(AppLocalizations words) =>
-      DateFormat.yMMM(words.localeName).format(DateTime(year, month));
+      asShortMonthAndYear(words, DateTime(year, month));
 
   /// How the month reads against the one before it. Printed by the Ledger's
   /// header and by the chart detail, so the rounding and the three ways it can

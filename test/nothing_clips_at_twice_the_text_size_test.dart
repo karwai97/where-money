@@ -84,6 +84,44 @@ void main() {
       expect(find.text('JUL'), findsOneWidget);
     });
 
+    testWidgets('the sheet of months fits at $scale', (tester) async {
+      await openLedger(tester, scale);
+      tester.takeException();
+
+      await tester.tap(find.byTooltip('Choose a month'));
+      await tester.pumpAndSettle();
+      expectNothingClipped(tester, 'the sheet of months at $scale');
+
+      // Twelve cells and the year over them, all still there: a grid that
+      // fits because half of it scrolled off is not a grid that fits.
+      expect(find.text('2026'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(BottomSheet),
+          matching: find.text('MAR'),
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(
+        find.descendant(
+          of: find.byType(BottomSheet),
+          matching: find.text('MAR'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expectNothingClipped(tester, 'the Ledger back from the sheet at $scale');
+
+      // And the pill it left behind, which shares the foot of the screen
+      // with the camera button.
+      expect(markSaying('Back to Aug 2026'), findsOneWidget);
+      expect(
+        tester.getRect(markSaying('Back to Aug 2026')).right,
+        lessThanOrEqualTo(phone.width - 88),
+        reason: 'the pill stays out from under the buttons in the corner',
+      );
+    });
+
     testWidgets('the chart detail fits at $scale', (tester) async {
       await openLedger(tester, scale);
       tester.takeException();

@@ -127,6 +127,9 @@ void main() {
       'Inbox',
       'Previous month',
       'Next month',
+      'Choose a month',
+      'Previous year',
+      'Next year',
       'Add an Expense by hand',
       'Photograph a receipt',
     ]) {
@@ -136,6 +139,72 @@ void main() {
         reason: '"$tooltip" did not move',
       );
     }
+  });
+
+  // The two tests here that name their own clock. Everything else in this
+  // file works around an unreachable one by seeding relative to today; a
+  // sheet of twelve months has to say which of them lie ahead, and "the
+  // month before this one" is in the previous year every January.
+  group('choosing a month', () {
+    final august = DateTime(2026, 8, 23);
+
+    Future<void> openOnAugust(WidgetTester tester) async {
+      store = InMemoryLedgerStore(seedLedger(around: august));
+      tester.view
+        ..physicalSize = const Size(1200, 3000)
+        ..devicePixelRatio = 1;
+      await tester.pumpWidget(
+        WhereMoneyApp(
+          lock: FakeDeviceLock(),
+          preferences: InMemoryDevicePreferences(locksOnOpen: false),
+          signIn: FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai),
+          storesFor: (_) => store.stores,
+          model: model,
+          homeCurrency: 'MYR',
+          language: 'zh',
+          photograph: (_) async => null,
+          clock: () => august,
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('选一个月'));
+      await tester.pumpAndSettle();
+    }
+
+    Finder inSheet(Finder matching) =>
+        find.descendant(of: find.byType(BottomSheet), matching: matching);
+
+    testWidgets('the sheet is a Chinese year of Chinese months', (
+      tester,
+    ) async {
+      await openOnAugust(tester);
+
+      expect(
+        inSheet(find.text('2026年')),
+        findsOneWidget,
+        reason: 'a year is written with its own character, not as four digits',
+      );
+      expect(
+        inSheet(find.text('8月')),
+        findsOneWidget,
+        reason: 'and a month is not the first three characters of one',
+      );
+      expect(find.byTooltip('上一年'), findsOneWidget);
+      expect(find.byTooltip('下一年'), findsOneWidget);
+      expect(find.textContaining('Choose'), findsNothing);
+    });
+
+    testWidgets('the way back to the month it opened in is in Chinese and is '
+        'not shouted', (tester) async {
+      await openOnAugust(tester);
+      await tester.tap(inSheet(find.text('3月')));
+      await tester.pumpAndSettle();
+
+      // `cased` is a no-op in Chinese, so the pill reads as the message file
+      // wrote it — beside a Latin month it would have been shouted.
+      expect(find.text('回到2026年8月'), findsOneWidget);
+      expect(find.textContaining('Back to'), findsNothing);
+    });
   });
 
   testWidgets('an empty month says so in Chinese and names the month', (

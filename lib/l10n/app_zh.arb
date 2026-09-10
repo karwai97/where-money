@@ -169,6 +169,10 @@
   "ledgerUnreadable": "读不到你的账本。",
   "ledgerEmpty": "这里还什么都没有。\n用下面的按钮加一笔。",
   "ledgerNothingInMonth": "{month}没有记录。",
+  "ledgerChooseAMonth": "选一个月",
+  "ledgerPreviousYear": "上一年",
+  "ledgerNextYear": "下一年",
+  "ledgerBackToMonth": "回到{month}",
 
   "ledgerPhotosStayedBehindTitle": "照片留在了原来那台手机上",
   "ledgerPhotosStayedBehindBody": "你账本里的每一笔支出都从你的账号恢复回来了。收据的照片从不离开拍下它们的那台手机，所以这台手机上没有照片。其他都没有少。",
