@@ -14,10 +14,6 @@ The five canonical triage roles, used verbatim (`needs-triage`, `needs-info`, `r
 
 Single-context — one `CONTEXT.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
 
-### Code comments
-
-Keep the comments minimal and straight forward. Use the `lean-comments` skill for a dedicated comment cleanup or review pass.
-
 ### Prose
 
 Written output — READMEs, docs, commit bodies, issue text, UI copy — should read as human, not AI-generated. Use the `unslop` skill to audit or rewrite prose that carries AI tells.
