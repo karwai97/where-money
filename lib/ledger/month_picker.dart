@@ -126,7 +126,10 @@ class _AYearOfMonthsState extends State<_AYearOfMonths> {
       ),
       child: Column(
         children: [
-          const SizedBox(height: 12),
+          // Nothing above the year row. `showDragHandle` reserves a full
+          // 48 for the handle and centres a 4px grip in it, so the sheet
+          // already opens with 22 of air under the grip — the design's 12
+          // on top of that read as a hole, measured on a phone.
           _YearRow(
             year: _year,
             onPrevious: _year > _oldest ? () => _goTo(_year - 1) : null,
