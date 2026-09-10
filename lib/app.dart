@@ -99,6 +99,8 @@ class WhereMoneyApp extends StatelessWidget {
           photograph:
               photograph ??
               (from) => photographWithDevice(from, longEdge: knobs.longEdge),
+          knobs: knobs,
+          clock: clock,
         ),
       },
     );

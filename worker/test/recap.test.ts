@@ -167,6 +167,19 @@ describe('a Recap', () => {
     });
   });
 
+  it('reports what is used on the answer as well, on its own counter', async () => {
+    expectModelCall({ times: 1 });
+
+    const answered = await recap(
+      await signIdToken(key, { sub: 'uid-recap-counted' }),
+      { query: '?cap=5' },
+    );
+
+    expect(answered.status).toBe(200);
+    expect(answered.headers.get('x-allowance-used')).toBe('1');
+    expect(answered.headers.get('x-allowance-limit')).toBe('5');
+  });
+
   it('does not spend the allowance a Scan needs', async () => {
     expectModelCall({ times: 1 });
     const token = await signIdToken(key, { sub: 'uid-two-allowances' });

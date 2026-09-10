@@ -211,6 +211,53 @@ describe("a user's daily allowance", () => {
     expect((await scan(bob, { query: '?cap=1' })).status).toBe(200);
   });
 
+  it('is reported on the answer as well as on the refusal', async () => {
+    expectModelCall({ times: 1 });
+    const token = await signIdToken(key, { sub: 'uid-counted' });
+
+    const answered = await scan(token, { query: '?cap=2' });
+
+    expect(answered.status).toBe(200);
+    expect(answered.headers.get('x-allowance-used')).toBe('1');
+    expect(answered.headers.get('x-allowance-limit')).toBe('2');
+    expect(answered.headers.get('x-allowance-resets-at')).toMatch(
+      /T00:00:00\.000Z$/,
+    );
+  });
+
+  it('is reported on the refusal that spent it, in the headers and the body', async () => {
+    expectModelCall({ times: 1 });
+    const token = await signIdToken(key, { sub: 'uid-counted-out' });
+
+    await scan(token, { query: '?cap=1' });
+    const refused = await scan(token, { query: '?cap=1' });
+
+    expect(refused.status).toBe(429);
+    expect(refused.headers.get('x-allowance-used')).toBe('1');
+    expect(refused.headers.get('x-allowance-limit')).toBe('1');
+    expect(await refused.json()).toMatchObject({ used: 1, limit: 1 });
+  });
+
+  it('is reported even when the model was the thing that failed', async () => {
+    expectModelCall({ status: 500, body: '{"error":{"message":"boom"}}' });
+
+    const response = await scan(
+      await signIdToken(key, { sub: 'uid-counted-upstream' }),
+      { query: '?cap=3' },
+    );
+
+    expect(response.status).toBe(502);
+    expect(response.headers.get('x-allowance-used')).toBe('1');
+    expect(response.headers.get('x-allowance-limit')).toBe('3');
+  });
+
+  it('is not reported on a refusal made before it was checked', async () => {
+    const response = await scan(null);
+
+    expect(response.status).toBe(401);
+    expect(response.headers.get('x-allowance-used')).toBeNull();
+  });
+
   it('cannot be raised past the ceiling the deployment sets', async () => {
     expectModelCall({ times: 1 });
     const token = await signIdToken(key, { sub: 'uid-greedy' });

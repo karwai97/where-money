@@ -6,6 +6,7 @@
 /// than a code-review comment.
 library;
 
+export 'src/allowance.dart';
 export 'src/check.dart';
 export 'src/corrected_fields.dart';
 export 'src/currencies.dart';

@@ -62,6 +62,9 @@ class SignedInScope extends StatelessWidget {
     // Setting reaches them as events rather than as a rebuild — see
     // [_FollowsTheLanguage].
     final settings = context.read<SettingsCubit>().state;
+    // Held rather than looked up later: what remembers the allowance is called
+    // from a bloc long after the element that found it may have gone.
+    final preferences = context.read<DevicePreferences>();
     final language = settings.language;
     final homeCurrency = settings.homeCurrency;
 
@@ -96,16 +99,19 @@ class SignedInScope extends StatelessWidget {
           ),
         ),
         BlocProvider(
-          create: (_) =>
-              InboxBloc(stores.scans, model, knobs: knobs, language: language)
-                ..add(const InboxOpened()),
+          create: (_) => InboxBloc(
+            stores.scans,
+            model,
+            knobs: knobs,
+            language: language,
+            // Bound to the account here, because the bloc is wordless about
+            // who is signed in and the allowance is not.
+            remembers: (allowance) =>
+                preferences.rememberScanAllowance(uid, allowance),
+          )..add(const InboxOpened()),
         ),
         BlocProvider(
-          create: (context) => PhotosStayedBehind(
-            stores.receipts,
-            context.read<DevicePreferences>(),
-            uid,
-          ),
+          create: (_) => PhotosStayedBehind(stores.receipts, preferences, uid),
         ),
       ],
       child: _FollowsTheSettings(child: _LearnsItsHomeCurrency(child: child)),

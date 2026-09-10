@@ -13,7 +13,7 @@ class Knobs {
     this.model = 'gpt-5-nano',
     this.effort = 'low',
     this.longEdge = 1024,
-    this.dailyCap = 40,
+    this.dailyCap = 25,
   });
 
   /// Which model reads a receipt.

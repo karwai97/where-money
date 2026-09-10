@@ -45,7 +45,17 @@ void main() {
     await tester.pumpWidget(
       WhereMoneyApp(
         lock: FakeDeviceLock(),
-        preferences: InMemoryDevicePreferences(locksOnOpen: false),
+        preferences: InMemoryDevicePreferences(
+          locksOnOpen: false,
+          // Seeded so Settings draws the Daily cap counted rather than as the
+          // bare cap: the figure, the word beside it and the track are what
+          // the widest column on that row is made of.
+          scanAllowance: Allowance(
+            used: 12,
+            limit: 20,
+            resetsAt: fixtureNow.add(const Duration(hours: 6)),
+          ),
+        ),
         signIn: FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai),
         storesFor: (_) =>
             InMemoryLedgerStore(seedLedger(around: fixtureNow)).stores,
@@ -173,6 +183,10 @@ void main() {
       await tester.pumpAndSettle();
       expectNothingClipped(tester, 'the foot of Settings at $scale');
       expect(markSaying('Sign out'), findsOneWidget);
+      // The figure, the word beside it and the track under both, which is the
+      // busiest value column on the screen and the last row before the gap.
+      expect(markSaying('Daily cap'), findsOneWidget);
+      expect(find.text('12 / 20'), findsOneWidget);
     });
   }
 }

@@ -31,9 +31,14 @@ sealed class ModelFailure implements ScanAnswer, RecapAnswer {
 /// read Extraction, a refusal, silence, or text that was not the promised
 /// JSON.
 final class ModelAnswered implements ScanAnswer {
-  const ModelAnswered(this.outcome);
+  const ModelAnswered(this.outcome, {this.allowance});
 
   final ExtractionOutcome outcome;
+
+  /// How much of the day's Scans the Worker says are gone, or null when it did
+  /// not say. A Worker deployed before it reported this is an older Worker,
+  /// not a failure.
+  final Allowance? allowance;
 }
 
 /// The Model wrote a month up, or said nothing worth printing.
@@ -46,9 +51,15 @@ final class RecapAnswered implements RecapAnswer {
 /// Today's allowance is used up. [resetsAt] is when it is not, so the Inbox can
 /// say when rather than sorry.
 final class AllowanceSpent extends ModelFailure {
-  const AllowanceSpent({this.resetsAt});
+  const AllowanceSpent({this.resetsAt, this.allowance});
 
   final DateTime? resetsAt;
+
+  /// The same news in full, where the Worker sent the headers for it — what
+  /// Settings draws the day against the cap from. [resetsAt] stays because the
+  /// Inbox has always read it out of the body and an older Worker still sends
+  /// one.
+  final Allowance? allowance;
 }
 
 /// The Worker would not take the caller's token. Signing in again is the only

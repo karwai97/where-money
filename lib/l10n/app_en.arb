@@ -34,6 +34,31 @@
   "settingsLockDeviceCredential": "No fingerprint is set up on this phone, so it asks for your PIN before showing your spending.",
   "settingsLockUnavailable": "This phone has no screen lock. Set one in Android settings to use this.",
 
+  "settingsDailyCap": "Daily cap",
+  "@settingsDailyCap": {
+    "description": "A fact about the service rather than a Setting: how much of the day's Scans are gone. Read-only, and it answers no tap."
+  },
+  "settingsDailyCapScansToday": "Scans today",
+  "@settingsDailyCapScansToday": {
+    "description": "Beside a figure that reads used / cap. Its own key rather than a placeholder in one sentence, so a language can put the count where it belongs."
+  },
+  "settingsDailyCapScansADay": "Scans a day",
+  "@settingsDailyCapScansADay": {
+    "description": "Beside the cap alone, before the Worker has ever said how much is used."
+  },
+  "settingsDailyCapGoverns": "How many receipts the Model reads for you in one day. When they are spent, new photos wait in the Inbox until tomorrow.",
+  "@settingsDailyCapGoverns": {
+    "description": "What the cap governs, said under the row like every other Setting's sentence. Replaced by the Inbox's own words once the day is spent."
+  },
+  "settingsDailyCapSpoken": "{used} of {cap}",
+  "@settingsDailyCapSpoken": {
+    "description": "The figure as a screen reader should say it, so \"12 / 40\" is not read as twelve slash forty.",
+    "placeholders": {
+      "used": { "type": "int" },
+      "cap": { "type": "int" }
+    }
+  },
+
   "settingsSignOut": "Sign out",
 
   "settingsScansHeading": "What each Scan asks for",

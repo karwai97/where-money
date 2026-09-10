@@ -22,6 +22,18 @@
   "settingsLockDeviceCredential": "本机没有设置指纹，因此显示你的消费记录之前会要求 PIN 码。",
   "settingsLockUnavailable": "本机没有设置屏幕锁。先到 Android 设置里设一个才能用这项。",
 
+  "settingsDailyCap": "每日上限",
+  "settingsDailyCapScansToday": "今天的扫描",
+  "settingsDailyCapScansADay": "每天的扫描",
+  "settingsDailyCapGoverns": "模型一天为你读取多少张收据。用完之后，新的照片会在收件箱里等到明天。",
+  "settingsDailyCapSpoken": "{cap} 中的 {used}",
+  "@settingsDailyCapSpoken": {
+    "placeholders": {
+      "used": { "type": "int" },
+      "cap": { "type": "int" }
+    }
+  },
+
   "settingsSignOut": "退出登录",
 
   "settingsScansHeading": "每次扫描请求的设置",

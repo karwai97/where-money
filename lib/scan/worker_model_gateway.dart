@@ -53,13 +53,18 @@ class WorkerModelGateway implements ModelGateway {
 
     final body = _bodyOf(answer!);
     if (body == null) return _notJson(answer);
-    if (answer.statusCode == 200) return ModelAnswered(parseExtraction(body));
+    // Only this endpoint's headers are read. Recaps are counted separately and
+    // nothing on the phone shows that counter.
+    final allowance = _allowanceReportedIn(answer);
+    if (answer.statusCode == 200) {
+      return ModelAnswered(parseExtraction(body), allowance: allowance);
+    }
 
     return switch (body['error']) {
       'bad_image' || 'image_too_large' => ImageNotAccepted(
         '${body['message'] ?? body['error']}',
       ),
-      _ => _refusal(answer, body),
+      _ => _refusal(answer, body, allowance: allowance),
     };
   }
 
@@ -154,19 +159,37 @@ ModelFailure _notJson(http.Response answer) => ModelUnavailable(
   'the Worker answered ${answer.statusCode} with something that was not JSON',
 );
 
+/// What the Worker said about the day's allowance, or null. All three headers
+/// or none: two thirds of an Allowance is not one, and a Worker that has
+/// stopped sending them is an older Worker rather than something going wrong.
+Allowance? _allowanceReportedIn(http.Response answer) {
+  final used = int.tryParse(answer.headers['x-allowance-used'] ?? '');
+  final limit = int.tryParse(answer.headers['x-allowance-limit'] ?? '');
+  final resetsAt = DateTime.tryParse(
+    answer.headers['x-allowance-resets-at'] ?? '',
+  );
+  if (used == null || limit == null || resetsAt == null) return null;
+
+  return Allowance(used: used, limit: limit, resetsAt: resetsAt);
+}
+
 /// The statuses are `worker/README.md`'s, and each maps onto exactly one
 /// member of the failure taxonomy.
-ModelFailure _refusal(http.Response answer, Map<String, dynamic> body) =>
-    switch (body['error']) {
-      'cap_reached' => AllowanceSpent(
-        resetsAt: DateTime.tryParse('${body['resets_at']}'),
-      ),
-      'missing_token' ||
-      'invalid_token' => TokenRefused('${body['reason'] ?? body['error']}'),
-      // Everything left is the far end's problem, not the caller's:
-      // `model_unavailable`, `signing_keys_unavailable`, and whatever a later
-      // version of the Worker invents.
-      final Object? error => ModelUnavailable(
-        '${error ?? answer.statusCode}: ${body['message'] ?? answer.body}',
-      ),
-    };
+ModelFailure _refusal(
+  http.Response answer,
+  Map<String, dynamic> body, {
+  Allowance? allowance,
+}) => switch (body['error']) {
+  'cap_reached' => AllowanceSpent(
+    resetsAt: DateTime.tryParse('${body['resets_at']}'),
+    allowance: allowance,
+  ),
+  'missing_token' ||
+  'invalid_token' => TokenRefused('${body['reason'] ?? body['error']}'),
+  // Everything left is the far end's problem, not the caller's:
+  // `model_unavailable`, `signing_keys_unavailable`, and whatever a later
+  // version of the Worker invents.
+  final Object? error => ModelUnavailable(
+    '${error ?? answer.statusCode}: ${body['message'] ?? answer.body}',
+  ),
+};
