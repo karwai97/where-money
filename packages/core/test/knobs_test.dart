@@ -57,8 +57,8 @@ void main() {
   });
 
   test('a cap that is not a whole count leaves the cap alone', () {
-    expect(knobsFrom(const {'daily_cap': 'lots'}).dailyCap, 40);
-    expect(knobsFrom(const {'daily_cap': '-3'}).dailyCap, 40);
+    expect(knobsFrom(const {'daily_cap': 'lots'}).dailyCap, 25);
+    expect(knobsFrom(const {'daily_cap': '-3'}).dailyCap, 25);
   });
 
   test('a cap of nothing at all is a decision, and it holds', () {
