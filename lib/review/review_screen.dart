@@ -908,6 +908,7 @@ class _Row extends StatelessWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: 6),
               Row(
                 children: [
                   Expanded(
