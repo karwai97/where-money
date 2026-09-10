@@ -21,12 +21,18 @@ import 'settings/themes.dart';
 
 /// The bar the Ledger wears, so every screen reads as one app: the name of
 /// the screen as a tracked upper case mark rather than as a heading.
-AppBar barNamed(BuildContext context, String title) => AppBar(
-  title: Text(
-    cased(AppLocalizations.of(context), title),
-    style: asScreenName(Theme.of(context).textTheme.labelLarge),
-  ),
-);
+///
+/// [leading] is here rather than left to a second bar composed by hand: the
+/// currency sheet closes with a button, and a bar built beside this one is a
+/// second definition of the app's title style.
+AppBar barNamed(BuildContext context, String title, {Widget? leading}) =>
+    AppBar(
+      leading: leading,
+      title: Text(
+        cased(AppLocalizations.of(context), title),
+        style: asScreenName(Theme.of(context).textTheme.labelLarge),
+      ),
+    );
 
 /// The label column's width, in the type's own scale rather than in pixels: a
 /// reader who has turned text size up gets a wider column instead of a
@@ -116,6 +122,18 @@ Widget inTheLabelColumn(BuildContext context, String label, {Color? colour}) =>
         ),
       ),
     );
+
+/// A currency code, wherever one is set at reading size: the field that shows
+/// the chosen one, the search that is typed in codes, and every row of the
+/// sheet those two open. Monospaced beside the amounts it units, for the
+/// reason [asFigures] gives. The one place the code's face is decided.
+TextStyle? asACode(ThemeData theme) => asFigures(
+  theme.textTheme.bodyMedium?.copyWith(
+    color: theme.colorScheme.onSurface,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.4,
+  ),
+);
 
 /// The mark the design labels a column with, in the second tier of ink
 /// unless the Check wants it louder. The one place the face, the weight, the
@@ -458,14 +476,8 @@ class Chosen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colours = theme.colorScheme;
-    // The only field drawn this way is the currency, and a code is set in the
-    // figure face beside the amounts it units.
-    final style = asFigures(
-      theme.textTheme.bodyMedium?.copyWith(
-        fontWeight: FontWeight.w500,
-        letterSpacing: 0.4,
-      ),
-    );
+    // The only field drawn this way is the currency.
+    final style = asACode(theme);
 
     return Semantics(
       label: label,

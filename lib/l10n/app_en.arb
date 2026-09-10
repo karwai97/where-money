@@ -534,6 +534,10 @@
     "description": "The head of the list: the Home Currency and whatever this Ledger already holds."
   },
   "currencyAll": "All currencies",
+  "currencyHome": "Home",
+  "@currencyHome": {
+    "description": "The mark at the end of the Home Currency's row in that sheet, saying why that row is first."
+  },
   "currencyNoMatch": "No code matches {query}.",
   "@currencyNoMatch": {
     "placeholders": {

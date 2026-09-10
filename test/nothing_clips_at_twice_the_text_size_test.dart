@@ -9,6 +9,7 @@ import 'fakes/fake_model_gateway.dart';
 import 'fakes/fake_sign_in_gateway.dart';
 import 'fakes/in_memory_device_preferences.dart';
 import 'fakes/in_memory_ledger_store.dart';
+import 'picking_a_currency.dart';
 
 /// A phone whose text size is turned all the way up still has to draw every
 /// screen. WCAG asks for 200% without losing content, and two places used to
@@ -100,6 +101,50 @@ void main() {
       await tester.tap(find.byTooltip('Add an Expense by hand'));
       await tester.pumpAndSettle();
       expectNothingClipped(tester, 'Review at $scale');
+    });
+
+    testWidgets('the currency sheet fits at $scale', (tester) async {
+      await openLedger(tester, scale);
+      tester.takeException();
+
+      await tester.tap(find.byTooltip('Add an Expense by hand'));
+      await tester.pumpAndSettle();
+      tester.takeException();
+
+      // Past the fold at 200%, and a `ListView` lays out nothing nobody has
+      // scrolled to.
+      await tester.scrollUntilVisible(
+        markSaying('Currency'),
+        200,
+        // Named because the form is not the only scrollable on the screen:
+        // every field that can be typed into carries one of its own. The
+        // form's is the outermost, so it is the one found first.
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+
+      await openTheCurrencySheet(tester, 'Currency');
+      expectNothingClipped(tester, 'the currency sheet at $scale');
+
+      // The two things a sheet that fits could have dropped: the search,
+      // whose mark wraps to two lines in the 88px column, and the fullest
+      // row there is — the Home Currency, which is also what the field
+      // holds, so it carries the code, the mark and the check at once.
+      expect(inTheCurrencySheet(markSaying('Search codes')), findsOneWidget);
+      expect(inTheCurrencySheet(currencyRow('MYR')), findsOneWidget);
+
+      // And the sentence that replaces the list, indented past a label
+      // column that has grown with the text.
+      await tester.enterText(inTheCurrencySheet(find.byType(TextField)), 'ZZZ');
+      await tester.pumpAndSettle();
+      expectNothingClipped(
+        tester,
+        'the currency sheet with no match at $scale',
+      );
+      expect(
+        inTheCurrencySheet(find.textContaining('No code matches')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('Settings fits at $scale', (tester) async {

@@ -266,7 +266,7 @@ class _HomeCurrencyChoice extends StatelessWidget {
             value: currency ?? '',
             onTap: () async {
               final cubit = context.read<SettingsCubit>();
-              final chosen = await chooseACurrency(context);
+              final chosen = await chooseACurrency(context, current: currency);
               if (chosen != null) await cubit.chooseHomeCurrency(chosen);
             },
           ),

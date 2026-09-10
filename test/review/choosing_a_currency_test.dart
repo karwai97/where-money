@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:where_money/a_form_of_rows.dart';
 import 'package:where_money/app.dart';
 import 'package:where_money_core/where_money_core.dart';
 
@@ -73,15 +74,6 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> openTheSheet(WidgetTester tester) async {
-    await tester.tap(
-      find
-          .ancestor(of: markSaying('Currency'), matching: find.byType(InkWell))
-          .first,
-    );
-    await tester.pumpAndSettle();
-  }
-
   Future<void> correct(WidgetTester tester) async {
     await tester.tap(find.text('Village Grocer Bangsar'));
     await tester.pumpAndSettle();
@@ -121,14 +113,13 @@ void main() {
     );
     await tester.tap(find.byTooltip('Add an Expense by hand'));
     await tester.pumpAndSettle();
-    await openTheSheet(tester);
+    await openTheCurrencySheet(tester, 'Currency');
 
-    expect(find.text('Yours'), findsOneWidget);
-    expect(find.text('All currencies'), findsOneWidget);
+    expect(markSaying('Yours'), findsOneWidget);
+    expect(markSaying('All currencies'), findsOneWidget);
 
-    double topOf(String code) => tester
-        .getRect(inTheCurrencySheet(find.widgetWithText(ListTile, code)))
-        .top;
+    double topOf(String code) =>
+        tester.getRect(inTheCurrencySheet(currencyRow(code))).top;
 
     expect(
       topOf('MYR'),
@@ -142,29 +133,116 @@ void main() {
     );
     expect(
       topOf('JPY'),
-      lessThan(tester.getRect(find.text('All currencies')).top),
+      lessThan(tester.getRect(markSaying('All currencies')).top),
       reason: 'and the rest of the world below the head',
+    );
+  });
+
+  testWidgets('the sheet marks the Home Currency and checks the one already '
+      'chosen', (tester) async {
+    await openLedger(
+      tester,
+      homeCurrency: 'MYR',
+      ledger: [spentIn('SGD', id: 'abroad', day: 19)],
+    );
+    await correct(tester);
+    await openTheCurrencySheet(tester, 'Currency');
+
+    expect(
+      inTheCurrencySheet(
+        find.ancestor(of: markSaying('Home'), matching: find.byType(InkWell)),
+      ),
+      findsOneWidget,
+      reason: 'the first row of YOURS says why it is first',
+    );
+    expect(
+      find.descendant(
+        of: inTheCurrencySheet(currencyRow('SGD')),
+        matching: find.byIcon(Icons.check),
+      ),
+      findsOneWidget,
+      reason: 'the Expense is in SGD, so SGD is what the sheet opened on',
+    );
+    expect(
+      inTheCurrencySheet(find.byIcon(Icons.check)),
+      findsOneWidget,
+      reason: 'and nothing else is checked',
+    );
+  });
+
+  testWidgets('nothing is checked when what the field holds is not a code', (
+    tester,
+  ) async {
+    await openLedger(
+      tester,
+      homeCurrency: 'MYR',
+      ledger: [spentIn('???', id: 'unplaceable', day: 20)],
+    );
+    await correct(tester);
+    await openTheCurrencySheet(tester, 'Currency');
+
+    expect(
+      inTheCurrencySheet(find.byIcon(Icons.check)),
+      findsNothing,
+      reason: 'checking the Home Currency would say the app had chosen',
+    );
+  });
+
+  testWidgets('the head over the rest of the world counts them, and the '
+      'search moves the count', (tester) async {
+    await openLedger(tester, homeCurrency: 'MYR');
+    await tester.tap(find.byTooltip('Add an Expense by hand'));
+    await tester.pumpAndSettle();
+    await openTheCurrencySheet(tester, 'Currency');
+
+    // The figure in the head rather than whichever Text happens to be last
+    // in it: the head's other child is the name it was found by.
+    int countUnderTheHead() => tester
+        .widgetList<Text>(
+          find.descendant(
+            of: find.ancestor(
+              of: markSaying('All currencies'),
+              matching: find.byType(Head),
+            ),
+            matching: find.byType(Text),
+          ),
+        )
+        .map((text) => int.tryParse(text.data ?? ''))
+        .nonNulls
+        .single;
+
+    final all = countUnderTheHead();
+    expect(
+      all,
+      isoCurrencies.length - 1,
+      reason: 'everything but the Home Currency, which is under YOURS',
+    );
+
+    await tester.enterText(inTheCurrencySheet(find.byType(TextField)), 'K');
+    await tester.pumpAndSettle();
+
+    expect(
+      countUnderTheHead(),
+      lessThan(all),
+      reason: 'the figure counts the rows under the head, not the currencies',
     );
   });
 
   testWidgets('a currency is found by searching for its code', (tester) async {
     await openReview(tester);
-    await openTheSheet(tester);
+    await openTheCurrencySheet(tester, 'Currency');
 
     await tester.enterText(inTheCurrencySheet(find.byType(TextField)), 'nok');
     await tester.pumpAndSettle();
 
-    expect(inTheCurrencySheet(find.widgetWithText(ListTile, 'NOK')), findsOne);
-    expect(
-      inTheCurrencySheet(find.widgetWithText(ListTile, 'USD')),
-      findsNothing,
-    );
+    expect(inTheCurrencySheet(currencyRow('NOK')), findsOne);
+    expect(inTheCurrencySheet(currencyRow('USD')), findsNothing);
   });
 
   testWidgets('a search that matches nothing says so rather than showing an '
       'empty list', (tester) async {
     await openReview(tester);
-    await openTheSheet(tester);
+    await openTheCurrencySheet(tester, 'Currency');
 
     await tester.enterText(inTheCurrencySheet(find.byType(TextField)), 'ZZZ');
     await tester.pumpAndSettle();
