@@ -17,7 +17,7 @@
       "description": "The long edge a receipt is stored and sent at, in pixels. Above roughly 1440 the model downscales anyway, so the upload is wasted. Anything outside 256-4096 is treated as a typo and the app keeps its own value."
     },
     "daily_cap": {
-      "defaultValue": { "value": "20" },
+      "defaultValue": { "value": "25" },
       "valueType": "STRING",
       "description": "Scans a day, counted by the Worker. Lowers what the deployment allows and never raises it, so the ceiling in wrangler.jsonc still holds."
     }
