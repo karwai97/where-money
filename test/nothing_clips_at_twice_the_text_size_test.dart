@@ -36,7 +36,12 @@ void main() {
         .clearTextScaleFactorTestValue();
   });
 
-  Future<void> openLedger(WidgetTester tester, double scale) async {
+  /// The app at [scale], opened as whoever [signIn] says is signed in.
+  Future<void> openApp(
+    WidgetTester tester,
+    double scale, {
+    required FakeSignInGateway signIn,
+  }) async {
     tester.view
       ..physicalSize = phone
       ..devicePixelRatio = 1;
@@ -56,7 +61,7 @@ void main() {
             resetsAt: fixtureNow.add(const Duration(hours: 6)),
           ),
         ),
-        signIn: FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai),
+        signIn: signIn,
         storesFor: (_) =>
             InMemoryLedgerStore(seedLedger(around: fixtureNow)).stores,
         model: FakeModelGateway(),
@@ -67,6 +72,21 @@ void main() {
     );
     await tester.pumpAndSettle();
   }
+
+  Future<void> openLedger(WidgetTester tester, double scale) => openApp(
+    tester,
+    scale,
+    signIn: FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai),
+  );
+
+  /// Signed out, with [refusing] set as what the phone says when the way in
+  /// is tapped — the failure sentence is the one thing that changes the
+  /// strip's height, and a long detail is what it has to wrap.
+  Future<void> openSignedOut(
+    WidgetTester tester,
+    double scale, {
+    Object? refusing,
+  }) => openApp(tester, scale, signIn: FakeSignInGateway()..refuse = refusing);
 
   /// What the frame reported, said in full. `takeException` answers with a
   /// summary once there is more than one, and six clipped months is exactly
@@ -81,6 +101,38 @@ void main() {
   }
 
   for (final scale in scales) {
+    testWidgets('the sign-in screen fits at $scale', (tester) async {
+      await openSignedOut(
+        tester,
+        scale,
+        refusing: StateError(
+          'the phone turned it down and said rather a lot about why',
+        ),
+      );
+      expectNothingClipped(tester, 'the sign-in screen at $scale');
+
+      // The block over the strip scrolls when it outgrows the space, so what
+      // this asserts is that everything is still there and still reachable.
+      // The buttons grow past 48 rather than clipping their labels, and a
+      // Material button ellipsises rather than reporting an overflow — so
+      // reaching them by their words is all a frame can say about them.
+      expect(find.text('Where Money'), findsOneWidget);
+      expect(
+        find.text('Photograph the receipt. See where the money went.'),
+        findsOneWidget,
+      );
+      expect(markSaying('Continue with Google'), findsOneWidget);
+      expect(markSaying('Continue as guest'), findsOneWidget);
+
+      // And with the failure sentence in the strip as well, which is the one
+      // thing that changes the strip's height.
+      await tester.tap(markSaying('Continue with Google'));
+      await tester.pumpAndSettle();
+      expectNothingClipped(tester, 'the sign-in screen refused at $scale');
+      expect(find.textContaining('turned it down'), findsOneWidget);
+      expect(markSaying('Continue as guest'), findsOneWidget);
+    });
+
     testWidgets('the Ledger fits at $scale', (tester) async {
       await openLedger(tester, scale);
       expectNothingClipped(tester, 'the Ledger at $scale');
@@ -225,6 +277,54 @@ void main() {
       // busiest value column on the screen and the last row before the gap.
       expect(markSaying('Daily cap'), findsOneWidget);
       expect(find.text('12 / 20'), findsOneWidget);
+    });
+
+    testWidgets('the Settings a guest sees, and both of the dialogs it can '
+        'open, '
+        'fit at $scale', (tester) async {
+      final signIn = FakeSignInGateway(alreadySignedIn: FakeSignInGateway.guest)
+        ..collides = true;
+      await openApp(tester, scale, signIn: signIn);
+      tester.takeException();
+
+      await tester.tap(find.byTooltip('Settings'));
+      await tester.pumpAndSettle();
+
+      // The row a guest gets and the sentence under it, which is the longest
+      // supporting line on the screen and sits below the fold at 200%.
+      await tester.scrollUntilVisible(
+        markSaying('Sign in to keep this Ledger'),
+        200,
+      );
+      await tester.pumpAndSettle();
+      expectNothingClipped(tester, 'Settings as a guest at $scale');
+      expect(
+        find.text(
+          'This Ledger has no account behind it, so it goes when this phone '
+          'does. Signing in keeps it.',
+        ),
+        findsOneWidget,
+      );
+
+      // Leaving asks first, in the longest sentence either dialog carries.
+      await tester.tap(markSaying('Sign out'));
+      await tester.pumpAndSettle();
+      expectNothingClipped(tester, 'the leaving dialog at $scale');
+      expect(find.textContaining('cannot be recovered'), findsOneWidget);
+      await tester.tap(find.text('Keep it'));
+      await tester.pumpAndSettle();
+
+      // And the one the collision opens, which is longer still. It waits
+      // over a spinning row, so nothing settles while it is up.
+      await tester.tap(markSaying('Sign in to keep this Ledger'));
+      for (var frame = 0; frame < 5; frame++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      expectNothingClipped(tester, 'the other-ledger dialog at $scale');
+      expect(
+        find.textContaining('That account already has a Ledger'),
+        findsOneWidget,
+      );
     });
   }
 }

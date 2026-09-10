@@ -44,6 +44,12 @@ Future<void> main() async {
     (_) => defaultLanguage,
   );
   final homeCurrency = await preferences.homeCurrency().catchError((_) => null);
+  // A local read, like the four above it. The erasure this may name runs in
+  // the app rather than here: it goes over the network, and a launch held on
+  // that is a launch that never finishes on a bad connection.
+  final erasureUnderWay = await preferences.erasureUnderWay().catchError(
+    (_) => null,
+  );
 
   runApp(
     WhereMoneyApp(
@@ -54,6 +60,7 @@ Future<void> main() async {
       theme: theme,
       language: language,
       homeCurrency: homeCurrency,
+      erasureUnderWay: erasureUnderWay,
       model: WorkerModelGateway(
         endpoint: worker,
         knobs: knobs,

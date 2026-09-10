@@ -92,6 +92,12 @@ class DeviceScanStore implements ScanStore, ReceiptStore {
     _changes.add(await _read());
   }
 
+  @override
+  Future<void> eraseEveryScan() async {
+    if (directory.existsSync()) await directory.delete(recursive: true);
+    _changes.add(const []);
+  }
+
   Future<List<Scan>> _read() async {
     if (!directory.existsSync()) return const [];
 

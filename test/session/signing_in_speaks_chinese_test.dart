@@ -42,13 +42,23 @@ void main() {
     await open(tester);
     await tester.pumpAndSettle();
 
-    expect(find.text('拍下收据，然后就可以把手机收起来。'), findsOneWidget);
+    expect(find.text('拍下收据，看看钱去了哪里。'), findsOneWidget);
     expect(find.text('用 Google 继续'), findsOneWidget);
     expect(find.text('Continue with Google'), findsNothing);
     expect(
-      find.text('Photograph a receipt, put the phone away.'),
+      find.text('Photograph the receipt. See where the money went.'),
       findsNothing,
     );
+  });
+
+  testWidgets('the way round the account is offered in Chinese too', (
+    tester,
+  ) async {
+    await open(tester);
+    await tester.pumpAndSettle();
+
+    expect(find.text('以访客身份继续'), findsOneWidget);
+    expect(find.text('Continue as guest'), findsNothing);
   });
 
   testWidgets('the product keeps its name in Latin', (tester) async {
@@ -109,6 +119,18 @@ class _StillReading implements SignInGateway {
 
   @override
   Future<void> signIn() async {}
+
+  @override
+  Future<void> continueAsGuest() async {}
+
+  @override
+  Future<void> linkWithGoogle() async {}
+
+  @override
+  Future<void> signInWith(Object credential) async {}
+
+  @override
+  Future<void> deleteAccount() async {}
 
   @override
   Future<void> signOut() async {}

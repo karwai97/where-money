@@ -61,6 +61,43 @@
 
   "settingsSignOut": "Sign out",
 
+  "settingsKeepThisLedger": "Sign in to keep this Ledger",
+  "@settingsKeepThisLedger": {
+    "description": "The row a guest is offered in Settings, trading their session for a Google account. Drawn only for a guest: an account holder already has what it offers."
+  },
+  "settingsKeepThisLedgerHint": "This Ledger has no account behind it, so it goes when this phone does. Signing in keeps it.",
+  "@settingsKeepThisLedgerHint": {
+    "description": "Under the row above, in the place this app says what a Setting is for. Says what happens if the offer is declined, which the label alone does not."
+  },
+  "settingsSignOutAsGuestTitle": "Sign out of this Ledger?",
+  "@settingsSignOutAsGuestTitle": {
+    "description": "Asked before a guest signs out, which deletes their Ledger. An account holder is not asked: their Ledger waits for them."
+  },
+  "settingsSignOutAsGuestBody": "Your Ledger and its receipts will be deleted, and cannot be recovered.",
+  "@settingsSignOutAsGuestBody": {
+    "description": "Names the loss rather than counting it: no number changes the decision, and reading one would make the dialog wait on the Ledger."
+  },
+  "settingsSignOutKeep": "Keep it",
+  "@settingsSignOutKeep": {
+    "description": "Backing out of the dialog above. The verb the Inbox and an Expense already decline with."
+  },
+  "settingsSignOutConfirm": "Sign out",
+  "@settingsSignOutConfirm": {
+    "description": "Going through with it. The same words as the row, because it is the same act."
+  },
+  "settingsErasingInFlight": "Deleting this Ledger",
+  "@settingsErasingInFlight": {
+    "description": "What the spinner over Settings is waiting for while a guest's Ledger is erased. Not a sign-in: nothing is being signed into, and `signInInFlight` would say the wrong thing."
+  },
+  "settingsAccountInUseConfirm": "Sign in",
+  "@settingsAccountInUseConfirm": {
+    "description": "Going through with the dialog below. Not `settingsSignOutConfirm`: this signs the user in to the other account, and a button saying the opposite of what it does is worse than a long one."
+  },
+  "settingsAccountInUseBody": "That account already has a Ledger. Signing in opens it, and this Ledger and its receipts will be deleted.",
+  "@settingsAccountInUseBody": {
+    "description": "A guest chose a Google account that is already somebody. Two Ledgers cannot be made one, so this says which is kept before anything is deleted."
+  },
+
   "settingsScansHeading": "What each Scan asks for",
   "settingsScansModel": "Model: {model}",
   "@settingsScansModel": {
@@ -674,13 +711,17 @@
     "description": "The first frame, before the app knows whether anybody is signed in. There is nothing on it but a spinner, so this is what a screen reader is given to say. The product keeps its name in every language."
   },
 
-  "signInTagline": "Photograph a receipt, put the phone away.",
+  "signInTagline": "Photograph the receipt. See where the money went.",
   "@signInTagline": {
     "description": "The sign-in screen needs a language before the app knows whose account it is rendering, which is why the Language is a Setting on the phone rather than on the account."
   },
   "signInWithGoogle": "Continue with Google",
   "@signInWithGoogle": {
     "description": "Google is a proper name and stays as it is."
+  },
+  "signInAsGuest": "Continue as guest",
+  "@signInAsGuest": {
+    "description": "The way round the account, beside the way into one. What a guest keeps is ADR territory and not settled here."
   },
   "signInInFlight": "Signing in",
   "signInFailed": "Signing in did not work. {detail}",

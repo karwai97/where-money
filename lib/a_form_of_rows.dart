@@ -34,6 +34,81 @@ AppBar barNamed(BuildContext context, String title, {Widget? leading}) =>
       ),
     );
 
+/// The one action a screen exists for: full width, the height a thumb wants,
+/// and its name in the tracked upper case mark the bar over the screen uses.
+///
+/// Review's commit button is where this shape was drawn first and the sign-in
+/// screen's way into an account is the second, so it sits here with the app's
+/// other shared presentation. Two definitions would drift, and this one is
+/// what makes the primary action on any screen recognisable as that.
+ButtonStyle asTheOneAction(ThemeData theme) => FilledButton.styleFrom(
+  minimumSize: _wayOnSize,
+  shape: _wayOnShape,
+  textStyle: asAButtonName(theme),
+);
+
+/// The way round the account, beside or under [asTheOneAction]: the same
+/// height and the same shape, drawn as an edge and a container instead of a
+/// fill, with its label a tier down in the muted ink.
+///
+/// Signing out of Settings and continuing as a guest are both this. Outlined
+/// and muted because neither is what the screen is for — the reason the
+/// Ledger's small FAB is not accent-filled either.
+ButtonStyle asTheWayRound(ThemeData theme) {
+  final colours = theme.colorScheme;
+
+  return OutlinedButton.styleFrom(
+    minimumSize: _wayOnSize,
+    shape: _wayOnShape,
+    textStyle: asAButtonName(theme),
+    backgroundColor: colours.surfaceContainer,
+    foregroundColor: colours.onSurfaceVariant,
+    side: BorderSide(color: colours.outlineVariant),
+  );
+}
+
+/// What the two styles above hold in common, so the pair cannot drift into two
+/// heights or two corners. Only the ink differs between them, and that is the
+/// whole of how a screen ranks its buttons.
+///
+/// A minimum rather than a height: at twice the text size a label wants more
+/// than 48 and gets it, rather than being clipped to it.
+const _wayOnSize = Size.fromHeight(48);
+final _wayOnShape = RoundedRectangleBorder(
+  borderRadius: BorderRadius.circular(10),
+);
+
+/// A button's name, which is the name of a screen set a little tighter — see
+/// [asScreenName] for why 1.2 rather than 1.8.
+TextStyle? asAButtonName(ThemeData theme) =>
+    asScreenName(theme.textTheme.labelLarge, tracking: 1.2);
+
+/// The strip at the foot of a screen that holds the ways on out of the
+/// scroll: a rule over it, the phone's own inset under it, and the padding
+/// [Head]'s rows are set to. The counterpart of [Head] at the other end of a
+/// screen, and read by the two screens that end in a button.
+class Foot extends StatelessWidget {
+  const Foot({required this.child, super.key});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: BoxDecoration(
+      border: Border(
+        top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+      ),
+    ),
+    child: SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: child,
+      ),
+    ),
+  );
+}
+
 /// The label column's width, in the type's own scale rather than in pixels: a
 /// reader who has turned text size up gets a wider column instead of a
 /// clipped label.

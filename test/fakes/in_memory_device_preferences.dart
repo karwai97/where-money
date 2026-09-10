@@ -9,7 +9,9 @@ class InMemoryDevicePreferences implements DevicePreferences {
     this._language = defaultLanguage,
     this._homeCurrency,
     Allowance? scanAllowance,
-  }) : _locks = locksOnOpen,
+    String? erasureUnderWay,
+  }) : _erasing = erasureUnderWay,
+       _locks = locksOnOpen,
        _allowance = scanAllowance,
        _mode = theme;
 
@@ -18,7 +20,16 @@ class InMemoryDevicePreferences implements DevicePreferences {
   String _language;
   String? _homeCurrency;
   Allowance? _allowance;
+  String? _erasing;
   final _explained = <String>{};
+
+  /// Every uid this phone has been told to forget, so a test can ask whether
+  /// an erasure reached the preferences as well as the Ledger.
+  final forgotten = <String>{};
+
+  /// Set to have [forget] refuse. Best effort like the Scans are, and for
+  /// the same reason: what a phone remembers is local and invisible.
+  Object? refuseForgetting;
 
   @override
   Future<ThemeMode> theme() async => _mode;
@@ -61,4 +72,22 @@ class InMemoryDevicePreferences implements DevicePreferences {
   @override
   Future<void> rememberScanAllowance(String uid, Allowance allowance) async =>
       _allowance = allowance;
+
+  @override
+  Future<String?> erasureUnderWay() async => _erasing;
+
+  @override
+  Future<void> rememberErasureUnderWay(String uid) async => _erasing = uid;
+
+  @override
+  Future<void> forgetErasureUnderWay() async => _erasing = null;
+
+  @override
+  Future<void> forget(String uid) async {
+    if (refuseForgetting case final failure?) throw failure;
+    forgotten.add(uid);
+    _explained.remove(uid);
+    _allowance = null;
+    _homeCurrency = null;
+  }
 }
