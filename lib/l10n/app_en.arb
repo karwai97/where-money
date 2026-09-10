@@ -389,6 +389,26 @@
     }
   },
 
+  "ledgerChooseAMonth": "Choose a month",
+  "@ledgerChooseAMonth": {
+    "description": "The month over the Ledger's total is a button into a sheet of the whole year. Read as the button's tooltip and as its hint to a screen reader; the month itself is the label, so this says what tapping it does rather than repeating the name."
+  },
+  "ledgerPreviousYear": "Previous year",
+  "@ledgerPreviousYear": {
+    "description": "The chevron left of the year in that sheet. A tooltip on an icon, so it names the direction rather than the year it would land on."
+  },
+  "ledgerNextYear": "Next year",
+  "@ledgerNextYear": {
+    "description": "The chevron right of the year in that sheet, and the mirror of the one above. Disabled at the year the app was opened in, where it still names the direction it would have gone."
+  },
+  "ledgerBackToMonth": "Back to {month}",
+  "@ledgerBackToMonth": {
+    "description": "The pill that returns the Ledger to the month the app was opened in, shown only once the reader has left it. The month arrives already named in the locale's own calendar words — short beside the arrow, spelled out for a screen reader — so it is a String here rather than a date to format.",
+    "placeholders": {
+      "month": { "type": "String" }
+    }
+  },
+
   "ledgerPhotosStayedBehindTitle": "The photos stayed behind",
   "@ledgerPhotosStayedBehindTitle": {
     "description": "Said once, on a phone that restored somebody's Ledger from their account and so has none of the receipt photos. A dialog over the Ledger, which is the screen it explains."

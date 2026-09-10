@@ -23,6 +23,7 @@ class MonthHeader extends StatelessWidget {
     this.rollup,
     this.trend, {
     required this.onMonthPicked,
+    required this.onChooseMonth,
     super.key,
   });
 
@@ -32,6 +33,10 @@ class MonthHeader extends StatelessWidget {
   final List<Rollup> trend;
 
   final void Function(Rollup month) onMonthPicked;
+
+  /// The badge tapped: the reader wants to name a month rather than step to
+  /// one. What that opens is the screen's business, not this header's.
+  final VoidCallback onChooseMonth;
 
   @override
   Widget build(BuildContext context) {
@@ -54,16 +59,7 @@ class MonthHeader extends StatelessWidget {
               textBaseline: TextBaseline.alphabetic,
               children: [
                 Expanded(child: _Total(rollup)),
-                Text(
-                  cased(words, rollup.shortMonthAndYearLabel(words)),
-                  style: atItsWeight(
-                    theme.textTheme.labelSmall?.copyWith(
-                      color: colours.primary,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1.1,
-                    ),
-                  ),
-                ),
+                _Badge(rollup, onTap: onChooseMonth),
               ],
             ),
             const SizedBox(height: 6),
@@ -84,6 +80,74 @@ class MonthHeader extends StatelessWidget {
               onPicked: onMonthPicked,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The month on screen, and the way to any other. A label until the trend
+/// below it turned out to be the only route through the months, and a route
+/// six months wide is no route to last year.
+///
+/// The chevron is drawn on every month, the one the app opened in included, so
+/// the way in looks the same wherever the reader has got to.
+class _Badge extends StatelessWidget {
+  const _Badge(this.rollup, {required this.onTap});
+
+  final Rollup rollup;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final words = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final colours = theme.colorScheme;
+
+    return Tooltip(
+      message: words.ledgerChooseAMonth,
+      child: TextButton(
+        onPressed: onTap,
+        style: TextButton.styleFrom(
+          foregroundColor: colours.primary,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          // Material's own 64px floor would put the badge miles off the right
+          // edge; the shape is the label plus its padding.
+          minimumSize: Size.zero,
+          // A 28px badge is not a target. This is the only thing on the
+          // screen that costs the header height, and it buys the one control
+          // that reaches a month the trend cannot.
+          tapTargetSize: MaterialTapTargetSize.padded,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(6),
+          ),
+        ),
+        // Inside the button rather than around it: excluding the subtree from
+        // above would take the focus node with it, which is the defect
+        // `charts.dart` records against the trend's columns.
+        child: Semantics(
+          // The month spelled out, not the cased abbreviation the badge
+          // draws, and the hint says what tapping it does.
+          label: rollup.monthLabel(words),
+          hint: words.ledgerChooseAMonth,
+          excludeSemantics: true,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                cased(words, rollup.shortMonthAndYearLabel(words)),
+                style: atItsWeight(
+                  theme.textTheme.labelSmall?.copyWith(
+                    color: colours.primary,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 1.1,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              const Icon(Icons.expand_more, size: 14),
+            ],
+          ),
         ),
       ),
     );

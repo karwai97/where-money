@@ -195,6 +195,14 @@ ThemeData _grownFrom(Brightness brightness, _Palette palette) {
         color: colours.onSurfaceVariant,
       ),
     ),
+    // Material's default drag handle is the full muted ink, which over the
+    // sheet's own container reads as a rule rather than as a grip. Here
+    // rather than at the call site because `showModalBottomSheet` takes a
+    // background and not a handle; the app's other sheet draws no handle, so
+    // this reaches nothing else.
+    bottomSheetTheme: BottomSheetThemeData(
+      dragHandleColor: colours.onSurfaceVariant.withValues(alpha: 0.4),
+    ),
     // Said out loud because Material would not do it: a FloatingActionButton
     // reads `primaryContainer`, not `primary`, so the one button the design
     // fills with the accent was coming out a tonal violet nobody measured.

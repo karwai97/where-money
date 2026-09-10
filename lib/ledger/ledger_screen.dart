@@ -18,6 +18,7 @@ import 'how_it_got_here.dart';
 import 'ledger_bloc.dart';
 import 'left_out.dart';
 import 'month_header.dart';
+import 'month_picker.dart';
 import 'photos_stayed_behind.dart';
 import 'rollup_screen.dart';
 
@@ -109,32 +110,7 @@ class LedgerScreen extends StatelessWidget {
               words.ledgerEmpty,
             ),
             LedgerWithoutHomeCurrency(:final expenses) => _Expenses(expenses),
-            LedgerReady() => Column(
-              children: [
-                MonthHeader(
-                  state.rollup,
-                  state.trend,
-                  onMonthPicked: (month) => context.read<LedgerBloc>().add(
-                    MonthPicked(month.year, month.month),
-                  ),
-                ),
-                Expanded(
-                  child: switch (state) {
-                    LedgerReady(expenses: []) => _Message(words.ledgerEmpty),
-                    LedgerReady(inMonth: []) => _Message(
-                      words.ledgerNothingInMonth(
-                        state.rollup.monthLabel(words),
-                      ),
-                    ),
-                    LedgerReady(:final inMonth) => _Expenses(
-                      inMonth,
-                      homeCurrency: state.rollup.homeCurrency,
-                      months: [state.rollup],
-                    ),
-                  },
-                ),
-              ],
-            ),
+            LedgerReady() => _MonthOnScreen(state),
           },
         ),
       ),
@@ -231,6 +207,199 @@ class LedgerScreen extends StatelessWidget {
 const double _markWidth = 20;
 const double _gutter = 12;
 
+/// What the foot of the list has to clear: the 56px camera button, its 16px
+/// inset and 16px above it — which is also enough for the pill beside it. The
+/// last row and the notice under it used to scroll under both.
+const double _belowTheList = 88;
+
+/// The width the buttons in the corner take, so the pill is centred in what is
+/// left rather than under them.
+const double _theButtonColumn = 88;
+
+/// How far the pill rises into place as it fades in.
+const double _pillRise = 8;
+
+/// Where the pill's box sits above the bottom safe inset. The box is 48 tall
+/// for the touch target with the 40px shape centred in it, so this is the
+/// design's 24 under the shape less the 4 above it.
+const double _pillInset = 20;
+
+/// The month on screen: its header, its list, and the way back to the month
+/// the app was opened in.
+class _MonthOnScreen extends StatelessWidget {
+  const _MonthOnScreen(this.state);
+
+  final LedgerReady state;
+
+  bool get _onTheOpenedMonth =>
+      state.rollup.year == state.opened.year &&
+      state.rollup.month == state.opened.month;
+
+  @override
+  Widget build(BuildContext context) {
+    final words = AppLocalizations.of(context);
+
+    return Column(
+      children: [
+        MonthHeader(
+          state.rollup,
+          state.trend,
+          onMonthPicked: (month) => _moveTo(context, month.year, month.month),
+          onChooseMonth: () => _chooseAMonth(context),
+        ),
+        Expanded(
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: switch (state) {
+                  LedgerReady(expenses: []) => _Message(words.ledgerEmpty),
+                  LedgerReady(inMonth: []) => _Message(
+                    words.ledgerNothingInMonth(state.rollup.monthLabel(words)),
+                  ),
+                  LedgerReady(:final inMonth) => _Expenses(
+                    inMonth,
+                    homeCurrency: state.rollup.homeCurrency,
+                    months: [state.rollup],
+                  ),
+                },
+              ),
+              Positioned.directional(
+                textDirection: Directionality.of(context),
+                start: 0,
+                end: _theButtonColumn,
+                bottom: _pillInset + MediaQuery.paddingOf(context).bottom,
+                child: Align(
+                  child: _BackToTheOpenedMonth(
+                    state.opened,
+                    // Nothing to go back to on the month the app started in.
+                    shown: !_onTheOpenedMonth,
+                    onTap: () =>
+                        _moveTo(context, state.opened.year, state.opened.month),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _moveTo(BuildContext context, int year, int month) =>
+      context.read<LedgerBloc>().add(MonthPicked(year, month));
+
+  Future<void> _chooseAMonth(BuildContext context) async {
+    final bloc = context.read<LedgerBloc>();
+    final picked = await chooseAMonth(
+      context,
+      expenses: state.expenses,
+      showing: state.rollup,
+      opened: state.opened,
+    );
+    if (picked != null) bloc.add(MonthPicked(picked.year, picked.month));
+  }
+}
+
+/// The way back to the month the app was opened in, for a reader who has
+/// wandered off it. Fades in with a rise rather than appearing, so a change of
+/// month does not pop chrome onto the screen.
+class _BackToTheOpenedMonth extends StatelessWidget {
+  const _BackToTheOpenedMonth(
+    this.opened, {
+    required this.shown,
+    required this.onTap,
+  });
+
+  final DateTime opened;
+  final bool shown;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => AnimatedSwitcher(
+    duration: const Duration(milliseconds: 200),
+    switchInCurve: Curves.easeOutCubic,
+    switchOutCurve: Curves.easeOutCubic,
+    transitionBuilder: (child, animation) => FadeTransition(
+      opacity: animation,
+      child: AnimatedBuilder(
+        animation: animation,
+        // Pixels rather than a SlideTransition's fraction of the child, which
+        // would rise further the taller a scaled label makes the pill.
+        builder: (context, _) => Transform.translate(
+          offset: Offset(0, (1 - animation.value) * _pillRise),
+          child: child,
+        ),
+      ),
+    ),
+    // Gone rather than transparent on the opened month: a pill nobody can see
+    // is still a pill a screen reader reads out.
+    child: shown ? _Pill(opened, onTap: onTap) : const SizedBox.shrink(),
+  );
+}
+
+class _Pill extends StatelessWidget {
+  const _Pill(this.opened, {required this.onTap});
+
+  final DateTime opened;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final words = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final colours = theme.colorScheme;
+
+    return TextButton(
+      onPressed: onTap,
+      style: TextButton.styleFrom(
+        foregroundColor: colours.primary,
+        backgroundColor: colours.surfaceContainer,
+        elevation: 3,
+        minimumSize: const Size(0, 40),
+        padding: const EdgeInsets.only(left: 18, right: 16),
+        // 40 is the shape; this is the target around it.
+        tapTargetSize: MaterialTapTargetSize.padded,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          // The same line the small button above it carries, so the two read
+          // as the same kind of thing over the list.
+          side: BorderSide(color: colours.outlineVariant),
+        ),
+      ),
+      child: Semantics(
+        // The month spelled out rather than the cased abbreviation drawn.
+        label: words.ledgerBackToMonth(asMonth(words, opened)),
+        excludeSemantics: true,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(
+                cased(
+                  words,
+                  words.ledgerBackToMonth(asShortMonthAndYear(words, opened)),
+                ),
+                maxLines: 1,
+                // Ellipsised rather than grown: the pill has the width left
+                // of the buttons in the corner and must not reach under them.
+                overflow: TextOverflow.ellipsis,
+                style: asScreenName(
+                  theme.textTheme.labelLarge,
+                  tracking: 1.2,
+                )?.copyWith(color: colours.primary),
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Today is always later than wherever the reader has got to, so
+            // the arrow points forward. Flutter mirrors it under RTL.
+            const Icon(Icons.arrow_forward, size: 16),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// The list under the header, at direction C's density: 52px rows, the
 /// merchant over when and what it was for, and the amount kept in its own
 /// column so a month can be read down the figures.
@@ -254,6 +423,11 @@ class _Expenses extends StatelessWidget {
       const _ColumnHeads(),
       Expanded(
         child: ListView.builder(
+          // So the last row and the notice under it can be scrolled clear of
+          // the buttons in the corner and of the pill beside them.
+          padding: EdgeInsets.only(
+            bottom: _belowTheList + MediaQuery.paddingOf(context).bottom,
+          ),
           // One past the end: what the totals leave out belongs under the
           // last row, not pinned below the scroll where it would sit on
           // screen with nothing above it to explain.
