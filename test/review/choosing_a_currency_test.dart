@@ -239,6 +239,29 @@ void main() {
     expect(inTheCurrencySheet(currencyRow('USD')), findsNothing);
   });
 
+  testWidgets('scrolling the list puts the keyboard away', (tester) async {
+    await openReview(tester, homeCurrency: 'MYR');
+    await openTheCurrencySheet(tester, 'Currency');
+
+    expect(
+      tester.testTextInput.isVisible,
+      isTrue,
+      reason: 'the sheet opens on the search, so the keyboard comes up',
+    );
+
+    await tester.drag(
+      inTheCurrencySheet(find.byType(ListView)),
+      const Offset(0, -200),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.testTextInput.isVisible,
+      isFalse,
+      reason: 'somebody scrolling has stopped typing and is reading codes',
+    );
+  });
+
   testWidgets('a search that matches nothing says so rather than showing an '
       'empty list', (tester) async {
     await openReview(tester);

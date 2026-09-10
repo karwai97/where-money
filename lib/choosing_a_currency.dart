@@ -160,6 +160,12 @@ class _SheetState extends State<_Sheet> {
           else
             Expanded(
               child: ListView.builder(
+                // The sheet opens with the keyboard up over most of the list.
+                // Somebody who has started scrolling has stopped typing and
+                // is reading codes, so the keyboard goes rather than waiting
+                // to be dismissed off the one row it is covering.
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
                 itemCount: rows.length,
                 itemBuilder: (context, index) => rows[index](context),
               ),
