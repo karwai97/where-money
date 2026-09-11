@@ -150,7 +150,7 @@ class _TheRecap extends StatelessWidget {
                   style: theme.textTheme.bodyMedium,
                 ),
                 Align(
-                  alignment: Alignment.centerLeft,
+                  alignment: AlignmentDirectional.centerStart,
                   child: TextButton(
                     onPressed: () =>
                         context.read<LedgerBloc>().add(const RecapAskedAgain()),

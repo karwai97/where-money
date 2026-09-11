@@ -1,0 +1,342 @@
+{
+  "@@locale": "de",
+
+  "settingsTitle": "Einstellungen",
+
+  "settingsTheme": "Design",
+  "settingsThemeSystem": "System",
+  "settingsThemeLight": "Hell",
+  "settingsThemeDark": "Dunkel",
+
+  "settingsLanguage": "Sprache",
+  "settingsLanguageEnglish": "English",
+  "settingsLanguageChinese": "中文",
+  "settingsLanguageSpanish": "Español",
+  "settingsLanguagePortuguese": "Português",
+  "settingsLanguageFrench": "Français",
+  "settingsLanguageGerman": "Deutsch",
+  "settingsLanguageJapanese": "日本語",
+  "settingsLanguageKorean": "한국어",
+  "settingsLanguageRussian": "Русский",
+  "settingsLanguageArabic": "العربية",
+  "settingsLanguageHindi": "हिन्दी",
+  "settingsLanguageIndonesian": "Bahasa Indonesia",
+
+  "settingsHomeCurrency": "Hauptwährung",
+  "settingsHomeCurrencyInferred": "Übernommen aus deiner ersten Ausgabe.",
+  "settingsHomeCurrencyNone": "Deine erste Ausgabe legt sie fest.",
+  "settingsHomeCurrencyGoverns": "Summen und Rückblicke werden in ihr berechnet. Ausgaben in anderen Währungen werden aufgeführt, aber nicht mitgezählt.",
+
+  "settingsLock": "Sperre",
+  "settingsLockBiometrics": "Fragt nach Fingerabdruck, Gesicht oder der PIN dieses Handys, bevor deine Ausgaben angezeigt werden.",
+  "settingsLockDeviceCredential": "Auf diesem Handy ist kein Fingerabdruck eingerichtet, deshalb wird vor dem Anzeigen deiner Ausgaben nach der PIN gefragt.",
+  "settingsLockUnavailable": "Dieses Handy hat keine Displaysperre. Richte in den Android-Einstellungen eine ein, um das zu nutzen.",
+
+  "settingsDailyCap": "Tageslimit",
+  "settingsDailyCapScansToday": "Scans heute",
+  "settingsDailyCapScansADay": "Scans pro Tag",
+  "settingsDailyCapGoverns": "Wie viele Belege das Modell an einem Tag für dich liest. Sind sie aufgebraucht, warten neue Fotos bis morgen im Eingang.",
+  "settingsDailyCapSpoken": "{used} von {cap}",
+  "@settingsDailyCapSpoken": {
+    "placeholders": {
+      "used": { "type": "int" },
+      "cap": { "type": "int" }
+    }
+  },
+
+  "settingsSignedInWith": "{email} · Google",
+  "@settingsSignedInWith": {
+    "placeholders": {
+      "email": { "type": "String" }
+    }
+  },
+  "settingsSignedInWithGoogle": "Google",
+  "settingsGuest": "Gast",
+  "settingsGuestNoAccount": "Kein Konto hinter diesem Kassenbuch",
+
+  "settingsSignOut": "Abmelden",
+
+  "settingsKeepThisLedger": "Anmelden, um dieses Kassenbuch zu behalten",
+  "settingsKeepThisLedgerHint": "Es verschwindet mit diesem Handy. Angemeldet bleibt es erhalten.",
+  "settingsSignOutAsGuestTitle": "Aus diesem Kassenbuch abmelden?",
+  "settingsSignOutAsGuestBody": "Dein Kassenbuch und seine Belege werden gelöscht und lassen sich nicht wiederherstellen.",
+  "settingsSignOutKeep": "Behalten",
+  "settingsSignOutConfirm": "Abmelden",
+  "settingsErasingInFlight": "Dieses Kassenbuch wird gelöscht",
+  "settingsAccountInUseConfirm": "Anmelden",
+  "settingsAccountInUseBody": "Dieses Konto hat schon ein Kassenbuch. Beim Anmelden wird es geöffnet, und dieses Kassenbuch samt Belegen wird gelöscht.",
+
+  "settingsScansHeading": "Was jeder Scan anfordert",
+  "settingsScansModel": "Modell: {model}",
+  "settingsScansEffort": "Denkaufwand: {effort}",
+  "settingsScansLongEdge": "Lange Bildkante: {pixels} px",
+  "settingsScansDailyCap": "{count, plural, one{Tageslimit: {count} Scan} other{Tageslimit: {count} Scans}}",
+  "settingsScansFromConsole": "Wird in der Firebase-Konsole festgelegt und beim Start der App gelesen. Eine Änderung dort braucht also nur ein Schließen und Neuöffnen der App, keine neue Version. Bis eine ankommt, gelten die Werte, mit denen die App ausgeliefert wurde.",
+  "settingsScansNotEnforced": "Das ist, was angefordert wird, nicht, was gilt: Der Worker führt die Liste der Modelle, die er aufruft, und die Obergrenze für das Tageslimit. Einen Namen, den er nicht kennt, oder ein Limit über seiner Grenze ersetzt er dort stillschweigend. Wenn eine Änderung hier keine Wirkung zeigt, liegt es daran.",
+
+  "settingsCorrectedHeading": "Was die Prüfung korrigieren musste",
+  "settingsCorrectedNothingYet": "Noch kein Beleg gelesen, also gibt es nichts zu sagen.",
+  "settingsCorrectedTally": "{count, plural, one{{count} Beleg gelesen, {clean} unverändert.} other{{count} Belege gelesen, {clean} unverändert.}}",
+  "settingsCorrectedField": "{field}, korrigiert bei {count} von {total}",
+  "settingsCorrectedManualExcluded": "Von Hand eingegebene Ausgaben zählen nicht mit: Sie würden jedes Feld als Änderung werten, gegen eine Extraktion, die es nie gab.",
+
+  "fieldMerchant": "Händler",
+  "fieldPurchasedAt": "Datum",
+  "fieldCurrency": "Währung",
+  "fieldSubtotal": "Zwischensumme",
+  "fieldTax": "Steuer",
+  "fieldTip": "Trinkgeld",
+  "fieldTotal": "Gesamt",
+  "fieldPaymentMethod": "Bezahlt mit",
+  "fieldCategory": "Kategorie",
+  "fieldLineItems": "Posten",
+
+  "categoryGroceries": "Lebensmittel",
+  "categoryDining": "Essen gehen",
+  "categoryTransport": "Mobilität",
+  "categoryFuel": "Tanken",
+  "categoryUtilities": "Nebenkosten",
+  "categoryHealthcare": "Gesundheit",
+  "categoryPharmacy": "Apotheke",
+  "categoryEntertainment": "Unterhaltung",
+  "categoryShopping": "Shopping",
+  "categoryApparel": "Kleidung",
+  "categoryHome": "Wohnen",
+  "categoryElectronics": "Elektronik",
+  "categoryTravel": "Reisen",
+  "categoryEducation": "Bildung",
+  "categoryPersonalCare": "Körperpflege",
+  "categorySubscriptions": "Abos",
+  "categoryFeesCharges": "Gebühren",
+  "categoryOther": "Sonstiges",
+
+  "paymentMethodCash": "Bar",
+  "paymentMethodCard": "Karte",
+  "paymentMethodEwallet": "E-Wallet",
+  "paymentMethodBankTransfer": "Überweisung",
+  "paymentMethodUnknown": "Nicht erfasst",
+
+  "reviewTitleTyped": "Ausgabe hinzufügen",
+  "reviewTitlePhotographed": "Diesen Beleg prüfen",
+  "reviewTitleCorrecting": "Diese Ausgabe korrigieren",
+
+  "reviewClean": "Auf diesem Beleg passt alles zusammen. Vergleiche ihn mit dem Foto, dann füge ihn hinzu.",
+  "reviewRefused": "Die Ausgabe wurde nicht gespeichert. Deine Eingaben sind noch da.",
+
+  "reviewToCheck": "{count, plural, other{{count} zu prüfen}}",
+
+  "reviewSectionWhatThisWas": "Was das war",
+  "reviewSectionWhatItCost": "Was es gekostet hat",
+
+  "reviewPickDate": "Datum wählen",
+
+  "reviewTypeItIn": "Hier eingeben",
+  "reviewCategoryReason": "Das Modell hat das gewählt, weil: {reason}",
+
+  "reviewLineDescription": "Beschreibung",
+  "reviewLineQuantity": "Menge",
+  "reviewLineUnitPrice": "Einzelpreis",
+  "reviewLineAmount": "Betrag",
+  "reviewAddLineItem": "Posten hinzufügen",
+  "reviewRemoveLineItem": "Diesen Posten entfernen",
+
+  "reviewAddToLedger": "Ins Kassenbuch",
+  "reviewSave": "Speichern",
+
+  "reviewFindingNotAReceiptTitle": "Kein Beleg",
+  "reviewFindingNotAReceiptDetail": "Das Modell sagt, dieses Bild ist kein Beleg.",
+
+  "reviewFindingNoTotalTitle": "Kein Gesamtbetrag",
+  "reviewFindingNoTotalDetail": "Der Gesamtbetrag ist null oder negativ. Es wurde nichts Brauchbares gelesen.",
+
+  "reviewFindingNoMerchantTitle": "Kein Händler",
+  "reviewFindingNoMerchantDetail": "Der Händlername war nicht lesbar. Die Ausgabe lässt sich niemandem zuordnen.",
+
+  "reviewFindingNoDateTitle": "Kein Datum",
+  "reviewFindingNoDateDetail": "Das Datum auf dem Beleg war nicht lesbar. Es wird auf heute gesetzt.",
+
+  "reviewFindingUnparseableDateTitle": "Unverständliches Datum",
+  "reviewFindingUnparseableDateDetail": "Gelesen wurde „{read}“, das ist kein ISO-Datum.",
+
+  "reviewFindingDateInTheFutureTitle": "Datum liegt in der Zukunft",
+  "reviewFindingDateInTheFutureDetail": "Gelesen wurde {read}, das ist noch nicht passiert. Wahrscheinlich ein Kartenablaufdatum oder ein Mindesthaltbarkeitsdatum, nicht der Kauf.",
+
+  "reviewFindingYearLooksMisreadTitle": "Jahr wohl falsch gelesen",
+  "reviewFindingYearLooksMisreadDetail": "Gelesen wurde {read}, fast genau ein Jahr her. Bei einem frisch fotografierten Beleg heißt das meist, dass das Jahr falsch gelesen wurde. Wahrscheinlich ist {likelyYear} gemeint.",
+
+  "reviewFindingDateIsUnusuallyOldTitle": "Datum ungewöhnlich alt",
+  "reviewFindingDateIsUnusuallyOldDetail": "Gelesen wurde {read}, vor {daysAgo} Tagen. Bei einem alten Beleg in Ordnung, aber wenn du ihn gerade erst fotografiert hast, lohnt sich ein Blick.",
+
+  "reviewFindingCurrencyUnclearTitle": "Währung unklar",
+  "reviewFindingNoCurrencyDetail": "Keine Währung erkannt, der Betrag hat also keine Einheit.",
+  "reviewFindingCurrencyNotAnIsoCodeDetail": "Gelesen wurde „{read}“, das ist kein ISO-4217-Code.",
+
+  "reviewFindingTotalDoesNotAddUpTitle": "Gesamtbetrag geht nicht auf",
+  "reviewFindingTotalDoesNotAddUpDetail": "Zwischensumme {subtotal} + Steuer {tax} + Trinkgeld {tip} = {composed}, aber als Gesamtbetrag steht {total} (Abweichung {difference}).",
+
+  "reviewFindingLineItemsDoNotMatchSubtotalTitle": "Posten passen nicht zur Zwischensumme",
+  "reviewFindingLineItemsDoNotMatchTotalTitle": "Posten passen nicht zum Gesamtbetrag",
+  "reviewFindingLineItemsUnderSubtotalDetail": "Die Posten ergeben {sum}, die Zwischensumme ist {target}. Vielleicht fehlt ein Posten, oder ein Rabatt wurde nicht einzeln aufgeführt.",
+  "reviewFindingLineItemsOverSubtotalDetail": "Die Posten ergeben {sum}, die Zwischensumme ist {target}. Die Posten übersteigen den Beleg, also wurde etwas doppelt gelesen.",
+  "reviewFindingLineItemsUnderTotalDetail": "Die Posten ergeben {sum}, der Gesamtbetrag ist {target}. Vielleicht fehlt ein Posten, oder ein Rabatt wurde nicht einzeln aufgeführt.",
+  "reviewFindingLineItemsOverTotalDetail": "Die Posten ergeben {sum}, der Gesamtbetrag ist {target}. Die Posten übersteigen den Beleg, also wurde etwas doppelt gelesen.",
+
+  "reviewFindingLineArithmeticOffTitle": "Zeile geht nicht auf",
+  "reviewFindingLineArithmeticOffDetail": "„{description}“: {quantity} × {unitPrice} = {expected}, aber in der Zeile steht {amount}.",
+
+  "reviewFindingUnknownItemCategoryTitle": "Unbekannte Postenkategorie",
+  "reviewFindingUnknownItemCategoryDetail": "„{description}“ kam als „{read}“ zurück, das gibt es in der Kategorienliste nicht.",
+
+  "reviewFindingUnknownCategoryTitle": "Unbekannte Kategorie",
+  "reviewFindingUnknownCategoryDetail": "Gelesen wurde „{read}“, das liegt außerhalb der Werte, die das Schema festlegt.",
+
+  "reviewFindingUnknownPaymentMethodTitle": "Unbekannte Zahlungsart",
+  "reviewFindingUnknownPaymentMethodDetail": "Gelesen wurde „{read}“.",
+
+  "reviewFindingModelAskedForReviewTitle": "Modell bittet um Prüfung",
+  "reviewFindingModelAskedNoReasonDetail": "Es hat das Bild markiert, aber keinen Grund genannt.",
+  "reviewFindingReasonSeparator": "; ",
+  "ledgerTitle": "Kassenbuch",
+  "ledgerColumnMerchant": "Händler",
+  "ledgerColumnAmount": "Betrag",
+  "ledgerAddByHand": "Ausgabe von Hand hinzufügen",
+  "ledgerPhotograph": "Beleg fotografieren",
+  "ledgerTakeAPhoto": "Foto aufnehmen",
+  "ledgerChooseFromGallery": "Aus der Galerie wählen",
+  "ledgerCharts": "Diagramme",
+  "ledgerInbox": "Eingang",
+  "ledgerInboxWaiting": "{count, plural, one{Eingang, {count} wartet} other{Eingang, {count} warten}}",
+  "ledgerUnreadable": "Dein Kassenbuch konnte nicht gelesen werden.",
+  "ledgerEmpty": "Hier ist noch nichts.\nLeg mit dem Knopf unten eine Ausgabe an.",
+  "ledgerNothingInMonth": "Nichts im {month}.",
+
+  "ledgerChooseAMonth": "Monat wählen",
+  "ledgerPreviousYear": "Vorheriges Jahr",
+  "ledgerNextYear": "Nächstes Jahr",
+  "ledgerBackToMonth": "Zurück zum {month}",
+
+  "ledgerPhotosStayedBehindTitle": "Die Fotos sind zurückgeblieben",
+  "ledgerPhotosStayedBehindBody": "Jede Ausgabe in deinem Kassenbuch kam aus deinem Konto zurück. Belegfotos verlassen nie das Handy, auf dem sie aufgenommen wurden, deshalb hat dieses hier keine. Sonst fehlt nichts.",
+  "ledgerPhotosStayedBehindGotIt": "Verstanden",
+  "ledgerLoading": "Dein Kassenbuch wird geöffnet",
+
+  "expenseGone": "Diese Ausgabe ist nicht mehr in deinem Kassenbuch.",
+  "expenseCorrect": "Diese Ausgabe korrigieren",
+  "expenseDelete": "Diese Ausgabe löschen",
+  "expenseDeleteTitle": "Diese Ausgabe löschen?",
+  "expenseDeleteBody": "{merchant}, {amount}, verschwindet aus deinem Kassenbuch und aus deinen Summen.",
+  "expenseDeleteBodyKeepsReceipt": "{merchant}, {amount}, verschwindet aus deinem Kassenbuch und aus deinen Summen. Das Belegfoto bleibt auf diesem Handy.",
+  "expenseDeleteKeep": "Behalten",
+  "expenseDeleteConfirm": "Löschen",
+  "expenseFromReceipt": "Aus einem fotografierten Beleg gelesen",
+  "expenseTypedByHand": "Von Hand eingegeben",
+  "expenseForeignCurrency": "In {currency} bezahlt, deshalb nicht in deinen Monatssummen.",
+  "expenseNoLineItems": "Keine Posten, nur der Gesamtbetrag.",
+  "expenseLineItemCount": "{category} · {quantity} × {unitPrice}",
+  "expenseReceiptNotOnThisDevice": "Das Belegfoto ist nicht auf diesem Gerät. Fotos bleiben auf dem Handy, das sie aufgenommen hat. Ein anderswo wiederhergestelltes Kassenbuch kommt deshalb ohne sie an.",
+  "expenseReceiptLoading": "Beleg wird geladen",
+
+  "chartsCategoryTotal": "{count, plural, one{{category}, {amount}, {count} Ausgabe} other{{category}, {amount}, {count} Ausgaben}}",
+  "chartsMonthTotal": "{month}, {amount}",
+
+  "rollupByCategory": "Nach Kategorie",
+  "rollupMonthByMonth": "Monat für Monat",
+  "rollupNothingSpent": "Im {month} nichts ausgegeben.",
+  "rollupRecapHeading": "Wohin dein Geld ging",
+  "rollupRecapPending": "Der Monat wird gelesen.",
+  "rollupRecapTooFew": "{needed, plural, one{Ein Monat braucht {needed} Ausgabe, bevor es etwas zu schreiben gibt. Die Diagramme funktionieren so oder so.} other{Ein Monat braucht {needed} Ausgaben, bevor es etwas zu schreiben gibt. Die Diagramme funktionieren so oder so.}}",
+  "rollupRecapAskAgain": "Noch mal fragen",
+
+  "rollupRecapRefused": "Das Modell wollte zu diesem Monat keinen Rückblick schreiben.",
+  "rollupRecapNothingToSay": "Das Modell hatte zu diesem Monat nichts zu sagen.",
+  "rollupRecapAllowanceSpent": "Das war das Kontingent für heute. Morgen gibt es einen Rückblick.",
+  "rollupRecapTokenRefused": "Melde dich neu an, dann kommt der Rückblick zurück.",
+  "rollupRecapOutOfReach": "Ohne Verbindung kein Rückblick. Die Diagramme brauchen keine.",
+  "rollupRecapModelUnavailable": "Das Modell war nicht erreichbar. Die Diagramme brauchen es nicht.",
+  "rollupNothingToCompare": "Im {month} wurde nichts ausgegeben, also gibt es keinen Vergleich.",
+  "rollupAboutTheSame": "Etwa so viel wie im {month}.",
+  "rollupMoreThan": "{percent} % mehr als im {month}.",
+  "rollupLessThan": "{percent} % weniger als im {month}.",
+  "rollupLeftOutThisMonth": "{count, plural, one{{count} Ausgabe in {currencies}, diesen Monat bezahlt, ist nicht in diesen Summen.} other{{count} Ausgaben in {currencies}, diesen Monat bezahlt, sind nicht in diesen Summen.}}",
+  "rollupLeftOutTheseMonths": "{count, plural, one{{count} Ausgabe in {currencies}, in diesen Monaten bezahlt, ist nicht in diesen Summen.} other{{count} Ausgaben in {currencies}, in diesen Monaten bezahlt, sind nicht in diesen Summen.}}",
+  "rollupNoHomeCurrencyTitle": "Noch keine Summen",
+  "rollupNoHomeCurrency": "Summen beginnen mit deiner ersten Ausgabe. In welcher Währung du sie erfasst, in der werden Diagramme und Rückblicke berechnet. In den Einstellungen kannst du das später ändern.",
+
+  "currencyChooseTitle": "Währung wählen",
+  "currencyClose": "Schließen",
+  "currencySearch": "Codes suchen",
+  "currencyYours": "Deine",
+  "currencyAll": "Alle Währungen",
+  "currencyHome": "Hauptwährung",
+  "currencyNoMatch": "Kein Code passt zu {query}.",
+
+  "rollupLoading": "Der Monat wird geöffnet",
+
+  "inboxTitle": "Eingang",
+  "inboxEmpty": "Keine Belege warten.",
+  "inboxPhotographed": "Fotografiert {moment}",
+
+  "inboxWaitingToBeRead": "Wartet aufs Lesen",
+  "inboxBeingRead": "Wird gelesen",
+  "inboxReadyToReview": "Bereit zur Prüfung",
+  "inboxNotAReceipt": "Das sieht nicht wie ein Beleg aus",
+  "inboxCommitted": "In deinem Kassenbuch",
+
+  "inboxCapped": "Die Scans für heute sind aufgebraucht",
+  "inboxMoreScansAt": "Neue Scans ab {moment}.",
+  "inboxMoreScansTomorrow": "Neue Scans morgen.",
+
+  "inboxFailureRefused": "Das Modell wollte dieses Foto nicht lesen",
+  "inboxFailureRefusedNext": "Ein schärferes Foto hilft am ehesten.",
+  "inboxFailureSaidNothing": "Das Modell hat gar nichts geantwortet",
+  "inboxFailureSaidNothingNext": "Noch mal lesen hilft meistens.",
+  "inboxFailureNotLegible": "Die Antwort des Modells war nicht lesbar",
+  "inboxFailureNotLegibleNext": "Noch mal lesen hilft meistens.",
+  "inboxFailureOutOfReach": "Keine Verbindung beim Lesen",
+  "inboxFailureOutOfReachNext": "Es versucht es von selbst weiter.",
+  "inboxFailureModelUnavailable": "Das Modell war nicht verfügbar",
+  "inboxFailureModelUnavailableNext": "Das geht meist vorbei. Lies es in einer Minute noch mal.",
+  "inboxFailureTokenRefused": "Deine Anmeldung wurde nicht angenommen",
+  "inboxFailureTokenRefusedNext": "Melde dich neu an und lies es dann noch mal.",
+  "inboxFailureImageNotAccepted": "Dieses Foto konnte nicht gesendet werden",
+  "inboxFailureImageNotAcceptedNext": "Fotografiere den Beleg noch mal.",
+  "inboxFailureUnsaid": "Das konnte nicht gelesen werden",
+
+  "inboxLoading": "Der Eingang wird geöffnet",
+
+  "inboxReview": "Prüfen",
+  "inboxReadAgain": "Noch mal lesen",
+  "inboxDiscard": "Verwerfen",
+  "inboxAbandon": "Aufgeben",
+  "inboxAbandonThisScan": "Diesen Scan aufgeben",
+  "inboxKeep": "Behalten",
+  "inboxDiscardingDeletesThePhoto": "Verwerfen löscht dieses Foto vom Handy.",
+  "inboxAbandoningDeletesThePhoto": "Aufgeben löscht das Foto dieses Scans vom Handy.",
+
+  "receiptZoom": "Beleg vergrößern",
+  "receiptTitle": "Der Beleg",
+  "receiptBackToTheFields": "Zurück zu den Feldern",
+
+  "openingWait": "Where Money wird geöffnet",
+
+  "signInTagline": "Beleg fotografieren. Sehen, wohin das Geld ging.",
+  "signInWithGoogle": "Weiter mit Google",
+  "signInAsGuest": "Weiter als Gast",
+  "signInInFlight": "Anmeldung läuft",
+  "signInFailed": "Die Anmeldung hat nicht geklappt. {detail}",
+
+  "lockTitle": "Where Money ist gesperrt",
+  "lockWhy": "Deine Ausgaben sind auf diesem Handy. Entsperre es, um sie zu lesen.",
+  "lockRefused": "Das hat nicht entsperrt.",
+  "lockUnlock": "Entsperren",
+  "lockSignOutInstead": "Stattdessen abmelden",
+  "lockWaiting": "Warten, bis das Handy fragt",
+  "lockReason": "Entsperre Where Money, um deine Ausgaben zu sehen.",
+
+  "appName": "Where Money",
+
+  "merchantUnknown": "Unbekannter Händler",
+
+  "expenseSourceScanned": "Aus einem Beleg gelesen",
+  "expenseSourceManual": "Von Hand eingegeben"
+}

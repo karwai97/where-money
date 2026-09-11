@@ -42,7 +42,7 @@ describe('the language a request asked for', () => {
   });
 
   it('is English when the client asked for one we do not know', () => {
-    expect(asked('?lang=fr')).toBe('en');
+    expect(asked('?lang=sw')).toBe('en');
     expect(asked('?lang=zh-Hant')).toBe('en');
     expect(asked('?lang=')).toBe('en');
   });

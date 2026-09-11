@@ -1,0 +1,344 @@
+{
+  "@@locale": "hi",
+
+  "settingsTitle": "सेटिंग्स",
+
+  "settingsTheme": "थीम",
+  "settingsThemeSystem": "सिस्टम",
+  "settingsThemeLight": "लाइट",
+  "settingsThemeDark": "डार्क",
+
+  "settingsLanguage": "भाषा",
+  "settingsLanguageEnglish": "English",
+  "settingsLanguageChinese": "中文",
+  "settingsLanguageSpanish": "Español",
+  "settingsLanguagePortuguese": "Português",
+  "settingsLanguageFrench": "Français",
+  "settingsLanguageGerman": "Deutsch",
+  "settingsLanguageJapanese": "日本語",
+  "settingsLanguageKorean": "한국어",
+  "settingsLanguageRussian": "Русский",
+  "settingsLanguageArabic": "العربية",
+  "settingsLanguageHindi": "हिन्दी",
+  "settingsLanguageIndonesian": "Bahasa Indonesia",
+
+  "settingsHomeCurrency": "मुख्य मुद्रा",
+  "settingsHomeCurrencyInferred": "आपके पहले खर्च से ली गई।",
+  "settingsHomeCurrencyNone": "आपका पहला खर्च इसे तय करेगा।",
+  "settingsHomeCurrencyGoverns": "कुल और सार इसी में निकाले जाते हैं। दूसरी मुद्राओं में हुआ खर्च दिखता तो है, पर जोड़ा नहीं जाता।",
+
+  "settingsLock": "लॉक",
+  "settingsLockBiometrics": "आपका खर्च दिखाने से पहले फ़िंगरप्रिंट, चेहरा या इस फ़ोन का PIN माँगे।",
+  "settingsLockDeviceCredential": "इस फ़ोन पर फ़िंगरप्रिंट सेट नहीं है, इसलिए यह खर्च दिखाने से पहले आपका PIN माँगता है।",
+  "settingsLockUnavailable": "इस फ़ोन पर स्क्रीन लॉक नहीं है। इसे इस्तेमाल करने के लिए Android सेटिंग्स में एक लगाएँ।",
+
+  "settingsDailyCap": "रोज़ की सीमा",
+  "settingsDailyCapScansToday": "आज के स्कैन",
+  "settingsDailyCapScansADay": "रोज़ के स्कैन",
+  "settingsDailyCapGoverns": "मॉडल एक दिन में आपके लिए कितनी रसीदें पढ़ता है। ये खत्म हो जाएँ तो नई फ़ोटो कल तक इनबॉक्स में इंतज़ार करती हैं।",
+  "settingsDailyCapSpoken": "{cap} में से {used}",
+  "@settingsDailyCapSpoken": {
+    "placeholders": {
+      "used": { "type": "int" },
+      "cap": { "type": "int" }
+    }
+  },
+
+  "settingsSignedInWith": "{email} · Google",
+  "@settingsSignedInWith": {
+    "placeholders": {
+      "email": { "type": "String" }
+    }
+  },
+  "settingsSignedInWithGoogle": "Google",
+  "settingsGuest": "गेस्ट",
+  "settingsGuestNoAccount": "इस बही के पीछे कोई अकाउंट नहीं",
+
+  "settingsSignOut": "साइन आउट",
+
+  "settingsKeepThisLedger": "इस बही को रखने के लिए साइन इन करें",
+  "settingsKeepThisLedgerHint": "यह फ़ोन गया तो यह भी गई। साइन इन करने से बची रहती है।",
+  "settingsSignOutAsGuestTitle": "इस बही से साइन आउट करें?",
+  "settingsSignOutAsGuestBody": "आपकी बही और उसकी रसीदें मिट जाएँगी, और वापस नहीं आएँगी।",
+  "settingsSignOutKeep": "रहने दें",
+  "settingsSignOutConfirm": "साइन आउट",
+  "settingsErasingInFlight": "यह बही मिटाई जा रही है",
+  "settingsAccountInUseConfirm": "साइन इन",
+  "settingsAccountInUseBody": "उस अकाउंट की पहले से एक बही है। साइन इन करने पर वही खुलेगी, और यह बही और इसकी रसीदें मिट जाएँगी।",
+
+  "settingsScansHeading": "हर स्कैन क्या माँगता है",
+  "settingsScansModel": "मॉडल: {model}",
+  "settingsScansEffort": "रीज़निंग स्तर: {effort}",
+  "settingsScansLongEdge": "तस्वीर का लंबा किनारा: {pixels} px",
+  "settingsScansDailyCap": "{count, plural, other{रोज़ की सीमा: {count} स्कैन}}",
+  "settingsScansFromConsole": "Firebase कंसोल में सेट होते हैं और ऐप शुरू होते समय पढ़े जाते हैं, इसलिए वहाँ बदलाव के बाद ऐप बंद करके दोबारा खोलना पड़ता है, नया वर्ज़न नहीं चाहिए। नए मान आने तक ये वही हैं जो ऐप के साथ आए थे।",
+  "settingsScansNotEnforced": "यह वह है जो माँगा गया है, न कि जो लागू है: कौन-से मॉडल बुलाए जा सकते हैं और रोज़ की सीमा की ऊपरी हद, दोनों Worker के पास हैं। जो नाम वह नहीं जानता या जो सीमा उसकी हद से ऊपर है, उसे वह चुपचाप उसी सिरे पर बदल देता है। यहाँ बदलाव का असर न हो, तो वजह वहीं है।",
+
+  "settingsCorrectedHeading": "जाँच में क्या सुधारना पड़ा",
+  "settingsCorrectedNothingYet": "अभी तक कोई रसीद पढ़ी नहीं गई, इसलिए कहने को कुछ नहीं।",
+  "settingsCorrectedTally": "{count, plural, one{{count} रसीद पढ़ी गई, {clean} में कोई बदलाव नहीं।} other{{count} रसीदें पढ़ी गईं, {clean} में कोई बदलाव नहीं।}}",
+  "settingsCorrectedField": "{field}, {total} में से {count} में सुधार",
+  "settingsCorrectedManualExcluded": "हाथ से लिखे खर्च गिने नहीं जाते: उनमें हर फ़ील्ड बदली हुई गिनी जाती है, जबकि तुलना के लिए मॉडल का पढ़ा कुछ था ही नहीं।",
+
+  "fieldMerchant": "दुकान",
+  "fieldPurchasedAt": "तारीख़",
+  "fieldCurrency": "मुद्रा",
+  "fieldSubtotal": "सबटोटल",
+  "fieldTax": "टैक्स",
+  "fieldTip": "टिप",
+  "fieldTotal": "कुल",
+  "fieldPaymentMethod": "भुगतान",
+  "fieldCategory": "श्रेणी",
+  "fieldLineItems": "आइटम",
+
+  "categoryGroceries": "किराना",
+  "categoryDining": "बाहर खाना",
+  "categoryTransport": "आना-जाना",
+  "categoryFuel": "ईंधन",
+  "categoryUtilities": "बिजली-पानी",
+  "categoryHealthcare": "स्वास्थ्य",
+  "categoryPharmacy": "दवाइयाँ",
+  "categoryEntertainment": "मनोरंजन",
+  "categoryShopping": "शॉपिंग",
+  "categoryApparel": "कपड़े",
+  "categoryHome": "घर",
+  "categoryElectronics": "इलेक्ट्रॉनिक्स",
+  "categoryTravel": "यात्रा",
+  "categoryEducation": "शिक्षा",
+  "categoryPersonalCare": "पर्सनल केयर",
+  "categorySubscriptions": "सब्सक्रिप्शन",
+  "categoryFeesCharges": "फ़ीस और शुल्क",
+  "categoryOther": "अन्य",
+
+  "paymentMethodCash": "नक़द",
+  "paymentMethodCard": "कार्ड",
+  "paymentMethodEwallet": "ई-वॉलेट",
+  "paymentMethodBankTransfer": "बैंक ट्रांसफ़र",
+  "paymentMethodUnknown": "दर्ज नहीं",
+
+  "reviewTitleTyped": "खर्च जोड़ें",
+  "reviewTitlePhotographed": "इस रसीद की जाँच करें",
+  "reviewTitleCorrecting": "इस खर्च को सुधारें",
+
+  "reviewClean": "इस रसीद का सब हिसाब मिलता है। फ़ोटो से मिलाकर देख लें, फिर जोड़ दें।",
+  "reviewRefused": "वह खर्च सेव नहीं हुआ। आपका लिखा हुआ यहीं है।",
+
+  "reviewToCheck": "{count, plural, other{जाँचने को {count}}}",
+
+  "reviewSectionWhatThisWas": "यह क्या था",
+  "reviewSectionWhatItCost": "कितना लगा",
+
+  "reviewPickDate": "तारीख़ चुनें",
+
+  "reviewTypeItIn": "यहाँ लिखें",
+  "reviewCategoryReason": "मॉडल ने यह इसलिए चुना: {reason}",
+
+  "reviewLineDescription": "विवरण",
+  "reviewLineQuantity": "मात्रा",
+  "reviewLineUnitPrice": "एक का दाम",
+  "reviewLineAmount": "रक़म",
+  "reviewAddLineItem": "आइटम जोड़ें",
+  "reviewRemoveLineItem": "यह आइटम हटाएँ",
+
+  "reviewAddToLedger": "बही में जोड़ें",
+  "reviewSave": "सेव करें",
+
+  "reviewFindingNotAReceiptTitle": "रसीद नहीं है",
+  "reviewFindingNotAReceiptDetail": "मॉडल के हिसाब से यह तस्वीर रसीद नहीं है।",
+
+  "reviewFindingNoTotalTitle": "कुल नहीं",
+  "reviewFindingNoTotalDetail": "कुल शून्य है या माइनस में, काम की कोई रक़म पढ़ी नहीं गई।",
+
+  "reviewFindingNoMerchantTitle": "दुकान नहीं",
+  "reviewFindingNoMerchantDetail": "दुकान का नाम पढ़ा नहीं जा सका। यह खर्च किसका है, पता नहीं।",
+
+  "reviewFindingNoDateTitle": "तारीख़ नहीं",
+  "reviewFindingNoDateDetail": "रसीद पर तारीख़ पढ़ी नहीं जा सकी, इसलिए आज की मानी जाएगी।",
+
+  "reviewFindingUnparseableDateTitle": "तारीख़ समझ नहीं आई",
+  "reviewFindingUnparseableDateDetail": "\"{read}\" मिला, जो ISO तारीख़ नहीं है।",
+
+  "reviewFindingDateInTheFutureTitle": "तारीख़ आगे की है",
+  "reviewFindingDateInTheFutureDetail": "{read} पढ़ा गया, जो अभी आया ही नहीं। शायद यह कार्ड की एक्सपायरी या बेस्ट-बिफ़ोर तारीख़ है, खरीद की नहीं।",
+
+  "reviewFindingYearLooksMisreadTitle": "साल गलत पढ़ा लगता है",
+  "reviewFindingYearLooksMisreadDetail": "{read} पढ़ा गया, यानी लगभग ठीक एक साल पहले। अभी-अभी खींची रसीद पर ऐसा होने का मतलब अक्सर यही है कि साल गलत पढ़ा गया। {likelyYear} सही होने की संभावना है।",
+
+  "reviewFindingDateIsUnusuallyOldTitle": "तारीख़ बहुत पुरानी है",
+  "reviewFindingDateIsUnusuallyOldDetail": "{read} पढ़ा गया, {daysAgo} दिन पहले। पुरानी रसीद हो तो ठीक है, पर अभी खींची है तो जाँच लें।",
+
+  "reviewFindingCurrencyUnclearTitle": "मुद्रा साफ़ नहीं",
+  "reviewFindingNoCurrencyDetail": "कोई मुद्रा पहचानी नहीं गई, इसलिए रक़म की कोई इकाई नहीं।",
+  "reviewFindingCurrencyNotAnIsoCodeDetail": "\"{read}\" मिला, जो ISO 4217 कोड नहीं है।",
+
+  "reviewFindingTotalDoesNotAddUpTitle": "कुल का हिसाब नहीं मिलता",
+  "reviewFindingTotalDoesNotAddUpDetail": "सबटोटल {subtotal} + टैक्स {tax} + टिप {tip} = {composed}, पर कुल में {total} लिखा है ({difference} का फ़र्क़)।",
+
+  "reviewFindingLineItemsDoNotMatchSubtotalTitle": "आइटम सबटोटल से नहीं मिलते",
+  "reviewFindingLineItemsDoNotMatchTotalTitle": "आइटम कुल से नहीं मिलते",
+  "reviewFindingLineItemsUnderSubtotalDetail": "आइटम का जोड़ {sum} है, सबटोटल {target}। शायद कोई आइटम छूट गया, या कोई डिस्काउंट अलग से नहीं लिखा था।",
+  "reviewFindingLineItemsOverSubtotalDetail": "आइटम का जोड़ {sum} है, सबटोटल {target}। आइटम रसीद से ज़्यादा हैं, तो कुछ दो बार पढ़ा गया है।",
+  "reviewFindingLineItemsUnderTotalDetail": "आइटम का जोड़ {sum} है, कुल {target}। शायद कोई आइटम छूट गया, या कोई डिस्काउंट अलग से नहीं लिखा था।",
+  "reviewFindingLineItemsOverTotalDetail": "आइटम का जोड़ {sum} है, कुल {target}। आइटम रसीद से ज़्यादा हैं, तो कुछ दो बार पढ़ा गया है।",
+
+  "reviewFindingLineArithmeticOffTitle": "लाइन का हिसाब गलत",
+  "reviewFindingLineArithmeticOffDetail": "\"{description}\": {quantity} × {unitPrice} = {expected}, पर लाइन में {amount} लिखा है।",
+
+  "reviewFindingUnknownItemCategoryTitle": "आइटम की श्रेणी अनजान",
+  "reviewFindingUnknownItemCategoryDetail": "\"{description}\" की श्रेणी \"{read}\" आई, जो सूची में नहीं है।",
+
+  "reviewFindingUnknownCategoryTitle": "श्रेणी अनजान",
+  "reviewFindingUnknownCategoryDetail": "\"{read}\" मिला, जो schema में बताई सूची से बाहर है।",
+
+  "reviewFindingUnknownPaymentMethodTitle": "भुगतान का तरीका अनजान",
+  "reviewFindingUnknownPaymentMethodDetail": "\"{read}\" मिला।",
+
+  "reviewFindingModelAskedForReviewTitle": "मॉडल ने जाँच के लिए कहा",
+  "reviewFindingModelAskedNoReasonDetail": "उसने तस्वीर को फ़्लैग किया, पर कोई वजह नहीं दी।",
+  "reviewFindingReasonSeparator": "; ",
+  "ledgerTitle": "बही",
+
+  "ledgerColumnMerchant": "दुकान",
+  "ledgerColumnAmount": "रक़म",
+
+  "ledgerAddByHand": "हाथ से खर्च जोड़ें",
+  "ledgerPhotograph": "रसीद की फ़ोटो लें",
+  "ledgerTakeAPhoto": "फ़ोटो लें",
+  "ledgerChooseFromGallery": "गैलरी से चुनें",
+  "ledgerCharts": "चार्ट",
+  "ledgerInbox": "इनबॉक्स",
+  "ledgerInboxWaiting": "{count, plural, other{इनबॉक्स, {count} इंतज़ार में}}",
+  "ledgerUnreadable": "आपकी बही पढ़ी नहीं जा सकी।",
+  "ledgerEmpty": "यहाँ अभी कुछ नहीं है।\nनीचे के बटन से एक जोड़ें।",
+  "ledgerNothingInMonth": "{month} में कुछ नहीं।",
+
+  "ledgerChooseAMonth": "महीना चुनें",
+  "ledgerPreviousYear": "पिछला साल",
+  "ledgerNextYear": "अगला साल",
+  "ledgerBackToMonth": "{month} पर वापस",
+
+  "ledgerPhotosStayedBehindTitle": "फ़ोटो पुराने फ़ोन पर ही रह गईं",
+  "ledgerPhotosStayedBehindBody": "आपकी बही का हर खर्च आपके अकाउंट से वापस आ गया है। रसीदों की फ़ोटो उसी फ़ोन पर रहती हैं जिस पर खींची गईं, इसलिए इस फ़ोन पर वे नहीं हैं। बाकी कुछ नहीं छूटा।",
+  "ledgerPhotosStayedBehindGotIt": "ठीक है",
+  "ledgerLoading": "आपकी बही खुल रही है",
+
+  "expenseGone": "वह खर्च अब आपकी बही में नहीं है।",
+  "expenseCorrect": "इस खर्च को सुधारें",
+  "expenseDelete": "इस खर्च को मिटाएँ",
+  "expenseDeleteTitle": "इस खर्च को मिटाएँ?",
+  "expenseDeleteBody": "{merchant}, {amount}, आपकी बही और कुल से हट जाएगा।",
+  "expenseDeleteBodyKeepsReceipt": "{merchant}, {amount}, आपकी बही और कुल से हट जाएगा। रसीद की फ़ोटो इस फ़ोन पर रहेगी।",
+  "expenseDeleteKeep": "रहने दें",
+  "expenseDeleteConfirm": "मिटाएँ",
+  "expenseFromReceipt": "खींची गई रसीद से पढ़ा गया",
+  "expenseTypedByHand": "हाथ से लिखा गया",
+  "expenseForeignCurrency": "{currency} में भुगतान हुआ, इसलिए यह आपके महीने के कुल में नहीं है।",
+  "expenseNoLineItems": "कोई आइटम नहीं, बस कुल।",
+  "expenseLineItemCount": "{category} · {quantity} × {unitPrice}",
+  "expenseReceiptNotOnThisDevice": "रसीद की फ़ोटो इस डिवाइस पर नहीं है। फ़ोटो उसी फ़ोन पर रहती हैं जिसने उन्हें खींचा, इसलिए कहीं और बहाल की गई बही उनके बिना आती है।",
+  "expenseReceiptLoading": "रसीद लोड हो रही है",
+
+  "chartsCategoryTotal": "{count, plural, other{{category}, {amount}, {count} खर्च}}",
+  "chartsMonthTotal": "{month}, {amount}",
+
+  "rollupByCategory": "श्रेणी के हिसाब से",
+  "rollupMonthByMonth": "महीने-दर-महीने",
+  "rollupNothingSpent": "{month} में कोई खर्च नहीं।",
+  "rollupRecapHeading": "आपका पैसा कहाँ गया",
+  "rollupRecapPending": "महीना पढ़ा जा रहा है।",
+  "rollupRecapTooFew": "{needed, plural, one{महीने में कम से कम {needed} खर्च हो, तब लिखने लायक कुछ बनता है। चार्ट वैसे भी चलते हैं।} other{महीने में कम से कम {needed} खर्च हों, तब लिखने लायक कुछ बनता है। चार्ट वैसे भी चलते हैं।}}",
+  "rollupRecapAskAgain": "फिर से पूछें",
+
+  "rollupRecapRefused": "मॉडल ने इस महीने का सार लिखने से मना कर दिया।",
+  "rollupRecapNothingToSay": "इस महीने पर मॉडल के पास कहने को कुछ नहीं था।",
+  "rollupRecapAllowanceSpent": "आज का कोटा खत्म। कल सार मिलेगा।",
+  "rollupRecapTokenRefused": "दोबारा साइन इन करें, सार वापस आ जाएगा।",
+  "rollupRecapOutOfReach": "बिना इंटरनेट सार नहीं बनता। चार्ट को इसकी ज़रूरत नहीं।",
+  "rollupRecapModelUnavailable": "मॉडल तक पहुँच नहीं हो पाई। चार्ट को इसकी ज़रूरत नहीं।",
+  "rollupNothingToCompare": "{month} में कोई खर्च नहीं था, तुलना किससे करें।",
+  "rollupAboutTheSame": "{month} के बराबर ही।",
+  "rollupMoreThan": "{month} से {percent}% ज़्यादा।",
+  "rollupLessThan": "{month} से {percent}% कम।",
+  "rollupLeftOutThisMonth": "{count, plural, one{इस महीने {currencies} में हुआ {count} खर्च इन कुल में नहीं है।} other{इस महीने {currencies} में हुए {count} खर्च इन कुल में नहीं हैं।}}",
+  "rollupLeftOutTheseMonths": "{count, plural, one{इन महीनों में {currencies} में हुआ {count} खर्च इन कुल में नहीं है।} other{इन महीनों में {currencies} में हुए {count} खर्च इन कुल में नहीं हैं।}}",
+  "rollupNoHomeCurrencyTitle": "अभी कोई कुल नहीं",
+  "rollupNoHomeCurrency": "कुल आपके पहले खर्च से शुरू होता है। आप उसे जिस मुद्रा में लिखेंगे, चार्ट और सार उसी में निकलेंगे। बाद में सेटिंग्स में बदल सकते हैं।",
+
+  "currencyChooseTitle": "मुद्रा चुनें",
+  "currencyClose": "बंद करें",
+  "currencySearch": "कोड खोजें",
+  "currencyYours": "आपकी",
+  "currencyAll": "सभी मुद्राएँ",
+  "currencyHome": "मुख्य",
+  "currencyNoMatch": "{query} से कोई कोड नहीं मिला।",
+
+  "rollupLoading": "महीना खुल रहा है",
+
+  "inboxTitle": "इनबॉक्स",
+  "inboxEmpty": "कोई रसीद इंतज़ार में नहीं।",
+  "inboxPhotographed": "{moment} खींची गई",
+
+  "inboxWaitingToBeRead": "पढ़ने का इंतज़ार",
+  "inboxBeingRead": "पढ़ी जा रही है",
+  "inboxReadyToReview": "जाँच के लिए तैयार",
+  "inboxNotAReceipt": "यह रसीद जैसी नहीं लगती",
+  "inboxCommitted": "आपकी बही में है",
+
+  "inboxCapped": "आज के स्कैन खत्म हो गए",
+  "inboxMoreScansAt": "{moment} के बाद और स्कैन।",
+  "inboxMoreScansTomorrow": "कल और स्कैन।",
+
+  "inboxFailureRefused": "मॉडल ने यह फ़ोटो पढ़ने से मना कर दिया",
+  "inboxFailureRefusedNext": "साफ़ फ़ोटो से सबसे ज़्यादा उम्मीद है।",
+  "inboxFailureSaidNothing": "मॉडल ने कोई जवाब नहीं दिया",
+  "inboxFailureSaidNothingNext": "दोबारा पढ़ने पर अक्सर बन जाता है।",
+  "inboxFailureNotLegible": "मॉडल का जवाब समझ नहीं आया",
+  "inboxFailureNotLegibleNext": "दोबारा पढ़ने पर अक्सर बन जाता है।",
+  "inboxFailureOutOfReach": "पढ़ते समय इंटरनेट नहीं था",
+  "inboxFailureOutOfReachNext": "यह अपने आप कोशिश करता रहेगा।",
+  "inboxFailureModelUnavailable": "मॉडल उपलब्ध नहीं था",
+  "inboxFailureModelUnavailableNext": "यह आम तौर पर थोड़ी देर की बात है। एक मिनट बाद दोबारा पढ़ें।",
+  "inboxFailureTokenRefused": "आपका साइन इन स्वीकार नहीं हुआ",
+  "inboxFailureTokenRefusedNext": "दोबारा साइन इन करें, फिर दोबारा पढ़ें।",
+  "inboxFailureImageNotAccepted": "यह फ़ोटो भेजी नहीं जा सकी",
+  "inboxFailureImageNotAcceptedNext": "रसीद की फ़ोटो दोबारा लें।",
+  "inboxFailureUnsaid": "यह पढ़ी नहीं जा सकी",
+
+  "inboxLoading": "इनबॉक्स खुल रहा है",
+
+  "inboxReview": "जाँचें",
+  "inboxReadAgain": "दोबारा पढ़ें",
+  "inboxDiscard": "हटाएँ",
+  "inboxAbandon": "छोड़ें",
+  "inboxAbandonThisScan": "यह स्कैन छोड़ें",
+  "inboxKeep": "रहने दें",
+  "inboxDiscardingDeletesThePhoto": "यह फ़ोटो हटाने से वह फ़ोन से मिट जाएगी।",
+  "inboxAbandoningDeletesThePhoto": "यह स्कैन छोड़ने से इसकी फ़ोटो फ़ोन से मिट जाएगी।",
+
+  "receiptZoom": "रसीद को ज़ूम करें",
+  "receiptTitle": "रसीद",
+  "receiptBackToTheFields": "फ़ील्ड पर वापस",
+
+  "openingWait": "Where Money खुल रहा है",
+
+  "signInTagline": "रसीद की फ़ोटो लें। देखें पैसा कहाँ गया।",
+  "signInWithGoogle": "Google से जारी रखें",
+  "signInAsGuest": "गेस्ट के रूप में जारी रखें",
+  "signInInFlight": "साइन इन हो रहा है",
+  "signInFailed": "साइन इन नहीं हो पाया। {detail}",
+
+  "lockTitle": "Where Money लॉक है",
+  "lockWhy": "आपका खर्च इस फ़ोन पर है। पढ़ने के लिए अनलॉक करें।",
+  "lockRefused": "इससे अनलॉक नहीं हुआ।",
+  "lockUnlock": "अनलॉक करें",
+  "lockSignOutInstead": "इसके बजाय साइन आउट करें",
+  "lockWaiting": "फ़ोन के पूछने का इंतज़ार",
+  "lockReason": "अपना खर्च देखने के लिए Where Money अनलॉक करें।",
+
+  "appName": "Where Money",
+
+  "merchantUnknown": "अनजान दुकान",
+
+  "expenseSourceScanned": "रसीद से पढ़ा गया",
+  "expenseSourceManual": "हाथ से लिखा गया"
+}

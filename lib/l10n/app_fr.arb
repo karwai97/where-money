@@ -1,0 +1,343 @@
+{
+  "@@locale": "fr",
+
+  "settingsTitle": "Paramètres",
+
+  "settingsTheme": "Thème",
+  "settingsThemeSystem": "Système",
+  "settingsThemeLight": "Clair",
+  "settingsThemeDark": "Sombre",
+
+  "settingsLanguage": "Langue",
+  "settingsLanguageEnglish": "English",
+  "settingsLanguageChinese": "中文",
+  "settingsLanguageSpanish": "Español",
+  "settingsLanguagePortuguese": "Português",
+  "settingsLanguageFrench": "Français",
+  "settingsLanguageGerman": "Deutsch",
+  "settingsLanguageJapanese": "日本語",
+  "settingsLanguageKorean": "한국어",
+  "settingsLanguageRussian": "Русский",
+  "settingsLanguageArabic": "العربية",
+  "settingsLanguageHindi": "हिन्दी",
+  "settingsLanguageIndonesian": "Bahasa Indonesia",
+
+  "settingsHomeCurrency": "Devise principale",
+  "settingsHomeCurrencyInferred": "Reprise de votre première dépense.",
+  "settingsHomeCurrencyNone": "Votre première dépense la fixera.",
+  "settingsHomeCurrencyGoverns": "Les totaux et les bilans sont calculés dans cette devise. Les dépenses dans d'autres devises sont listées mais pas comptées.",
+
+  "settingsLock": "Verrou",
+  "settingsLockBiometrics": "Demander votre empreinte, votre visage ou le PIN de ce téléphone avant d'afficher vos dépenses.",
+  "settingsLockDeviceCredential": "Aucune empreinte n'est enregistrée sur ce téléphone : le PIN sera demandé avant d'afficher vos dépenses.",
+  "settingsLockUnavailable": "Ce téléphone n'a pas de verrouillage d'écran. Configurez-en un dans les paramètres Android pour utiliser cette option.",
+
+  "settingsDailyCap": "Plafond quotidien",
+  "settingsDailyCapScansToday": "Lectures aujourd'hui",
+  "settingsDailyCapScansADay": "Lectures par jour",
+  "settingsDailyCapGoverns": "Le nombre de reçus que le modèle lit pour vous en une journée. Une fois épuisé, les nouvelles photos attendent dans la boîte de réception jusqu'à demain.",
+  "settingsDailyCapSpoken": "{used} sur {cap}",
+  "@settingsDailyCapSpoken": {
+    "placeholders": {
+      "used": { "type": "int" },
+      "cap": { "type": "int" }
+    }
+  },
+
+  "settingsSignedInWith": "{email} · Google",
+  "@settingsSignedInWith": {
+    "placeholders": {
+      "email": { "type": "String" }
+    }
+  },
+  "settingsSignedInWithGoogle": "Google",
+  "settingsGuest": "Invité",
+  "settingsGuestNoAccount": "Aucun compte derrière ce registre",
+
+  "settingsSignOut": "Se déconnecter",
+
+  "settingsKeepThisLedger": "Se connecter pour garder ce registre",
+  "settingsKeepThisLedgerHint": "Il disparaît avec ce téléphone. Se connecter le conserve.",
+  "settingsSignOutAsGuestTitle": "Se déconnecter de ce registre ?",
+  "settingsSignOutAsGuestBody": "Votre registre et ses reçus seront supprimés, sans possibilité de récupération.",
+  "settingsSignOutKeep": "Le garder",
+  "settingsSignOutConfirm": "Se déconnecter",
+  "settingsErasingInFlight": "Suppression de ce registre",
+  "settingsAccountInUseConfirm": "Se connecter",
+  "settingsAccountInUseBody": "Ce compte a déjà un registre. Se connecter l'ouvrira, et ce registre-ci et ses reçus seront supprimés.",
+
+  "settingsScansHeading": "Ce que chaque lecture demande",
+  "settingsScansModel": "Modèle : {model}",
+  "settingsScansEffort": "Effort de raisonnement : {effort}",
+  "settingsScansLongEdge": "Grand côté de l'image : {pixels} px",
+  "settingsScansDailyCap": "{count, plural, one{Plafond quotidien : {count} lecture} other{Plafond quotidien : {count} lectures}}",
+  "settingsScansFromConsole": "Défini dans la console Firebase et lu au démarrage de l'application : un changement là-bas demande de fermer et rouvrir l'application, jamais une nouvelle version. En attendant, ce sont les valeurs livrées avec l'application.",
+  "settingsScansNotEnforced": "Ce qui est demandé, pas ce qui est appliqué : le Worker garde la liste des modèles qu'il accepte d'appeler et la limite haute du plafond quotidien. Un nom qu'il ne connaît pas, ou un plafond au-dessus de sa limite, est remplacé en silence de son côté. Si un changement ici reste sans effet, c'est là qu'il est passé.",
+
+  "settingsCorrectedHeading": "Ce que la vérification a dû corriger",
+  "settingsCorrectedNothingYet": "Aucun reçu n'a encore été lu, il n'y a donc rien à dire.",
+  "settingsCorrectedTally": "{count, plural, one{{count} reçu lu, {clean} sans retouche.} other{{count} reçus lus, {clean} sans retouche.}}",
+  "settingsCorrectedField": "{field}, corrigé {count} fois sur {total}",
+  "settingsCorrectedManualExcluded": "Les dépenses saisies à la main ne sont pas comptées : elles marqueraient chaque champ comme corrigé, face à une extraction qui n'a jamais existé.",
+
+  "fieldMerchant": "Commerçant",
+  "fieldPurchasedAt": "Date",
+  "fieldCurrency": "Devise",
+  "fieldSubtotal": "Sous-total",
+  "fieldTax": "Taxe",
+  "fieldTip": "Pourboire",
+  "fieldTotal": "Total",
+  "fieldPaymentMethod": "Payé par",
+  "fieldCategory": "Catégorie",
+  "fieldLineItems": "Lignes",
+
+  "categoryGroceries": "Courses",
+  "categoryDining": "Restaurants",
+  "categoryTransport": "Transports",
+  "categoryFuel": "Carburant",
+  "categoryUtilities": "Eau et énergie",
+  "categoryHealthcare": "Santé",
+  "categoryPharmacy": "Pharmacie",
+  "categoryEntertainment": "Loisirs",
+  "categoryShopping": "Achats",
+  "categoryApparel": "Vêtements",
+  "categoryHome": "Maison",
+  "categoryElectronics": "Électronique",
+  "categoryTravel": "Voyages",
+  "categoryEducation": "Éducation",
+  "categoryPersonalCare": "Soins personnels",
+  "categorySubscriptions": "Abonnements",
+  "categoryFeesCharges": "Frais",
+  "categoryOther": "Autre",
+
+  "paymentMethodCash": "Espèces",
+  "paymentMethodCard": "Carte",
+  "paymentMethodEwallet": "Portefeuille électronique",
+  "paymentMethodBankTransfer": "Virement",
+  "paymentMethodUnknown": "Non renseigné",
+
+  "reviewTitleTyped": "Ajouter une dépense",
+  "reviewTitlePhotographed": "Vérifier ce reçu",
+  "reviewTitleCorrecting": "Corriger cette dépense",
+
+  "reviewClean": "Tout est cohérent sur ce reçu. Comparez-le à la photo, puis ajoutez-le.",
+  "reviewRefused": "Cette dépense n'a pas été enregistrée. Votre saisie est toujours là.",
+
+  "reviewToCheck": "{count, plural, other{{count} à vérifier}}",
+
+  "reviewSectionWhatThisWas": "De quoi il s'agit",
+  "reviewSectionWhatItCost": "Ce que ça a coûté",
+
+  "reviewPickDate": "Choisir une date",
+
+  "reviewTypeItIn": "À saisir",
+  "reviewCategoryReason": "Le modèle l'a choisie parce que : {reason}",
+
+  "reviewLineDescription": "Description",
+  "reviewLineQuantity": "Qté",
+  "reviewLineUnitPrice": "Prix unitaire",
+  "reviewLineAmount": "Montant",
+  "reviewAddLineItem": "Ajouter une ligne",
+  "reviewRemoveLineItem": "Supprimer cette ligne",
+
+  "reviewAddToLedger": "Ajouter au registre",
+  "reviewSave": "Enregistrer",
+
+  "reviewFindingNotAReceiptTitle": "Pas un reçu",
+  "reviewFindingNotAReceiptDetail": "Le modèle dit que cette image n'est pas un reçu.",
+
+  "reviewFindingNoTotalTitle": "Pas de total",
+  "reviewFindingNoTotalDetail": "Le total est nul ou négatif : rien d'utilisable n'a été lu.",
+
+  "reviewFindingNoMerchantTitle": "Pas de commerçant",
+  "reviewFindingNoMerchantDetail": "Le nom du commerçant était illisible ; on ne sait pas d'où vient la dépense.",
+
+  "reviewFindingNoDateTitle": "Pas de date",
+  "reviewFindingNoDateDetail": "La date du reçu était illisible : ce sera aujourd'hui par défaut.",
+
+  "reviewFindingUnparseableDateTitle": "Date non reconnue",
+  "reviewFindingUnparseableDateDetail": "Lu « {read} », qui n'est pas une date ISO.",
+
+  "reviewFindingDateInTheFutureTitle": "Date dans le futur",
+  "reviewFindingDateInTheFutureDetail": "Lu {read}, qui n'est pas encore arrivé : sans doute une date d'expiration de carte ou de péremption plutôt que celle de l'achat.",
+
+  "reviewFindingYearLooksMisreadTitle": "Année sans doute mal lue",
+  "reviewFindingYearLooksMisreadDetail": "Lu {read}, presque un an jour pour jour. Sur un reçu tout juste photographié, c'est souvent l'année qui a été mal lue : {likelyYear} est la valeur probable.",
+
+  "reviewFindingDateIsUnusuallyOldTitle": "Date étonnamment ancienne",
+  "reviewFindingDateIsUnusuallyOldDetail": "Lu {read}, il y a {daysAgo} jours. Normal pour un vieux reçu, mais à vérifier s'il vient d'être photographié.",
+
+  "reviewFindingCurrencyUnclearTitle": "Devise incertaine",
+  "reviewFindingNoCurrencyDetail": "Aucune devise identifiée : le montant n'a pas d'unité.",
+  "reviewFindingCurrencyNotAnIsoCodeDetail": "Lu « {read} », qui n'est pas un code ISO 4217.",
+
+  "reviewFindingTotalDoesNotAddUpTitle": "Le total ne tombe pas juste",
+  "reviewFindingTotalDoesNotAddUpDetail": "sous-total {subtotal} + taxe {tax} + pourboire {tip} = {composed}, mais le total indique {total} (écart de {difference}).",
+
+  "reviewFindingLineItemsDoNotMatchSubtotalTitle": "Les lignes ne correspondent pas au sous-total",
+  "reviewFindingLineItemsDoNotMatchTotalTitle": "Les lignes ne correspondent pas au total",
+  "reviewFindingLineItemsUnderSubtotalDetail": "Les lignes totalisent {sum} pour un sous-total de {target} : une ligne a pu être oubliée, ou une remise n'a pas été détaillée.",
+  "reviewFindingLineItemsOverSubtotalDetail": "Les lignes totalisent {sum} pour un sous-total de {target} : elles dépassent le reçu, quelque chose a donc été lu deux fois.",
+  "reviewFindingLineItemsUnderTotalDetail": "Les lignes totalisent {sum} pour un total de {target} : une ligne a pu être oubliée, ou une remise n'a pas été détaillée.",
+  "reviewFindingLineItemsOverTotalDetail": "Les lignes totalisent {sum} pour un total de {target} : elles dépassent le reçu, quelque chose a donc été lu deux fois.",
+
+  "reviewFindingLineArithmeticOffTitle": "Ligne mal calculée",
+  "reviewFindingLineArithmeticOffDetail": "« {description} » : {quantity} × {unitPrice} = {expected}, mais la ligne indique {amount}.",
+
+  "reviewFindingUnknownItemCategoryTitle": "Catégorie de ligne inconnue",
+  "reviewFindingUnknownItemCategoryDetail": "« {description} » est revenu avec « {read} », qui n'est pas dans la liste des catégories.",
+
+  "reviewFindingUnknownCategoryTitle": "Catégorie inconnue",
+  "reviewFindingUnknownCategoryDetail": "Lu « {read} », hors des valeurs que le schema déclare.",
+
+  "reviewFindingUnknownPaymentMethodTitle": "Mode de paiement inconnu",
+  "reviewFindingUnknownPaymentMethodDetail": "Lu « {read} ».",
+
+  "reviewFindingModelAskedForReviewTitle": "Le modèle demande une vérification",
+  "reviewFindingModelAskedNoReasonDetail": "Il a signalé l'image sans donner de raison.",
+  "reviewFindingReasonSeparator": " ; ",
+  "ledgerTitle": "Registre",
+
+  "ledgerColumnMerchant": "Commerçant",
+  "ledgerColumnAmount": "Montant",
+
+  "ledgerAddByHand": "Ajouter une dépense à la main",
+  "ledgerPhotograph": "Photographier un reçu",
+  "ledgerTakeAPhoto": "Prendre une photo",
+  "ledgerChooseFromGallery": "Choisir dans la galerie",
+  "ledgerCharts": "Graphiques",
+  "ledgerInbox": "Boîte de réception",
+  "ledgerInboxWaiting": "{count, plural, other{Boîte de réception, {count} en attente}}",
+  "ledgerUnreadable": "Impossible de lire votre registre.",
+  "ledgerEmpty": "Rien ici pour l'instant.\nAjoutez une dépense avec le bouton ci-dessous.",
+  "ledgerNothingInMonth": "Rien en {month}.",
+  "ledgerChooseAMonth": "Choisir un mois",
+  "ledgerPreviousYear": "Année précédente",
+  "ledgerNextYear": "Année suivante",
+  "ledgerBackToMonth": "Retour à {month}",
+
+  "ledgerPhotosStayedBehindTitle": "Les photos sont restées sur l'autre téléphone",
+  "ledgerPhotosStayedBehindBody": "Chaque dépense de votre registre a été restaurée depuis votre compte. Les photos de reçus ne quittent jamais le téléphone qui les a prises, alors celui-ci n'en a aucune. Rien d'autre ne manque.",
+  "ledgerPhotosStayedBehindGotIt": "Compris",
+  "ledgerLoading": "Ouverture de votre registre",
+
+  "expenseGone": "Cette dépense n'est plus dans votre registre.",
+  "expenseCorrect": "Corriger cette dépense",
+  "expenseDelete": "Supprimer cette dépense",
+  "expenseDeleteTitle": "Supprimer cette dépense ?",
+  "expenseDeleteBody": "{merchant}, {amount}, disparaîtra de votre registre et de vos totaux.",
+  "expenseDeleteBodyKeepsReceipt": "{merchant}, {amount}, disparaîtra de votre registre et de vos totaux. La photo du reçu reste sur ce téléphone.",
+  "expenseDeleteKeep": "La garder",
+  "expenseDeleteConfirm": "Supprimer",
+  "expenseFromReceipt": "Lue sur un reçu photographié",
+  "expenseTypedByHand": "Saisie à la main",
+  "expenseForeignCurrency": "Payée en {currency}, donc hors de vos totaux mensuels.",
+  "expenseNoLineItems": "Aucune ligne, seulement le total.",
+  "expenseLineItemCount": "{category} · {quantity} × {unitPrice}",
+  "expenseReceiptNotOnThisDevice": "La photo du reçu n'est pas sur cet appareil. Les photos restent sur le téléphone qui les a prises ; un registre restauré ailleurs arrive sans elles.",
+  "expenseReceiptLoading": "Chargement du reçu",
+
+  "chartsCategoryTotal": "{count, plural, one{{category}, {amount}, {count} dépense} other{{category}, {amount}, {count} dépenses}}",
+  "chartsMonthTotal": "{month}, {amount}",
+
+  "rollupByCategory": "Par catégorie",
+  "rollupMonthByMonth": "Mois par mois",
+  "rollupNothingSpent": "Aucune dépense en {month}.",
+  "rollupRecapHeading": "Où est passé votre argent",
+  "rollupRecapPending": "Lecture du mois.",
+  "rollupRecapTooFew": "{needed, plural, one{Il faut au moins {needed} dépense dans le mois pour qu'il y ait quelque chose à écrire. Les graphiques marchent quand même.} other{Il faut au moins {needed} dépenses dans le mois pour qu'il y ait quelque chose à écrire. Les graphiques marchent quand même.}}",
+  "rollupRecapAskAgain": "Redemander",
+
+  "rollupRecapRefused": "Le modèle a refusé d'écrire le bilan de ce mois.",
+  "rollupRecapNothingToSay": "Le modèle n'avait rien à dire sur ce mois.",
+  "rollupRecapAllowanceSpent": "C'est tout pour aujourd'hui. Il y aura un bilan demain.",
+  "rollupRecapTokenRefused": "Reconnectez-vous et le bilan reviendra.",
+  "rollupRecapOutOfReach": "Pas de bilan sans réseau. Les graphiques n'en ont pas besoin.",
+  "rollupRecapModelUnavailable": "Le modèle est injoignable. Les graphiques n'en ont pas besoin.",
+  "rollupNothingToCompare": "Rien n'a été dépensé en {month}, donc rien à comparer.",
+  "rollupAboutTheSame": "À peu près comme en {month}.",
+  "rollupMoreThan": "{percent} % de plus qu'en {month}.",
+  "rollupLessThan": "{percent} % de moins qu'en {month}.",
+  "rollupLeftOutThisMonth": "{count, plural, one{{count} dépense en {currencies}, faite ce mois-ci, n'est pas dans ces totaux.} other{{count} dépenses en {currencies}, faites ce mois-ci, ne sont pas dans ces totaux.}}",
+  "rollupLeftOutTheseMonths": "{count, plural, one{{count} dépense en {currencies}, faite sur ces mois, n'est pas dans ces totaux.} other{{count} dépenses en {currencies}, faites sur ces mois, ne sont pas dans ces totaux.}}",
+  "rollupNoHomeCurrencyTitle": "Pas encore de totaux",
+  "rollupNoHomeCurrency": "Les totaux commencent avec votre première dépense. La devise dans laquelle vous l'enregistrez devient celle des graphiques et des bilans ; vous pourrez la changer ensuite dans les paramètres.",
+
+  "currencyChooseTitle": "Choisir une devise",
+  "currencyClose": "Fermer",
+  "currencySearch": "Rechercher un code",
+  "currencyYours": "Les vôtres",
+  "currencyAll": "Toutes les devises",
+  "currencyHome": "Principale",
+  "currencyNoMatch": "Aucun code ne correspond à {query}.",
+
+  "rollupLoading": "Ouverture du mois",
+
+  "inboxTitle": "Boîte de réception",
+  "inboxEmpty": "Aucun reçu en attente.",
+  "inboxPhotographed": "Photographié {moment}",
+
+  "inboxWaitingToBeRead": "En attente de lecture",
+  "inboxBeingRead": "Lecture en cours",
+  "inboxReadyToReview": "Prêt à vérifier",
+  "inboxNotAReceipt": "Ça ne ressemble pas à un reçu",
+  "inboxCommitted": "Dans votre registre",
+
+  "inboxCapped": "Les lectures du jour sont épuisées",
+  "inboxMoreScansAt": "De nouvelles lectures à partir de {moment}.",
+  "inboxMoreScansTomorrow": "De nouvelles lectures demain.",
+
+  "inboxFailureRefused": "Le modèle a refusé de lire cette photo",
+  "inboxFailureRefusedNext": "Une photo plus nette réglera sans doute le problème.",
+  "inboxFailureSaidNothing": "Le modèle n'a rien répondu du tout",
+  "inboxFailureSaidNothingNext": "Relire suffit en général.",
+  "inboxFailureNotLegible": "La réponse du modèle était illisible",
+  "inboxFailureNotLegibleNext": "Relire suffit en général.",
+  "inboxFailureOutOfReach": "Pas de réseau au moment de la lecture",
+  "inboxFailureOutOfReachNext": "Il réessaiera tout seul.",
+  "inboxFailureModelUnavailable": "Le modèle n'était pas disponible",
+  "inboxFailureModelUnavailableNext": "Ça passe en général. Relisez dans une minute.",
+  "inboxFailureTokenRefused": "Votre connexion n'a pas été acceptée",
+  "inboxFailureTokenRefusedNext": "Reconnectez-vous, puis relisez.",
+  "inboxFailureImageNotAccepted": "Cette photo n'a pas pu être envoyée",
+  "inboxFailureImageNotAcceptedNext": "Photographiez le reçu à nouveau.",
+  "inboxFailureUnsaid": "Ceci n'a pas pu être lu",
+
+  "inboxLoading": "Ouverture de la boîte de réception",
+
+  "inboxReview": "Vérifier",
+  "inboxReadAgain": "Relire",
+  "inboxDiscard": "Jeter",
+  "inboxAbandon": "Abandonner",
+  "inboxAbandonThisScan": "Abandonner cette lecture",
+  "inboxKeep": "Garder",
+  "inboxDiscardingDeletesThePhoto": "Jeter cette photo la supprime du téléphone.",
+  "inboxAbandoningDeletesThePhoto": "Abandonner cette lecture supprime sa photo du téléphone.",
+
+  "receiptZoom": "Agrandir le reçu",
+  "receiptTitle": "Le reçu",
+  "receiptBackToTheFields": "Retour aux champs",
+
+  "openingWait": "Ouverture de Where Money",
+
+  "signInTagline": "Photographiez le reçu. Voyez où est passé l'argent.",
+  "signInWithGoogle": "Continuer avec Google",
+  "signInAsGuest": "Continuer en invité",
+  "signInInFlight": "Connexion en cours",
+  "signInFailed": "La connexion n'a pas abouti. {detail}",
+
+  "lockTitle": "Where Money est verrouillé",
+  "lockWhy": "Vos dépenses sont sur ce téléphone. Déverrouillez-le pour les lire.",
+  "lockRefused": "Le déverrouillage a échoué.",
+  "lockUnlock": "Déverrouiller",
+  "lockSignOutInstead": "Se déconnecter plutôt",
+  "lockWaiting": "En attente de la demande du téléphone",
+  "lockReason": "Déverrouillez Where Money pour voir vos dépenses.",
+
+  "appName": "Where Money",
+
+  "merchantUnknown": "Commerçant inconnu",
+
+  "expenseSourceScanned": "Lue sur un reçu",
+  "expenseSourceManual": "Saisie à la main"
+}

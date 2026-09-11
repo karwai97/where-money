@@ -222,7 +222,7 @@ describe('the language a Recap is written in', () => {
     expectModelCall();
 
     const response = await recap(await signIdToken(key, { sub: 'uid-recap-fr' }), {
-      query: '?lang=fr',
+      query: '?lang=sw',
     });
 
     expect(response.status).toBe(200);

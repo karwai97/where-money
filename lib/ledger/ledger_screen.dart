@@ -356,7 +356,7 @@ class _Pill extends StatelessWidget {
         backgroundColor: colours.surfaceContainer,
         elevation: 3,
         minimumSize: const Size(0, 40),
-        padding: const EdgeInsets.only(left: 18, right: 16),
+        padding: const EdgeInsetsDirectional.only(start: 18, end: 16),
         // 40 is the shape; this is the target around it.
         tapTargetSize: MaterialTapTargetSize.padded,
         shape: RoundedRectangleBorder(
@@ -465,7 +465,7 @@ class _ColumnHeads extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: colours.outlineVariant)),
       ),
-      alignment: Alignment.centerLeft,
+      alignment: AlignmentDirectional.centerStart,
       child: Row(
         children: [
           // Clears the mark in the rows below, so each head sits over the

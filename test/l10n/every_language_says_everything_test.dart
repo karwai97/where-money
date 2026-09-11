@@ -2,20 +2,52 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:where_money_core/where_money_core.dart';
 
 /// The failure mode the rest of the suite cannot see. A key dropped from
-/// **both** ARB files fails codegen loudly, because `nullable-getter: false`
-/// means the getter has to exist. A key dropped from **zh alone** falls back to
-/// the English one and the screen keeps working — it has happened twice, and
-/// both times exactly one widget test caught it, by accident, because that
-/// test happened to assert the whole sentence.
+/// **every** ARB file fails codegen loudly, because `nullable-getter: false`
+/// means the getter has to exist. A key dropped from **one translation alone**
+/// falls back to the English one and the screen keeps working — it has
+/// happened twice, and both times exactly one widget test caught it, by
+/// accident, because that test happened to assert the whole sentence.
 ///
 /// Ten keys have no assertion anywhere; each needs a state a widget test
 /// cannot hold still. Key parity is the check that covers them, and it covers
 /// the next ten without anybody adding a test.
 void main() {
   final template = _Arb('lib/l10n/app_en.arb');
-  final translations = [_Arb('lib/l10n/app_zh.arb')];
+  final translations = [
+    for (final language in languages)
+      if (language != 'en') _Arb('lib/l10n/app_$language.arb'),
+  ];
+
+  test('there is a message file for every language the domain knows', () {
+    // A code in the closed set with no ARB behind it is a dropdown entry that
+    // reads as English once chosen. gen-l10n would not say so.
+    for (final language in languages) {
+      expect(
+        File('lib/l10n/app_$language.arb').existsSync(),
+        isTrue,
+        reason: '$language is in `languages` and has no lib/l10n/app_$language.arb',
+      );
+    }
+  });
+
+  test('and no message file for a language it does not', () {
+    final files = Directory('lib/l10n')
+        .listSync()
+        .whereType<File>()
+        .map((file) => file.uri.pathSegments.last)
+        .where((name) => name.endsWith('.arb'))
+        .map((name) => name.substring('app_'.length, name.length - '.arb'.length))
+        .toSet();
+
+    expect(
+      files.difference(languages.toSet()),
+      isEmpty,
+      reason: 'these ARB files are for a language nobody can choose',
+    );
+  });
 
   test('every message file names its language', () {
     for (final arb in [template, ...translations]) {

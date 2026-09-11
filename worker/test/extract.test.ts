@@ -320,7 +320,7 @@ describe('the language a Scan is read in', () => {
     expectModelCall();
 
     const response = await scan(await signIdToken(key, { sub: 'uid-scan-fr' }), {
-      query: '?lang=fr',
+      query: '?lang=sw',
     });
 
     expect(response.status).toBe(200);

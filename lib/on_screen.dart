@@ -31,8 +31,9 @@ String cased(AppLocalizations words, String text) =>
 
 /// The languages this app can be read in whose script has no upper case to go
 /// to. A language added to `languages` belongs in here only if the same is
-/// true of it.
-const _withoutLetterCase = {'zh'};
+/// true of it: Han, kana, Hangul, Arabic and Devanagari have no case, and
+/// Cyrillic and the Latin-script languages do.
+const _withoutLetterCase = {'zh', 'ja', 'ko', 'ar', 'hi'};
 
 /// Dates are the one set of words this app does not write. The names of the
 /// months and the order the parts go in come out of the CLDR data
@@ -116,6 +117,28 @@ String paymentMethodLabel(AppLocalizations words, String method) =>
       'bank_transfer' => words.paymentMethodBankTransfer,
       'unknown' => words.paymentMethodUnknown,
       _ => method,
+    };
+
+/// Each language named in its own language, so somebody can find theirs
+/// without already reading any of the others — which is why these entries are
+/// identical in every ARB file. A code with no name beside it reads as itself
+/// rather than as somebody else's language; `choosing_a_language_test.dart` is
+/// what fails when a language is added to `languages` and not named here.
+String languageLabel(AppLocalizations words, String language) =>
+    switch (language) {
+      'en' => words.settingsLanguageEnglish,
+      'zh' => words.settingsLanguageChinese,
+      'es' => words.settingsLanguageSpanish,
+      'pt' => words.settingsLanguagePortuguese,
+      'fr' => words.settingsLanguageFrench,
+      'de' => words.settingsLanguageGerman,
+      'ja' => words.settingsLanguageJapanese,
+      'ko' => words.settingsLanguageKorean,
+      'ru' => words.settingsLanguageRussian,
+      'ar' => words.settingsLanguageArabic,
+      'hi' => words.settingsLanguageHindi,
+      'id' => words.settingsLanguageIndonesian,
+      _ => language,
     };
 
 extension ReviewFieldLabel on ReviewField {

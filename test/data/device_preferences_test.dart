@@ -54,7 +54,7 @@ void main() {
   });
 
   test('a language this version does not know falls back to English', () async {
-    expect(await preferencesHolding({'language': 'fr'}).language(), 'en');
+    expect(await preferencesHolding({'language': 'tlh'}).language(), 'en');
   });
 
   test('a Ledger nobody has spent in yet has no Home Currency', () async {

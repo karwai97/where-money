@@ -44,22 +44,38 @@ somewhere else in the sentence, and the plural rule is not English's.
 "settingsScansDailyCap": "{count, plural, =1{Daily cap: 1 Scan} other{Daily cap: {count} Scans}}"
 ```
 
-Chinese has one plural form, so its version of a plural message carries `other`
-alone. That is correct, not a missing translation.
+Each language carries its own CLDR plural categories, not English's. Chinese,
+Japanese, Korean and Indonesian have one form, so their version of a plural
+message carries `other` alone; Russian carries `one`, `few`, `many` and
+`other`; Arabic carries all six. That is correct, not a missing translation.
 
-## Both files are hand-written
+## Every file is hand-written
 
-Every key exists in every ARB file, in real prose. `l10n.yaml` writes anything
-missing to `l10n-untranslated.json`, and that file should stay empty — a key
-that silently falls back to English is a screen that is half migrated and
-looks finished.
+One ARB file per code in `languages` (`packages/core/lib/src/language.dart`),
+and every key exists in every one of them, in real prose. `l10n.yaml` writes
+anything missing to `l10n-untranslated.json`, and that file should stay empty
+— a key that silently falls back to English is a screen that is half migrated
+and looks finished.
 
-`test/l10n/both_languages_say_everything_test.dart` is what enforces that, and
+`test/l10n/every_language_says_everything_test.dart` is what enforces that, and
 it exists because the two failure modes are not symmetric. A key missing from
-**both** files fails codegen, loudly, because `nullable-getter: false` means the
-getter has to be there. A key missing from **zh alone** falls back and nothing
-breaks. Ten keys have no other assertion anywhere — each of them needs a state
-a widget test cannot hold still — and parity is what covers them.
+**every** file fails codegen, loudly, because `nullable-getter: false` means the
+getter has to be there. A key missing from **one translation alone** falls back
+and nothing breaks. Ten keys have no other assertion anywhere — each of them
+needs a state a widget test cannot hold still — and parity is what covers them.
+The same test checks that the set of ARB files and the set of codes in
+`languages` are the same set.
+
+Adding a language is four edits and one file: the code in `languages`, the
+Worker's copy of that list and what it tells the Model to call the language
+(`worker/src/language.ts`), the `settingsLanguage*` key naming it in its own
+language in **every** ARB file, its case in `languageLabel` and — if its script
+has no upper case — `_withoutLetterCase`, both in `lib/on_screen.dart`. Then
+the ARB file itself.
+
+`zh` is Simplified Chinese and `pt` is Brazilian Portuguese. The codes carry no
+script or region subtag, so the Worker tells the Model which variety to write
+beside them.
 
 The other half of the rule is `test/no_english_left_test.dart`, which walks
 `lib/` for sentences written outside these files. It says in its own doc comment

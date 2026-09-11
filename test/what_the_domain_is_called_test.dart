@@ -13,25 +13,23 @@ import 'package:where_money_core/where_money_core.dart';
 /// dropdown with nothing failing. These are the tests that were in the domain
 /// package before the words moved.
 ///
-/// Every set is checked in both languages. A slug can only be missing from one
-/// of them, and the fallback that keeps it readable is also what hides it.
+/// Every set is checked in every language the domain knows. A slug can only be
+/// missing from one of them, and the fallback that keeps it readable is also
+/// what hides it.
 void main() {
   // Dates and month names are the one set of words this app does not write:
   // they come out of the CLDR data `flutter_localizations` loads per locale,
   // which a MaterialApp does for itself and a unit test has to ask for.
   setUpAll(() async {
-    for (final locale in const [Locale('en'), Locale('zh')]) {
-      await GlobalMaterialLocalizations.delegate.load(locale);
+    for (final language in languages) {
+      await GlobalMaterialLocalizations.delegate.load(Locale(language));
     }
   });
 
-  final languages = <String, AppLocalizations>{
-    'English': AppLocalizationsEn(),
-    '中文': AppLocalizationsZh(),
-  };
+  for (final language in languages) {
+    final words = lookupAppLocalizations(Locale(language));
 
-  languages.forEach((named, words) {
-    group('in $named', () {
+    group('in $language', () {
       test('every Category has copy to show the user', () {
         for (final category in categories) {
           expect(categoryLabel(words, category), isNot(category));
@@ -61,8 +59,19 @@ void main() {
           expect(reviewFieldLabel(words, field.name), field.labelIn(words));
         }
       });
+
+      test('every language is named in its own language, identically', () {
+        // The dropdown names each language in itself so a reader can find
+        // theirs without already reading this one, which only works if the
+        // name does not change with the language it is read in.
+        final english = AppLocalizationsEn();
+        for (final named in languages) {
+          expect(languageLabel(words, named), languageLabel(english, named));
+          expect(languageLabel(words, named), isNot(named));
+        }
+      });
     });
-  });
+  }
 
   test('a slug this app has no words for reads as itself', () {
     final words = AppLocalizationsEn();

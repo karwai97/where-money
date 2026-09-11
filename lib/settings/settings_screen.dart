@@ -260,17 +260,6 @@ class _ThemeChoice extends StatelessWidget {
   }
 }
 
-/// Each language named in its own language, so somebody can find theirs without
-/// already reading the other one — which is why these two entries are identical
-/// in every ARB file. A code with no name beside it reads as itself rather than
-/// as somebody else's language; `choosing_a_language_test.dart` is what fails
-/// when a language is added here and not named.
-String _named(AppLocalizations words, String language) => switch (language) {
-  'en' => words.settingsLanguageEnglish,
-  'zh' => words.settingsLanguageChinese,
-  _ => language,
-};
-
 /// Beside the Theme one, and the same shape: two choices of the same kind
 /// should look like the same kind of thing.
 class _LanguageChoice extends StatelessWidget {
@@ -291,7 +280,9 @@ class _LanguageChoice extends StatelessWidget {
         // A language this build does not have is read in the one it falls back
         // to, which is the language it is already being read in.
         whenUnrecognised: defaultLanguage,
-        copy: (language) => _named(words, language),
+        // Named in `on_screen.dart` with the domain's other vocabulary, so the
+        // name of a language is decided once, like the name of a Category.
+        copy: (language) => languageLabel(words, language),
         onChosen: context.read<SettingsCubit>().chooseLanguage,
       ),
     );
@@ -361,7 +352,7 @@ class _Lock extends StatelessWidget {
                   ],
                 ),
                 Padding(
-                  padding: EdgeInsets.only(left: sayingIndent(context), top: 2),
+                  padding: EdgeInsetsDirectional.only(start: sayingIndent(context), top: 2),
                   child: Text(switch (can) {
                     LockAvailability.biometrics => words.settingsLockBiometrics,
                     LockAvailability.deviceCredential =>
@@ -417,7 +408,7 @@ class _HomeCurrencyChoice extends StatelessWidget {
             },
           ),
           Padding(
-            padding: EdgeInsets.only(left: sayingIndent(context), top: 6),
+            padding: EdgeInsetsDirectional.only(start: sayingIndent(context), top: 6),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -541,7 +532,7 @@ class _DailyCap extends StatelessWidget {
               ],
             ),
             Padding(
-              padding: EdgeInsets.only(left: sayingIndent(context)),
+              padding: EdgeInsetsDirectional.only(start: sayingIndent(context)),
               // The Inbox's own words for the same news once the day is spent,
               // so the two screens say one thing rather than two.
               child: Text(
