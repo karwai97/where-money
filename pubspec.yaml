@@ -17,6 +17,11 @@ dependencies:
     sdk: flutter
   # Pinned by flutter_localizations, so `any` is the only version that resolves.
   intl: any
+  # Grapheme clusters, for the initials in Settings. Reached through the SDK
+  # by anything that imports `package:flutter/widgets.dart`; named here
+  # because the one file that wants it is a pure function and imports no
+  # widgets. Pinned by the SDK, so `any` again.
+  characters: any
   cupertino_icons: ^1.0.8
   where_money_core:
     path: packages/core

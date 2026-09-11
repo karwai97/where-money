@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:where_money/app.dart';
 import 'package:where_money/lock/device_lock.dart';
+import 'package:where_money/session/sign_in_gateway.dart';
 import 'package:where_money_core/where_money_core.dart';
 
 import '../fakes/fake_device_lock.dart';
@@ -21,10 +22,13 @@ void main() {
     store = InMemoryLedgerStore(seedLedger(around: DateTime(2026, 8, 23)));
   });
 
-  Future<void> openSettings(WidgetTester tester) async {
+  Future<void> openSettings(
+    WidgetTester tester, {
+    SignedInUser who = FakeSignInGateway.kai,
+  }) async {
     await tester.pumpWidget(
       WhereMoneyApp(
-        signIn: FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai),
+        signIn: FakeSignInGateway(alreadySignedIn: who),
         storesFor: (_) => store.stores,
         model: FakeModelGateway(),
         lock: lock,
@@ -74,5 +78,27 @@ void main() {
     await tester.tap(find.byType(Switch), warnIfMissed: false);
     await tester.pumpAndSettle();
     expect(await preferences.locksOnOpen(), isTrue);
+  });
+
+  testWidgets('an account holder is told whose Ledger this is', (tester) async {
+    await openSettings(tester);
+
+    expect(find.text('Kai'), findsOneWidget);
+    expect(find.text('kai@example.com · Google'), findsOneWidget);
+    // The disc says the same thing a second time and is decoration; the two
+    // lines beside it are what a screen reader is given.
+    expect(find.text('K'), findsOneWidget);
+  });
+
+  testWidgets('an account Google named nobody reads as its address', (
+    tester,
+  ) async {
+    await openSettings(tester, who: FakeSignInGateway.nameless);
+
+    // The address takes the first line rather than a made-up name, and the
+    // line under it is left with the product name alone.
+    expect(find.text('nameless@example.com'), findsOneWidget);
+    expect(find.text('Google'), findsOneWidget);
+    expect(find.textContaining('nameless@example.com ·'), findsNothing);
   });
 }

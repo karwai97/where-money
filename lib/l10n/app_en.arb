@@ -59,15 +59,35 @@
     }
   },
 
+  "settingsSignedInWith": "{email} · Google",
+  "@settingsSignedInWith": {
+    "description": "Under the Settings table, beside the disc: whose account this Ledger is under. The address is not translated; the dot and the product name are what this key carries. \"Google\" is a product name and reads the same in every language.",
+    "placeholders": {
+      "email": { "type": "String" }
+    }
+  },
+  "settingsSignedInWithGoogle": "Google",
+  "@settingsSignedInWithGoogle": {
+    "description": "The line above, for an account with no address to put in front of it. Not a state Google sign-in produces, but `email` is nullable and a line reading \" · Google\" would be worse than the product name alone."
+  },
+  "settingsGuest": "Guest",
+  "@settingsGuest": {
+    "description": "What the same line says when there is no account: the sign-in screen's own word for a guest, so the two screens call one thing one thing."
+  },
+  "settingsGuestNoAccount": "No account behind this Ledger",
+  "@settingsGuestNoAccount": {
+    "description": "Under \"Guest\", where an account holder's address goes. Says what a guest is rather than what follows from it; the hint under the Keep button says that."
+  },
+
   "settingsSignOut": "Sign out",
 
   "settingsKeepThisLedger": "Sign in to keep this Ledger",
   "@settingsKeepThisLedger": {
     "description": "The row a guest is offered in Settings, trading their session for a Google account. Drawn only for a guest: an account holder already has what it offers."
   },
-  "settingsKeepThisLedgerHint": "This Ledger has no account behind it, so it goes when this phone does. Signing in keeps it.",
+  "settingsKeepThisLedgerHint": "It goes when this phone does. Signing in keeps it.",
   "@settingsKeepThisLedgerHint": {
-    "description": "Under the row above, in the place this app says what a Setting is for. Says what happens if the offer is declined, which the label alone does not."
+    "description": "Under the row above, in the place this app says what a Setting is for. Says what happens if the offer is declined, which the label alone does not. It no longer opens by saying there is no account behind the Ledger, because `settingsGuestNoAccount` is now on the line over it."
   },
   "settingsSignOutAsGuestTitle": "Sign out of this Ledger?",
   "@settingsSignOutAsGuestTitle": {

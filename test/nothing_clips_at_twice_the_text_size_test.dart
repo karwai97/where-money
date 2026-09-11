@@ -299,12 +299,13 @@ void main() {
       await tester.pumpAndSettle();
       expectNothingClipped(tester, 'Settings as a guest at $scale');
       expect(
-        find.text(
-          'This Ledger has no account behind it, so it goes when this phone '
-          'does. Signing in keeps it.',
-        ),
+        find.text('It goes when this phone does. Signing in keeps it.'),
         findsOneWidget,
       );
+      // The line over the row, which is the block that grows: the disc is
+      // fixed at 36 and the two lines beside it are not.
+      expect(find.text('Guest'), findsOneWidget);
+      expect(find.text('No account behind this Ledger'), findsOneWidget);
 
       // Leaving asks first, in the longest sentence either dialog carries.
       await tester.tap(markSaying('Sign out'));

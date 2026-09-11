@@ -211,6 +211,67 @@ void main() {
     );
   });
 
+  testWidgets('who is signed in sits between the table and the ways out of '
+      'it', (tester) async {
+    await openSettings(tester);
+
+    final table = rectOf(tester, markSaying('Daily cap'));
+    final name = rectOf(tester, find.text('Kai'));
+    final out = rectOf(tester, find.byType(OutlinedButton));
+    final disc = rectOf(
+      tester,
+      find.ancestor(of: find.text('K'), matching: find.byType(Container)),
+    );
+
+    expect(
+      name.top,
+      greaterThan(table.bottom),
+      reason: 'under the last row of the table, and not a row in it',
+    );
+    expect(
+      name.bottom,
+      lessThan(out.top),
+      reason: 'over the two buttons it is about',
+    );
+    expect(
+      disc.left,
+      closeTo(out.left, 0.5),
+      reason: "on the screen's margin rather than in the table's label column",
+    );
+    expect(
+      disc.size,
+      const Size(36, 36),
+      reason: 'a mark is not type: the disc is fixed where the lines are not',
+    );
+  });
+
+  testWidgets('who is signed in is read as one thing, and is not a control', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+
+    await openSettings(tester);
+
+    final announced = tester.getSemantics(find.text('Kai'));
+
+    // Said in full rather than in two `contains`: what the disc holds is
+    // decoration, and the only way to say it is not read out is to say
+    // exactly what is.
+    expect(announced.label, 'Kai\nkai@example.com · Google');
+    expect(
+      tester.getSemantics(find.text('kai@example.com · Google')),
+      same(announced),
+      reason: 'the address is read with the name, not as a node after it',
+    );
+    expect(
+      announced,
+      isSemantics(isButton: false, isFocusable: false),
+      reason: 'there is nothing to open; both ways to change it are below it',
+    );
+
+    handle.dispose();
+  });
+
   testWidgets('signing out is a way out of the screen rather than a Setting '
       'on it', (tester) async {
     await openSettings(tester);

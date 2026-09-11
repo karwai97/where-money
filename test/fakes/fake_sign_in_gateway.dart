@@ -12,6 +12,15 @@ class FakeSignInGateway implements SignInGateway {
     email: 'kai@example.com',
   );
 
+  /// An account Google returned no display name for, which it can do
+  /// (ADR-0010). A constant of its own rather than a mutated [kai], so a test
+  /// that wants a named account and a test that wants a nameless one cannot
+  /// take each other's.
+  static const nameless = SignedInUser(
+    uid: 'nameless-uid',
+    email: 'nameless@example.com',
+  );
+
   /// Who a guest is, which is a uid and nothing else — an anonymous account
   /// has no name and no address to report.
   static const guest = SignedInUser(uid: 'guest-uid', guest: true);

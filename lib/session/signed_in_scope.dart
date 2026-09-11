@@ -51,12 +51,19 @@ class SignedInScope extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final session = context.watch<SessionBloc>().state;
+    // The uid alone, rather than the session it sits in: a guest keeping
+    // their Ledger keeps their uid and changes everything else about the user
+    // (ADR-0010), and watching the whole state would answer that by building
+    // a second set of Stores over the ones the blocs are already reading.
+    // Nothing in this scope is about the user beyond the uid.
+    final uid = context.select<SessionBloc, String?>((session) {
+      final state = session.state;
+      return state is SignedIn ? state.user.uid : null;
+    });
     // Nobody to build them for. The sign-in screen reads none of these, and a
     // Ledger with no uid is not a thing.
-    if (session is! SignedIn) return child;
+    if (uid == null) return child;
 
-    final uid = session.user.uid;
     final stores = storesFor(uid);
     // Read once, for the blocs that are about to be built. After this the
     // Setting reaches them as events rather than as a rebuild — see

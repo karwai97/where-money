@@ -12,6 +12,7 @@ import '../on_screen.dart';
 import '../lock/device_lock.dart';
 import '../session/session_bloc.dart';
 import '../session/trading_a_guest_for_an_account.dart';
+import 'initials.dart';
 import 'settings_cubit.dart';
 import 'themes.dart';
 
@@ -221,6 +222,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           // The one gap on the screen. Everything above it is a table and is
           // ruled rather than spaced; this is not part of the table.
           const SizedBox(height: 24),
+          const _WhoIsSignedIn(),
           if (_guestDrawn != null) _KeepThisLedger(onPressed: _keep),
           _SignOut(onPressed: _signOut),
         ],
@@ -602,6 +604,145 @@ class _Figure extends StatelessWidget {
         const SizedBox(width: 6),
         Flexible(child: Text(word, style: theme.textTheme.bodySmall)),
       ],
+    );
+  }
+}
+
+/// Whose account this Ledger is under, over the two buttons that are about
+/// it. Deliberately not a row in the table: a Setting is a choice about this
+/// phone, and who is signed in is neither a choice nor about the phone. The
+/// Daily cap already bends that rule once and this does not bend it twice.
+///
+/// It answers no tap. There is nothing to open — switching accounts is
+/// signing out and back in, and both buttons for that are directly under it.
+///
+/// Read off the session rather than handed down, the way `_guestDrawn` is, so
+/// a guest who keeps their Ledger is redrawn as an account holder in the same
+/// frame the Keep button disappears.
+class _WhoIsSignedIn extends StatelessWidget {
+  const _WhoIsSignedIn();
+
+  /// Fixed, and outside the text scaler's reach for the reason [ReceiptMark]
+  /// gives: a mark is not type, and initials that grew with the type would
+  /// be drawn outside the disc holding them.
+  static const _disc = 36.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final words = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final colours = theme.colorScheme;
+
+    final session = context.watch<SessionBloc>().state;
+    // The screen is only reachable signed in, so the other lane is arithmetic
+    // rather than a state anybody sees.
+    if (session is! SignedIn) return const SizedBox.shrink();
+    final user = session.user;
+
+    final name = user.name?.trim();
+    final email = user.email;
+
+    // The two lines, settled once, so what the disc holds and what is read
+    // out cannot disagree about who this is.
+    final String? who;
+    final String and;
+    if (user.guest) {
+      // Named rather than left blank: whether there is an account behind the
+      // Ledger is a word on the line, not something read off the disc.
+      who = words.settingsGuest;
+      and = words.settingsGuestNoAccount;
+    } else if (name != null && name.isNotEmpty) {
+      who = name;
+      and = email == null
+          ? words.settingsSignedInWithGoogle
+          : words.settingsSignedInWith(email);
+    } else {
+      // No display name, which Google can return (ADR-0010). The address
+      // takes the first line rather than a made-up name, and the line under
+      // it is left with the product name alone instead of the address twice.
+      who = email;
+      and = words.settingsSignedInWithGoogle;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      // One thing to a screen reader: "Kai, kai@example.com · Google" in one
+      // go rather than as two nodes to arrow between.
+      child: MergeSemantics(
+        child: Row(
+          children: [
+            // The cell fill every value on the screen sits in, with a person
+            // in it. Decoration, and excluded: the lines beside it say
+            // everything it says.
+            ExcludeSemantics(
+              child: Container(
+                width: _disc,
+                height: _disc,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: colours.surfaceContainerHighest,
+                  shape: BoxShape.circle,
+                ),
+                child: user.guest
+                    ? Icon(
+                        Icons.person_outline,
+                        size: 18,
+                        color: colours.outline,
+                      )
+                    : Padding(
+                        // Tracking adds space after the last letter only, so
+                        // tracked initials sit left of centre in a circle.
+                        // Paid back on the left rather than by dropping the
+                        // tracking every other mark in the app carries.
+                        padding: const EdgeInsets.only(left: 1.4),
+                        child: Text(
+                          initialsOf(name: user.name, email: email),
+                          textScaler: TextScaler.noScaling,
+                          // A tier up from `asAMark`'s `outline`: these sit
+                          // on a filled cell rather than beside one.
+                          style: asTrackedMark(
+                            theme.textTheme.labelSmall?.copyWith(
+                              color: colours.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (who != null) ...[
+                    Text(
+                      who,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: atItsWeight(
+                        theme.textTheme.bodyMedium?.copyWith(
+                          color: colours.onSurface,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                  ],
+                  // Never wrapped: an address broken across two lines reads
+                  // as two addresses.
+                  Text(
+                    and,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
