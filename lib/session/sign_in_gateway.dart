@@ -19,8 +19,9 @@ class SignedInUser extends Equatable {
   final String? email;
 
   /// The account's own picture, where Google has one for it. Called a picture
-  /// rather than a photo because a Photo in this app is a photographed
-  /// receipt (`CONTEXT.md`), and the two are not the same kind of thing.
+  /// rather than a photo to stay clear of the word this app already uses for
+  /// a photographed receipt, which is what "photo" means everywhere else in
+  /// it.
   ///
   /// A [Uri] rather than the string Google returns: a URL the app cannot
   /// parse is no picture, and answering that here is better than failing
@@ -34,27 +35,31 @@ class SignedInUser extends Equatable {
   /// (ADR-0010).
   final bool guest;
 
-  /// This user as Google describes them. Google's answer wins where it has
-  /// one, and Firebase's is what is left where it has not.
+  /// This user as the Google account behind them describes them. Google's
+  /// answer wins where it has one; what is already here is what is left.
   ///
-  /// Firebase keeps a copy of the name and the picture, taken from the
-  /// credential the first time the account signed in. That copy can be
-  /// missing both while Google has both, so the SDK's own answer is the one
-  /// worth asking for — and it is the fresher of the two besides.
+  /// Firebase keeps two copies of a profile. The user record's own name and
+  /// picture are written when the account first signs in and can be empty;
+  /// what each provider said is kept beside it, per provider, and survives.
+  /// This is how the second reaches a screen that was drawing the first.
   ///
-  /// Only where the two agree on the address. A phone can have several Google
-  /// accounts on it, and a Google session restored for one of them while
-  /// Firebase holds the other would otherwise put one person's name and face
-  /// over another person's Ledger. A guest has no address at all, which is
-  /// the same check answering the same way and the reason a guest needs no
-  /// case of its own here.
+  /// Disagreeing disqualifies; not knowing does not. Where both carry an
+  /// address and the two differ this is not the same person and nothing is
+  /// taken — a description meant for one account must never land on
+  /// another's Ledger. Where this record has no address, it is missing it the
+  /// same way it is missing the name and the picture, and throwing those away
+  /// over a blank would be that guard inverted.
+  ///
+  /// A guest is never described: nothing is behind them to do the describing,
+  /// and the emptiness of their record is not an invitation to fill it in.
   SignedInUser describedBy(GoogleProfile? google) {
-    if (google == null || google.email != email) return this;
+    if (google == null || guest) return this;
+    if (email != null && google.email != email) return this;
 
     return SignedInUser(
       uid: uid,
       name: google.name ?? name,
-      email: email,
+      email: email ?? google.email,
       picture: google.picture ?? picture,
       guest: guest,
     );
@@ -64,13 +69,13 @@ class SignedInUser extends Equatable {
   List<Object?> get props => [uid, name, email, picture, guest];
 }
 
-/// What Google's own SDK says about a person, as against Firebase's copy of
-/// it: the address that says which person, and the two things that copy can
-/// be missing.
+/// What the Google account behind a user says about them: the address that
+/// says which person, and the two things the user record beside it can be
+/// missing.
 ///
 /// Its own type rather than three more arguments, so the rule that merges it
-/// into a [SignedInUser] can be read and tested without a Firebase user or a
-/// `GoogleSignInAccount` anywhere near it.
+/// into a [SignedInUser] can be read and tested with no Firebase user
+/// anywhere near it.
 class GoogleProfile extends Equatable {
   const GoogleProfile({required this.email, this.name, this.picture});
 

@@ -45,13 +45,26 @@ third state.
 
 `SignedInUser` carries `uid`, `name`, `email`, `picture` and `guest`.
 
-**Changed after the spec was written.** It originally said there was no photo
-URL, so nothing was fetched and no placeholder was faked. Google does return
-one, and an account's own picture is the thing a reader recognises fastest, so
-`SignedInUser` gained `picture` and the disc draws it where there is one. The
-initials did not become a placeholder: they are what the disc holds when there
-is no picture, while one is loading, and if it never arrives. Called a picture
-rather than a photo because a Photo in this app is a photographed receipt.
+**Changed after the spec was written**, twice, by the user.
+
+*The picture.* It originally said there was no photo URL, so nothing was
+fetched and no placeholder was faked. Google does return one, and an account's
+own picture is the thing a reader recognises fastest, so `SignedInUser` gained
+`picture` and the disc draws it where there is one. The initials did not become
+a placeholder: they are what the disc holds when there is no picture, while one
+is loading, and if it never arrives. Called a picture rather than a photo to
+stay clear of the word this app already uses for a photographed receipt.
+
+*Where the name and the picture come from.* Then: "use the display name and
+avatar from google sdk". Firebase keeps two copies of a profile — the user
+record's own name and picture, written at first sign-in and often empty, and
+what each provider said, kept per provider. The app was reading the first. It
+now reads the second, off `user.providerData`, through `GoogleProfile` and
+`SignedInUser.describedBy`. The Google SDK itself is *not* asked:
+`attemptLightweightAuthentication` is allowed to show UI and on Android does,
+putting an account chooser in front of an already signed-in user at launch.
+`describedBy` takes nothing from a profile whose address disagrees with the
+record's, and nothing at all for a guest.
 
 | User | Disc | First line | Second line |
 | --- | --- | --- | --- |
@@ -107,7 +120,7 @@ dropping the tracking.
 | Element | Built from | Notes |
 | --- | --- | --- |
 | The person | new private widget in `settings_screen.dart`, `_WhoIsSignedIn` or similar | A `Row` of the disc and a `Column` of two `Text`s. Reads the user off `context.watch<SessionBloc>()`, the way `_guestDrawn` does, so it redraws the moment a guest keeps their Ledger and stops being one. |
-| Disc | `Container` 36 × 36, `BoxShape.circle`, fill `surfaceContainerHighest` | Holds a `Text` of the initials in `asTrackedMark(labelSmall)` coloured `onSurfaceVariant`, or `Icon(Icons.person_outline, size: 18)` in `outline` for a guest. `ExcludeSemantics` on the disc: the lines beside it say everything it says. |
+| Disc | `Container` 36 × 36, `BoxShape.circle`, fill `surfaceContainerHighest`, keyed so a test can measure it | Holds the account's picture where there is one — `ClipOval` over `Image.network`, `BoxFit.cover`, `cacheWidth` at the drawn size, the mark below it through `frameBuilder` and `errorBuilder`. Otherwise a `Text` of the initials in `asTrackedMark(labelSmall)` coloured `onSurfaceVariant`, or `Icon(Icons.person_outline, size: 18)` in `outline` for a guest. `ExcludeSemantics` on the disc: the lines beside it say everything it says. |
 | First line | `Text`, `atItsWeight(bodyMedium w500)` in `onSurface` | `maxLines: 2`, `overflow: TextOverflow.ellipsis`. |
 | Second line | `Text`, `bodySmall` | `maxLines: 1`, `overflow: TextOverflow.ellipsis`. The address is not translated; the dot and "Google" come from one ARB message with a placeholder. |
 | Keep hint | existing `_KeepThisLedger` | Copy change only, below. |
@@ -205,3 +218,28 @@ Keep button's slot are as they are today.
 - `settings_in_graphite_test.dart` measures how the screen is drawn; add the
   disc's 36px and the 16px margin there if the file's pattern is to pin such
   values, otherwise leave it.
+
+Added with the two changes above:
+
+- The picture takes the disc; a picture that never arrives leaves the initials;
+  a guest has none and keeps the figure. The first needs a picture that
+  actually loads — a widget test's `HttpClient` answers 400 to everything — so
+  `test/fakes/every_picture_loads.dart` answers one transparent pixel instead.
+- `test/session/what_google_says_test.dart` on `describedBy`: Google's name and
+  picture win, they fill in what the record never had, the record is what is
+  left when Google says nothing, the uid is never Google's to change, a
+  different address describes nobody, a record with no address still takes what
+  Google has, and a guest is described by nobody.
+
+## Not asked for, and in anyway
+
+- `lib/session/signed_in_scope.dart` watches the uid rather than the whole
+  session. Outside "nothing else on the screen changes", but it is what makes
+  this spec's own `storesBuilt` stays at 1 true rather than merely passing: a
+  guest keeping their Ledger changed the user without changing the uid, and the
+  scope was building a second set of Stores over the ones the blocs were
+  already reading.
+- A fourth lane on the person: no name *and* no address puts `Google` on the
+  first line with no second line. The spec covers a null `email` only for an
+  account that has a name. Drawing a blank first line over one orphan word was
+  the alternative.

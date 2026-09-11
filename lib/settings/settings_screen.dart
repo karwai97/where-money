@@ -659,7 +659,7 @@ class _WhoIsSignedIn extends StatelessWidget {
           ? words.settingsSignedInWithGoogle
           : words.settingsSignedInWith(email);
     } else if (email != null) {
-      // No display name, which Google can return (ADR-0010). The address
+      // No display name, which Google can return. The address
       // takes the first line rather than a made-up name, and the line under
       // it is left with the product name alone instead of the address twice.
       who = email;

@@ -28,9 +28,6 @@ class GoogleSignInGateway implements SignInGateway {
   /// signed in. This costs no call at all — Firebase already holds what the
   /// Google provider said, and holds it *per provider*, which is the copy
   /// that survives when the user record's own is empty.
-  ///
-  /// The picture is parsed here, at the seam, so a URL nothing can parse is
-  /// simply no picture rather than a failure inside an image loader.
   static GoogleProfile? _googleIn(User user) {
     for (final provider in user.providerData) {
       final email = provider.email;
@@ -39,10 +36,7 @@ class GoogleSignInGateway implements SignInGateway {
       return GoogleProfile(
         email: email,
         name: provider.displayName,
-        picture: switch (provider.photoURL) {
-          final url? => Uri.tryParse(url),
-          null => null,
-        },
+        picture: _pictureAt(provider.photoURL),
       );
     }
     return null;
@@ -51,6 +45,11 @@ class GoogleSignInGateway implements SignInGateway {
   /// Firebase's own id for the Google provider, which is the string it keys
   /// `providerData` by rather than anything this app chose.
   static const _googleProvider = 'google.com';
+
+  /// A picture URL as the app holds one. Parsed at the seam, in the one place
+  /// both copies of it come through, so a URL nothing can parse is simply no
+  /// picture rather than a failure inside an image loader.
+  static Uri? _pictureAt(String? url) => url == null ? null : Uri.tryParse(url);
 
   /// `userChanges` rather than `authStateChanges`: a guest linking an account
   /// keeps their uid, so the auth *state* does not change and that stream
@@ -72,10 +71,7 @@ class GoogleSignInGateway implements SignInGateway {
     uid: user.uid,
     name: user.displayName,
     email: user.email,
-    picture: switch (user.photoURL) {
-      final url? => Uri.tryParse(url),
-      null => null,
-    },
+    picture: _pictureAt(user.photoURL),
     guest: user.isAnonymous,
   ).describedBy(_googleIn(user));
 

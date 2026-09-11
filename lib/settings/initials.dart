@@ -16,9 +16,9 @@ import 'package:characters/characters.dart';
 /// and the last of the whitespace-separated words, upper-cased. A one-word
 /// name gives one letter, and a name that is only whitespace is no name.
 ///
-/// With no name, the address's first letter — Google can return an account
-/// with no display name (ADR-0010), and a made-up one would be worse than an
-/// initial off the address the line beside it already shows.
+/// With no name, the address's first letter. Google can return an account
+/// with no display name, and a made-up one would be worse than an initial off
+/// the address the line beside it already shows.
 ///
 /// Counted in grapheme clusters rather than code units, so a Chinese name
 /// gives its first character instead of half of one.

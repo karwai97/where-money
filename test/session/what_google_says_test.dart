@@ -63,7 +63,25 @@ void main() {
     expect(firebase.describedBy(somebodyElse), firebase);
   });
 
-  test('a guest is described by nobody, having no address to match on', () {
+  test('a record with no address at all still takes what Google has', () {
+    // The failure this guards is the one the whole change exists to close,
+    // turned on itself: Firebase's record can be missing the address exactly
+    // the way it can be missing the name and the picture, and throwing a name
+    // and a face away over a blank would be the address check inverted.
+    const blank = SignedInUser(uid: 'kai-uid');
+
+    final described = blank.describedBy(google);
+
+    expect(described.name, 'Kar Wai Ngim');
+    expect(described.picture, isNotNull);
+    expect(
+      described.email,
+      'kai@example.com',
+      reason: "Google's, for want of one of its own",
+    );
+  });
+
+  test('a guest is described by nobody, and is not a blank record', () {
     const guest = SignedInUser(uid: 'guest-uid', guest: true);
 
     expect(guest.describedBy(google), guest);

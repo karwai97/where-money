@@ -23,8 +23,8 @@ class FakeSignInGateway implements SignInGateway {
     picture: Uri.parse('https://lh3.googleusercontent.com/a/kai'),
   );
 
-  /// An account Google returned no display name for, which it can do
-  /// (ADR-0010). A constant of its own rather than a mutated [kai], so a test
+  /// An account Google returned no display name for, which it can do.
+  /// A constant of its own rather than a mutated [kai], so a test
   /// that wants a named account and a test that wants a nameless one cannot
   /// take each other's.
   static const nameless = SignedInUser(
