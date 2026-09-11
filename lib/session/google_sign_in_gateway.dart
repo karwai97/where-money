@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -19,54 +17,40 @@ class GoogleSignInGateway implements SignInGateway {
   final FirebaseAuth _auth;
   final GoogleSignIn _google;
 
-  /// What Google last said about the person signed in, or null where it has
-  /// said nothing about them — nobody is signed in, the user is a guest, or
-  /// the SDK had nothing to restore.
-  ///
-  /// Held rather than asked for at the point of use. The SDK answers on a
-  /// broadcast stream that does not replay and on the return of the two calls
-  /// below, so what it says has to be caught where it is said.
-  GoogleProfile? _fromGoogle;
+  Future<void> initialize() => _google.initialize();
 
-  Future<void> initialize() async {
-    await _google.initialize();
-    _fromGoogle = await _restored();
-  }
-
-  /// The Google account behind a session this phone already had, asked for
-  /// without any UI, so a returning user is named and pictured on the frame
-  /// they come back to rather than a frame later.
+  /// What Google says about this account, taken off the Firebase record's own
+  /// provider data. A guest has no provider at all and so no profile.
   ///
-  /// Never allowed to fail a launch or to hold one up for long. Firebase
-  /// alone says who is signed in; everything this adds is a name and a face
-  /// the screen already has a fallback for, so a phone with no network gets
-  /// the fallback rather than a wait.
-  Future<GoogleProfile?> _restored() async {
-    try {
-      final restored =
-          await (_google.attemptLightweightAuthentication() ??
-                  Future<GoogleSignInAccount?>.value())
-              .timeout(const Duration(seconds: 3));
-      return _profileOf(restored);
-    } catch (_) {
-      return null;
+  /// Asking the SDK is the obvious way and the wrong one. Its
+  /// `attemptLightweightAuthentication` is allowed to show UI, and on Android
+  /// it does: it put an account chooser in front of a user who was already
+  /// signed in. This costs no call at all — Firebase already holds what the
+  /// Google provider said, and holds it *per provider*, which is the copy
+  /// that survives when the user record's own is empty.
+  ///
+  /// The picture is parsed here, at the seam, so a URL nothing can parse is
+  /// simply no picture rather than a failure inside an image loader.
+  static GoogleProfile? _googleIn(User user) {
+    for (final provider in user.providerData) {
+      final email = provider.email;
+      if (provider.providerId != _googleProvider || email == null) continue;
+
+      return GoogleProfile(
+        email: email,
+        name: provider.displayName,
+        picture: switch (provider.photoURL) {
+          final url? => Uri.tryParse(url),
+          null => null,
+        },
+      );
     }
+    return null;
   }
 
-  /// The SDK's account as the app's [GoogleProfile]. The picture is parsed
-  /// here, at the seam, so a URL nothing can parse is simply no picture
-  /// rather than a failure somewhere inside an image loader.
-  static GoogleProfile? _profileOf(GoogleSignInAccount? account) =>
-      account == null
-      ? null
-      : GoogleProfile(
-          email: account.email,
-          name: account.displayName,
-          picture: switch (account.photoUrl) {
-            final url? => Uri.tryParse(url),
-            null => null,
-          },
-        );
+  /// Firebase's own id for the Google provider, which is the string it keys
+  /// `providerData` by rather than anything this app chose.
+  static const _googleProvider = 'google.com';
 
   /// `userChanges` rather than `authStateChanges`: a guest linking an account
   /// keeps their uid, so the auth *state* does not change and that stream
@@ -84,7 +68,7 @@ class GoogleSignInGateway implements SignInGateway {
   /// whether it is a guest — and Google settles what they are called and what
   /// they look like. [SignedInUser.describedBy] says how the two are put
   /// together, and why that is not simply Google winning.
-  SignedInUser _asUser(User user) => SignedInUser(
+  static SignedInUser _asUser(User user) => SignedInUser(
     uid: user.uid,
     name: user.displayName,
     email: user.email,
@@ -93,7 +77,7 @@ class GoogleSignInGateway implements SignInGateway {
       null => null,
     },
     guest: user.isAnonymous,
-  ).describedBy(_fromGoogle);
+  ).describedBy(_googleIn(user));
 
   @override
   Future<void> signIn() async {
@@ -147,12 +131,6 @@ class GoogleSignInGateway implements SignInGateway {
       rethrow;
     }
 
-    // Caught here because this is where Google says it. Set before the
-    // Firebase call this feeds returns, so the emission that follows it is
-    // already the described user rather than a bare one that is corrected a
-    // frame later.
-    _fromGoogle = _profileOf(account);
-
     final idToken = account.authentication.idToken;
     if (idToken == null) {
       throw StateError('Google signed $account in without an ID token.');
@@ -171,7 +149,6 @@ class GoogleSignInGateway implements SignInGateway {
     // Google first: signing Firebase out first would briefly show a signed-out
     // Ledger while the picker still remembers the account.
     await _google.signOut();
-    _fromGoogle = null;
     await _auth.signOut();
   }
 }
