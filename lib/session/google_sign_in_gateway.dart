@@ -19,24 +19,61 @@ class GoogleSignInGateway implements SignInGateway {
 
   Future<void> initialize() => _google.initialize();
 
+  /// What Google says about this account, taken off the Firebase record's own
+  /// provider data. A guest has no provider at all and so no profile.
+  ///
+  /// Asking the SDK is the obvious way and the wrong one. Its
+  /// `attemptLightweightAuthentication` is allowed to show UI, and on Android
+  /// it does: it put an account chooser in front of a user who was already
+  /// signed in. This costs no call at all — Firebase already holds what the
+  /// Google provider said, and holds it *per provider*, which is the copy
+  /// that survives when the user record's own is empty.
+  static GoogleProfile? _googleIn(User user) {
+    for (final provider in user.providerData) {
+      final email = provider.email;
+      if (provider.providerId != _googleProvider || email == null) continue;
+
+      return GoogleProfile(
+        email: email,
+        name: provider.displayName,
+        picture: _pictureAt(provider.photoURL),
+      );
+    }
+    return null;
+  }
+
+  /// Firebase's own id for the Google provider, which is the string it keys
+  /// `providerData` by rather than anything this app chose.
+  static const _googleProvider = 'google.com';
+
+  /// A picture URL as the app holds one. Parsed at the seam, in the one place
+  /// both copies of it come through, so a URL nothing can parse is simply no
+  /// picture rather than a failure inside an image loader.
+  static Uri? _pictureAt(String? url) => url == null ? null : Uri.tryParse(url);
+
   /// `userChanges` rather than `authStateChanges`: a guest linking an account
   /// keeps their uid, so the auth *state* does not change and that stream
   /// never fires — the app would go on believing a linked user is a guest.
   ///
   /// The extra emissions this brings, a token refresh among them, cost
-  /// nothing: [SignedInUser] is an `Equatable` of four fields, so an unchanged
+  /// nothing: [SignedInUser] is an `Equatable` of five fields, so an unchanged
   /// user emits an equal value and no state changes.
   @override
-  Stream<SignedInUser?> changes() => _auth.userChanges().map(
-    (user) => user == null
-        ? null
-        : SignedInUser(
-            uid: user.uid,
-            name: user.displayName,
-            email: user.email,
-            guest: user.isAnonymous,
-          ),
-  );
+  Stream<SignedInUser?> changes() =>
+      _auth.userChanges().map((user) => user == null ? null : _asUser(user));
+
+  /// Firebase's user as the app's, wearing whatever Google says about them.
+  /// Firebase settles who this is — the uid the Ledger is keyed by, and
+  /// whether it is a guest — and Google settles what they are called and what
+  /// they look like. [SignedInUser.describedBy] says how the two are put
+  /// together, and why that is not simply Google winning.
+  static SignedInUser _asUser(User user) => SignedInUser(
+    uid: user.uid,
+    name: user.displayName,
+    email: user.email,
+    picture: _pictureAt(user.photoURL),
+    guest: user.isAnonymous,
+  ).describedBy(_googleIn(user));
 
   @override
   Future<void> signIn() async {

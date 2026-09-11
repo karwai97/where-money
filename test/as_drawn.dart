@@ -20,3 +20,9 @@ Finder markSaying(String words) => find.text(words.toUpperCase());
 /// descendant of the field so that this still finds it.
 Finder fieldCalled(String label) =>
     find.widgetWithText(TextField, label.toUpperCase());
+
+/// The disc of initials over the two buttons on Settings, found by its key
+/// rather than by whichever widget is drawing the circle. It is measured
+/// rather than read: it is fixed at 36 where the lines beside it grow, and
+/// the mark in it has to stay inside it.
+final Finder theDisc = find.byKey(const ValueKey('who is signed in: the disc'));

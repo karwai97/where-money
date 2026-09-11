@@ -61,6 +61,11 @@ void main() {
       // the ISO list. Normalising what was typed is data, not typography.
       'lib/choosing_a_currency.dart',
       'lib/review/review_bloc.dart',
+      // Initials off a name. Upper in every language that has a case and
+      // untouched in the ones that do not, which is the same argument: the
+      // letter is data, not typography. The file holds nothing else, so the
+      // screen that draws the initials stays covered.
+      'lib/settings/initials.dart',
     };
 
     final offenders = Directory('lib')

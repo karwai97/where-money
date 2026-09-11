@@ -25,6 +25,11 @@ void main() {
   late InMemoryLedgerStore store;
   late InMemoryDevicePreferences preferences;
 
+  /// How many times the app reached for a Ledger. A guest keeping theirs
+  /// keeps the uid, so nothing under the screen is re-keyed and this stays at
+  /// one — the claim `choosing_a_theme_test.dart` pins for the theme.
+  late int storesBuilt;
+
   final onTheLedger = Expense(
     id: 'seed-1',
     merchant: 'Village Grocer',
@@ -41,6 +46,7 @@ void main() {
     signIn = FakeSignInGateway();
     store = InMemoryLedgerStore([onTheLedger]);
     preferences = InMemoryDevicePreferences(locksOnOpen: false);
+    storesBuilt = 0;
   });
 
   Future<void> open(
@@ -52,7 +58,10 @@ void main() {
       WhereMoneyApp(
         language: language,
         signIn: signIn,
-        storesFor: (_) => store.stores,
+        storesFor: (_) {
+          storesBuilt++;
+          return store.stores;
+        },
         model: FakeModelGateway(),
         lock: FakeDeviceLock(),
         preferences: preferences,
@@ -87,11 +96,27 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  /// Scrolled to before it is tapped. The foot of Settings sits below the
-  /// fold once a guest's row is on it, and a tap dispatched at an offset
-  /// outside the viewport lands on nothing at all rather than failing.
-  Future<void> tapOn(WidgetTester tester, Finder what) async {
+  /// Brought on screen before it is tapped. The foot of Settings sits below
+  /// the fold once a guest's row and the line over it are on it, and a tap
+  /// dispatched at an offset outside the viewport lands on nothing at all
+  /// rather than failing.
+  ///
+  /// Scrolled for rather than only ensured visible: a `ListView` does not
+  /// build what is far enough past the fold, and `ensureVisible` needs an
+  /// element to work from.
+  Future<void> bringOnScreen(WidgetTester tester, Finder what) async {
+    if (what.evaluate().isEmpty) {
+      await tester.scrollUntilVisible(
+        what,
+        100,
+        scrollable: find.byType(Scrollable).first,
+      );
+    }
     await tester.ensureVisible(what);
+  }
+
+  Future<void> tapOn(WidgetTester tester, Finder what) async {
+    await bringOnScreen(tester, what);
     await tester.pumpAndSettle();
     await tester.tap(what);
     await tester.pumpAndSettle();
@@ -102,7 +127,7 @@ void main() {
   /// the row's spinner never would, and neither would the modal a deletion
   /// runs under.
   Future<void> tapAndWait(WidgetTester tester, Finder what) async {
-    await tester.ensureVisible(what);
+    await bringOnScreen(tester, what);
     await tester.pump();
     await tester.tap(what);
     for (var frame = 0; frame < 5; frame++) {
@@ -158,7 +183,11 @@ void main() {
 
       // `cased` is a no-op for zh, so the row reads as it is written.
       expect(find.text('登录以保留此账本'), findsOneWidget);
-      expect(find.text('此账本没有账号，会随这部手机一起消失。登录即可保留。'), findsOneWidget);
+      expect(find.text('它会随这部手机一起消失。登录即可保留。'), findsOneWidget);
+      // The line over the button, which is where the clause the hint used to
+      // open with now lives.
+      expect(find.text('访客'), findsOneWidget);
+      expect(find.text('此账本没有账号'), findsOneWidget);
 
       await tapOn(tester, find.text('退出登录'));
       expect(find.text('退出此账本？'), findsOneWidget);
@@ -178,12 +207,13 @@ void main() {
 
       expect(markSaying('Sign in to keep this Ledger'), findsOneWidget);
       expect(
-        find.text(
-          'This Ledger has no account behind it, so it goes when this phone '
-          'does. Signing in keeps it.',
-        ),
+        find.text('It goes when this phone does. Signing in keeps it.'),
         findsOneWidget,
       );
+      // The clause the hint used to open with, now on the line over the
+      // button, where it is a fact about the user rather than a preamble.
+      expect(find.text('Guest'), findsOneWidget);
+      expect(find.text('No account behind this Ledger'), findsOneWidget);
     });
 
     testWidgets('an account holder is not offered what they already have', (
@@ -211,6 +241,25 @@ void main() {
       // Nothing moved: the uid did not change, so neither did the Ledger.
       await tapOn(tester, find.byTooltip('Back'));
       expect(find.text('Village Grocer'), findsWidgets);
+    });
+
+    testWidgets('the line over the button stops saying guest in the same '
+        'frame the button goes', (tester) async {
+      await open(tester);
+      await continueAsGuest(tester);
+      await openSettings(tester);
+
+      expect(find.text('Guest'), findsOneWidget);
+      expect(find.text('Kai'), findsNothing);
+
+      await tapOn(tester, markSaying('Sign in to keep this Ledger'));
+
+      expect(find.text('Guest'), findsNothing);
+      expect(find.text('Kai'), findsOneWidget);
+      expect(find.text('kai@example.com · Google'), findsOneWidget);
+      // The uid did not change, so nothing under the screen was re-keyed and
+      // the Ledger this was read over is the one still loaded.
+      expect(storesBuilt, 1);
     });
 
     testWidgets('a closed account picker says nothing and changes nothing', (

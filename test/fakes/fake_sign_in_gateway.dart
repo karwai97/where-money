@@ -12,6 +12,26 @@ class FakeSignInGateway implements SignInGateway {
     email: 'kai@example.com',
   );
 
+  /// An account Google has a picture for. Kept apart from [kai] so that the
+  /// tests that are not about the picture never reach for one: an
+  /// `Image.network` in a widget test goes to the harness's own client, and a
+  /// default that did that would put a failed fetch under every screen.
+  static final pictured = SignedInUser(
+    uid: 'kai-uid',
+    name: 'Kai',
+    email: 'kai@example.com',
+    picture: Uri.parse('https://lh3.googleusercontent.com/a/kai'),
+  );
+
+  /// An account Google returned no display name for, which it can do.
+  /// A constant of its own rather than a mutated [kai], so a test
+  /// that wants a named account and a test that wants a nameless one cannot
+  /// take each other's.
+  static const nameless = SignedInUser(
+    uid: 'nameless-uid',
+    email: 'nameless@example.com',
+  );
+
   /// Who a guest is, which is a uid and nothing else — an anonymous account
   /// has no name and no address to report.
   static const guest = SignedInUser(uid: 'guest-uid', guest: true);
