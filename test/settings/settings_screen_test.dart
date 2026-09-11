@@ -6,6 +6,7 @@ import 'package:where_money/session/sign_in_gateway.dart';
 import 'package:where_money_core/where_money_core.dart';
 
 import '../as_drawn.dart';
+import '../fakes/every_picture_loads.dart';
 import '../fakes/fake_device_lock.dart';
 import '../fakes/fake_model_gateway.dart';
 import '../fakes/fake_sign_in_gateway.dart';
@@ -21,6 +22,11 @@ void main() {
     lock = FakeDeviceLock();
     preferences = InMemoryDevicePreferences();
     store = InMemoryLedgerStore(seedLedger(around: DateTime(2026, 8, 23)));
+    // The image cache outlives a test. Without this, the one test that lets a
+    // picture load leaves it decoded for the test that is about a picture
+    // that never arrives, and that test silently stops testing anything.
+    imageCache.clear();
+    imageCache.clearLiveImages();
   });
 
   Future<void> openSettings(
@@ -121,5 +127,49 @@ void main() {
       reason: 'it is under a blank first line rather than on one',
     );
     expect(find.text('Guest'), findsNothing);
+  });
+
+  testWidgets("an account's own picture takes the disc", (tester) async {
+    await whileEveryPictureLoads(() async {
+      await openSettings(tester, who: FakeSignInGateway.pictured);
+      // Fetching and decoding are real asynchronous work off the frame loop,
+      // which pumping frames does not advance. Without this the picture is
+      // still in flight and the test would pin the fallback while claiming to
+      // pin the picture.
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pump();
+
+      expect(find.byType(Image), findsOneWidget);
+      // The initials are what the disc holds when there is no picture. There
+      // is one, so they are not drawn under it or beside it.
+      expect(find.text('K'), findsNothing);
+      // The lines say who this is; the disc never did.
+      expect(find.text('Kai'), findsOneWidget);
+    });
+  });
+
+  testWidgets('a picture that never arrives leaves the initials', (
+    tester,
+  ) async {
+    // No `whileEveryPictureLoads`: the harness answers 400, which is exactly
+    // the phone with no network that this fallback exists for.
+    await openSettings(tester, who: FakeSignInGateway.pictured);
+
+    expect(find.text('K'), findsOneWidget);
+    expect(find.text('Kai'), findsOneWidget);
+  });
+
+  testWidgets('a guest has no picture to draw and keeps the figure', (
+    tester,
+  ) async {
+    await whileEveryPictureLoads(() async {
+      await openSettings(tester, who: FakeSignInGateway.guest);
+
+      expect(find.byType(Image), findsNothing);
+      expect(find.byIcon(Icons.person_outline), findsOneWidget);
+      expect(find.text('Guest'), findsOneWidget);
+    });
   });
 }

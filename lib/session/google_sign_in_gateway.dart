@@ -24,18 +24,24 @@ class GoogleSignInGateway implements SignInGateway {
   /// never fires — the app would go on believing a linked user is a guest.
   ///
   /// The extra emissions this brings, a token refresh among them, cost
-  /// nothing: [SignedInUser] is an `Equatable` of four fields, so an unchanged
+  /// nothing: [SignedInUser] is an `Equatable` of five fields, so an unchanged
   /// user emits an equal value and no state changes.
   @override
-  Stream<SignedInUser?> changes() => _auth.userChanges().map(
-    (user) => user == null
-        ? null
-        : SignedInUser(
-            uid: user.uid,
-            name: user.displayName,
-            email: user.email,
-            guest: user.isAnonymous,
-          ),
+  Stream<SignedInUser?> changes() =>
+      _auth.userChanges().map((user) => user == null ? null : _asUser(user));
+
+  /// Firebase's user as the app's. The picture is parsed here, at the seam,
+  /// so a URL Google returns that nothing can parse is simply no picture
+  /// rather than a failure somewhere inside an image loader.
+  static SignedInUser _asUser(User user) => SignedInUser(
+    uid: user.uid,
+    name: user.displayName,
+    email: user.email,
+    picture: switch (user.photoURL) {
+      final url? => Uri.tryParse(url),
+      null => null,
+    },
+    guest: user.isAnonymous,
   );
 
   @override

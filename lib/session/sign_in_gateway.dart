@@ -1,5 +1,6 @@
 /// Identity, and nothing more. The domain wants a uid out of signing in; the
-/// name and the email are here only so the app can say who is signed in.
+/// name, the email and the picture are here only so the app can say who is
+/// signed in.
 library;
 
 import 'package:equatable/equatable.dart';
@@ -9,12 +10,23 @@ class SignedInUser extends Equatable {
     required this.uid,
     this.name,
     this.email,
+    this.picture,
     this.guest = false,
   });
 
   final String uid;
   final String? name;
   final String? email;
+
+  /// The account's own picture, where Google has one for it. Called a picture
+  /// rather than a photo because a Photo in this app is a photographed
+  /// receipt (`CONTEXT.md`), and the two are not the same kind of thing.
+  ///
+  /// A [Uri] rather than the string Google returns: a URL the app cannot
+  /// parse is no picture, and answering that here is better than failing
+  /// inside an image loader. Nullable twice over — an account can have none,
+  /// and a guest never has one.
+  final Uri? picture;
 
   /// Whether this is a session rather than an account: a uid with nothing
   /// behind it that can be signed into again. Identity like the uid is, and
@@ -23,7 +35,7 @@ class SignedInUser extends Equatable {
   final bool guest;
 
   @override
-  List<Object?> get props => [uid, name, email, guest];
+  List<Object?> get props => [uid, name, email, picture, guest];
 }
 
 abstract interface class SignInGateway {

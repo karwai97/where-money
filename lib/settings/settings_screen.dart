@@ -673,6 +673,33 @@ class _WhoIsSignedIn extends StatelessWidget {
       behind = null;
     }
 
+    // What the disc holds when there is no picture, and what it falls back to
+    // while one loads and if it never arrives: a figure for a guest, the
+    // account's initials otherwise.
+    final Widget mark = user.guest
+        ? Icon(Icons.person_outline, size: 18, color: colours.outline)
+        : Padding(
+            // Tracking adds space after the last letter only, so tracked
+            // initials sit left of centre in a circle. Paid back on the left
+            // rather than by dropping the tracking every other mark in the
+            // app carries.
+            padding: const EdgeInsets.only(left: 1.4),
+            child: Text(
+              // The trimmed name, not the raw one: whether there is a name to
+              // take an initial off is decided once, above, and this must not
+              // decide it again.
+              initialsOf(name: name, email: email),
+              textScaler: TextScaler.noScaling,
+              // A tier up from `asAMark`'s `outline`: these sit on a filled
+              // cell rather than beside one.
+              style: asTrackedMark(
+                theme.textTheme.labelSmall?.copyWith(
+                  color: colours.onSurfaceVariant,
+                ),
+              ),
+            ),
+          );
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       // One thing to a screen reader: "Kai, kai@example.com · Google" in one
@@ -695,33 +722,35 @@ class _WhoIsSignedIn extends StatelessWidget {
                   color: colours.surfaceContainerHighest,
                   shape: BoxShape.circle,
                 ),
-                child: user.guest
-                    ? Icon(
-                        Icons.person_outline,
-                        size: 18,
-                        color: colours.outline,
-                      )
-                    : Padding(
-                        // Tracking adds space after the last letter only, so
-                        // tracked initials sit left of centre in a circle.
-                        // Paid back on the left rather than by dropping the
-                        // tracking every other mark in the app carries.
-                        padding: const EdgeInsets.only(left: 1.4),
-                        child: Text(
-                          // The trimmed name, not the raw one: whether there
-                          // is a name to take an initial off is decided once,
-                          // above, and this must not decide it again.
-                          initialsOf(name: name, email: email),
-                          textScaler: TextScaler.noScaling,
-                          // A tier up from `asAMark`'s `outline`: these sit
-                          // on a filled cell rather than beside one.
-                          style: asTrackedMark(
-                            theme.textTheme.labelSmall?.copyWith(
-                              color: colours.onSurfaceVariant,
-                            ),
-                          ),
-                        ),
-                      ),
+                // Clipped rather than shaped: the circle on the decoration
+                // is the fill, and a child is not cut by it.
+                child: switch (user.picture) {
+                  null => mark,
+                  final picture => ClipOval(
+                    child: Image.network(
+                      picture.toString(),
+                      width: _disc,
+                      height: _disc,
+                      // Decoded at the size it is drawn at. Google serves a
+                      // picture far larger than 36px, and the whole of it
+                      // would otherwise sit in the image cache to be drawn
+                      // into a disc the size of a fingernail.
+                      cacheWidth:
+                          (_disc * MediaQuery.devicePixelRatioOf(context))
+                              .round(),
+                      // Square, whatever Google returns: a picture cropped to
+                      // the disc beats one letterboxed inside it.
+                      fit: BoxFit.cover,
+                      // The mark holds the disc until the picture is drawn,
+                      // and keeps it if the picture never arrives. This is
+                      // the one thing on the screen that goes to the network
+                      // to be drawn, so it has to be allowed to simply not.
+                      frameBuilder: (context, child, frame, _) =>
+                          frame == null ? mark : child,
+                      errorBuilder: (context, error, stack) => mark,
+                    ),
+                  ),
+                },
               ),
             ),
             const SizedBox(width: 12),

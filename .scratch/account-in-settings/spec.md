@@ -43,14 +43,26 @@ third state.
 
 ## What is shown
 
-`SignedInUser` carries `uid`, `name`, `email` and `guest`, and nothing else.
-There is no photo URL, so nothing is fetched and no placeholder is faked.
+`SignedInUser` carries `uid`, `name`, `email`, `picture` and `guest`.
+
+**Changed after the spec was written.** It originally said there was no photo
+URL, so nothing was fetched and no placeholder was faked. Google does return
+one, and an account's own picture is the thing a reader recognises fastest, so
+`SignedInUser` gained `picture` and the disc draws it where there is one. The
+initials did not become a placeholder: they are what the disc holds when there
+is no picture, while one is loading, and if it never arrives. Called a picture
+rather than a photo because a Photo in this app is a photographed receipt.
 
 | User | Disc | First line | Second line |
 | --- | --- | --- | --- |
+| Account, with a picture | the picture, cropped square to the disc | the name | `{email} · Google` |
 | Account, with a name | initials of the name | the name | `{email} · Google` |
 | Account, no name | first letter of the address | the address | `Google` |
 | Guest | outline figure icon | "Guest" | "No account behind this Ledger" |
+
+The disc is the one thing on the screen that goes to the network to be drawn.
+It has to be allowed to simply not: a phone with no connection gets the
+initials, and nothing about the screen waits on the fetch.
 
 Google can return an account with no display name, and `name` is nullable for
 that reason. An account with no email is not a state Google sign-in produces;
