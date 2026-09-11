@@ -5,6 +5,7 @@ import 'package:where_money/lock/device_lock.dart';
 import 'package:where_money/session/sign_in_gateway.dart';
 import 'package:where_money_core/where_money_core.dart';
 
+import '../as_drawn.dart';
 import '../fakes/fake_device_lock.dart';
 import '../fakes/fake_model_gateway.dart';
 import '../fakes/fake_sign_in_gateway.dart';
@@ -100,5 +101,25 @@ void main() {
     expect(find.text('nameless@example.com'), findsOneWidget);
     expect(find.text('Google'), findsOneWidget);
     expect(find.textContaining('nameless@example.com ·'), findsNothing);
+  });
+
+  testWidgets('an account with neither says the one thing there is to say', (
+    tester,
+  ) async {
+    // Not a state Google sign-in produces, but both fields are nullable, and
+    // the lane a nullable field opens is a lane somebody eventually lands in.
+    await openSettings(tester, who: const SignedInUser(uid: 'anonymous-uid'));
+
+    // On the first line rather than under a blank one, which is what a
+    // fallback chain that ran out would otherwise draw. Said as where it sits
+    // against the disc, because finding the word says nothing about which of
+    // the two lines it landed on.
+    expect(find.text('Google'), findsOneWidget);
+    expect(
+      tester.getRect(find.text('Google')).center.dy,
+      closeTo(tester.getRect(theDisc).center.dy, 2),
+      reason: 'it is under a blank first line rather than on one',
+    );
+    expect(find.text('Guest'), findsNothing);
   });
 }

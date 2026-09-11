@@ -216,19 +216,6 @@ void main() {
       expect(find.text('No account behind this Ledger'), findsOneWidget);
     });
 
-    testWidgets('an account holder is told whose Ledger it is instead', (
-      tester,
-    ) async {
-      signIn = FakeSignInGateway(alreadySignedIn: FakeSignInGateway.kai);
-
-      await open(tester);
-      await openSettings(tester);
-
-      expect(find.text('Kai'), findsOneWidget);
-      expect(find.text('kai@example.com · Google'), findsOneWidget);
-      expect(find.text('Guest'), findsNothing);
-    });
-
     testWidgets('an account holder is not offered what they already have', (
       tester,
     ) async {

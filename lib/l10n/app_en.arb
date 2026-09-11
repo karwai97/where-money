@@ -68,7 +68,7 @@
   },
   "settingsSignedInWithGoogle": "Google",
   "@settingsSignedInWithGoogle": {
-    "description": "The line above, for an account with no address to put in front of it. Not a state Google sign-in produces, but `email` is nullable and a line reading \" · Google\" would be worse than the product name alone."
+    "description": "The same line, for an account Google returned no display name for: the address is already on the line above it, so this says what kind of account it is and nothing else. Also the whole block when there is no address either — not a state Google sign-in produces, but `email` is nullable, and the product name on the line a reader looks at beats a blank one over it."
   },
   "settingsGuest": "Guest",
   "@settingsGuest": {

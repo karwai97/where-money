@@ -218,10 +218,7 @@ void main() {
     final table = rectOf(tester, markSaying('Daily cap'));
     final name = rectOf(tester, find.text('Kai'));
     final out = rectOf(tester, find.byType(OutlinedButton));
-    final disc = rectOf(
-      tester,
-      find.ancestor(of: find.text('K'), matching: find.byType(Container)),
-    );
+    final disc = rectOf(tester, theDisc);
 
     expect(
       name.top,
@@ -235,8 +232,13 @@ void main() {
     );
     expect(
       disc.left,
-      closeTo(out.left, 0.5),
+      closeTo(16, 0.5),
       reason: "on the screen's margin rather than in the table's label column",
+    );
+    expect(
+      disc.left,
+      closeTo(out.left, 0.5),
+      reason: 'the same margin as the button under it, not a margin of its own',
     );
     expect(
       disc.size,

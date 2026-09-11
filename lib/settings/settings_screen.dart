@@ -643,25 +643,34 @@ class _WhoIsSignedIn extends StatelessWidget {
     final email = user.email;
 
     // The two lines, settled once, so what the disc holds and what is read
-    // out cannot disagree about who this is.
-    final String? who;
-    final String and;
+    // out cannot disagree about who this is. [who] names the user and
+    // [behind] says what is behind the Ledger, which is the whole of what
+    // this block is for.
+    final String who;
+    final String? behind;
     if (user.guest) {
       // Named rather than left blank: whether there is an account behind the
       // Ledger is a word on the line, not something read off the disc.
       who = words.settingsGuest;
-      and = words.settingsGuestNoAccount;
+      behind = words.settingsGuestNoAccount;
     } else if (name != null && name.isNotEmpty) {
       who = name;
-      and = email == null
+      behind = email == null
           ? words.settingsSignedInWithGoogle
           : words.settingsSignedInWith(email);
-    } else {
+    } else if (email != null) {
       // No display name, which Google can return (ADR-0010). The address
       // takes the first line rather than a made-up name, and the line under
       // it is left with the product name alone instead of the address twice.
       who = email;
-      and = words.settingsSignedInWithGoogle;
+      behind = words.settingsSignedInWithGoogle;
+    } else {
+      // Neither, which Google sign-in does not produce — but both fields are
+      // nullable, and a lane that draws a blank line over one orphan word is
+      // worse than one that says the only thing there is to say, on the line
+      // a reader looks at.
+      who = words.settingsSignedInWithGoogle;
+      behind = null;
     }
 
     return Padding(
@@ -676,6 +685,9 @@ class _WhoIsSignedIn extends StatelessWidget {
             // everything it says.
             ExcludeSemantics(
               child: Container(
+                // Named, so a test that measures it is not bound to which
+                // widget happens to be drawing the shape.
+                key: const ValueKey('who is signed in: the disc'),
                 width: _disc,
                 height: _disc,
                 alignment: Alignment.center,
@@ -696,7 +708,10 @@ class _WhoIsSignedIn extends StatelessWidget {
                         // tracking every other mark in the app carries.
                         padding: const EdgeInsets.only(left: 1.4),
                         child: Text(
-                          initialsOf(name: user.name, email: email),
+                          // The trimmed name, not the raw one: whether there
+                          // is a name to take an initial off is decided once,
+                          // above, and this must not decide it again.
+                          initialsOf(name: name, email: email),
                           textScaler: TextScaler.noScaling,
                           // A tier up from `asAMark`'s `outline`: these sit
                           // on a filled cell rather than beside one.
@@ -715,28 +730,28 @@ class _WhoIsSignedIn extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (who != null) ...[
-                    Text(
-                      who,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: atItsWeight(
-                        theme.textTheme.bodyMedium?.copyWith(
-                          color: colours.onSurface,
-                          fontWeight: FontWeight.w500,
-                        ),
+                  Text(
+                    who,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: atItsWeight(
+                      theme.textTheme.bodyMedium?.copyWith(
+                        color: colours.onSurface,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                  ],
-                  // Never wrapped: an address broken across two lines reads
-                  // as two addresses.
-                  Text(
-                    and,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodySmall,
                   ),
+                  if (behind != null) ...[
+                    const SizedBox(height: 2),
+                    // Never wrapped: an address broken across two lines reads
+                    // as two addresses.
+                    Text(
+                      behind,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
                 ],
               ),
             ),

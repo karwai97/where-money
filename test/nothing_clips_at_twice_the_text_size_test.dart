@@ -277,6 +277,21 @@ void main() {
       // busiest value column on the screen and the last row before the gap.
       expect(markSaying('Daily cap'), findsOneWidget);
       expect(find.text('12 / 20'), findsOneWidget);
+      // Who is signed in, under the gap. The two lines grow with the type and
+      // the disc beside them does not, so the mark inside it has to stay
+      // inside it. Said as containment rather than as a size: the disc is 36
+      // whatever happens, and initials too big for it are painted outside it
+      // rather than clipped, so `expectNothingClipped` above sees nothing.
+      expect(find.text('Kai'), findsOneWidget);
+      final disc = tester.getRect(theDisc);
+      final initials = tester.getRect(find.text('K'));
+      expect(disc.size, const Size(36, 36));
+      expect(
+        disc.inflate(0.5).contains(initials.topLeft) &&
+            disc.inflate(0.5).contains(initials.bottomRight),
+        isTrue,
+        reason: 'the initials left the disc at $scale: $initials in $disc',
+      );
     });
 
     testWidgets('the Settings a guest sees, and both of the dialogs it can '
