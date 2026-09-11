@@ -34,8 +34,55 @@ class SignedInUser extends Equatable {
   /// (ADR-0010).
   final bool guest;
 
+  /// This user as Google describes them. Google's answer wins where it has
+  /// one, and Firebase's is what is left where it has not.
+  ///
+  /// Firebase keeps a copy of the name and the picture, taken from the
+  /// credential the first time the account signed in. That copy can be
+  /// missing both while Google has both, so the SDK's own answer is the one
+  /// worth asking for — and it is the fresher of the two besides.
+  ///
+  /// Only where the two agree on the address. A phone can have several Google
+  /// accounts on it, and a Google session restored for one of them while
+  /// Firebase holds the other would otherwise put one person's name and face
+  /// over another person's Ledger. A guest has no address at all, which is
+  /// the same check answering the same way and the reason a guest needs no
+  /// case of its own here.
+  SignedInUser describedBy(GoogleProfile? google) {
+    if (google == null || google.email != email) return this;
+
+    return SignedInUser(
+      uid: uid,
+      name: google.name ?? name,
+      email: email,
+      picture: google.picture ?? picture,
+      guest: guest,
+    );
+  }
+
   @override
   List<Object?> get props => [uid, name, email, picture, guest];
+}
+
+/// What Google's own SDK says about a person, as against Firebase's copy of
+/// it: the address that says which person, and the two things that copy can
+/// be missing.
+///
+/// Its own type rather than three more arguments, so the rule that merges it
+/// into a [SignedInUser] can be read and tested without a Firebase user or a
+/// `GoogleSignInAccount` anywhere near it.
+class GoogleProfile extends Equatable {
+  const GoogleProfile({required this.email, this.name, this.picture});
+
+  /// Never null, unlike [SignedInUser.email]: Google has no account without
+  /// one, and it is what says whether this is the same person.
+  final String email;
+
+  final String? name;
+  final Uri? picture;
+
+  @override
+  List<Object?> get props => [email, name, picture];
 }
 
 abstract interface class SignInGateway {
