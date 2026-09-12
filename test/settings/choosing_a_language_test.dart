@@ -138,9 +138,9 @@ void main() {
 
     // Exactly as the message files hold them. Every one of these is drawn as
     // a tracked mark, and a mark in a language with no upper case to go to is
-    // not cased at all — otherwise the app's own name inside "锁定 Where
-    // Money" would be the only shouting on the screen.
-    for (final chinese in ['设置', '主题', '语言', '锁定 Where Money', '主货币', '退出登录']) {
+    // not cased at all — `a_mark_is_cased_by_its_language_test.dart` pins
+    // what that would otherwise do to any Latin inside Chinese copy.
+    for (final chinese in ['设置', '主题', '语言', '锁定', '主货币', '退出登录']) {
       expect(find.text(chinese), findsWidgets, reason: '$chinese is missing');
     }
 
@@ -148,7 +148,7 @@ void main() {
       'Settings',
       'Theme',
       'Language',
-      'Lock Where Money',
+      'Lock',
       'Home Currency',
       'Sign out',
     ]) {

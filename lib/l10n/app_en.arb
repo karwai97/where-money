@@ -20,6 +20,19 @@
   "@settingsLanguageChinese": {
     "description": "Named in its own language, as above. Identical in every ARB file on purpose."
   },
+  "settingsLanguageSpanish": "Español",
+  "@settingsLanguageSpanish": {
+    "description": "Named in its own language, as above. Identical in every ARB file on purpose. The same holds for every settingsLanguage* key below it."
+  },
+  "settingsLanguagePortuguese": "Português",
+  "settingsLanguageFrench": "Français",
+  "settingsLanguageGerman": "Deutsch",
+  "settingsLanguageJapanese": "日本語",
+  "settingsLanguageKorean": "한국어",
+  "settingsLanguageRussian": "Русский",
+  "settingsLanguageArabic": "العربية",
+  "settingsLanguageHindi": "हिन्दी",
+  "settingsLanguageIndonesian": "Bahasa Indonesia",
 
   "settingsHomeCurrency": "Home Currency",
   "@settingsHomeCurrency": {
@@ -29,7 +42,10 @@
   "settingsHomeCurrencyNone": "Your first expense will set this.",
   "settingsHomeCurrencyGoverns": "Totals and Recaps are worked out in it. Spending in other currencies is listed but not counted.",
 
-  "settingsLock": "Lock Where Money",
+  "settingsLock": "Lock",
+  "@settingsLock": {
+    "description": "The name of the switch, in the 88px label column that holds two lines at most. One word: the app's own name took a line by itself and did not fit beside a verb in most languages. The sentence under the switch says what the Lock asks for."
+  },
   "settingsLockBiometrics": "Ask for your fingerprint or face, or this phone’s PIN, before showing your spending.",
   "settingsLockDeviceCredential": "No fingerprint is set up on this phone, so it asks for your PIN before showing your spending.",
   "settingsLockUnavailable": "This phone has no screen lock. Set one in Android settings to use this.",

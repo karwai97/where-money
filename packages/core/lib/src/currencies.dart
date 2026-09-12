@@ -5,7 +5,7 @@
 /// membership. Nobody decided ISO 4217's — it is a fact about the world — so
 /// it earns no ADR and no glossary entry, and no copy either: a
 /// code is already the word in every language, which is why these are outside
-/// the invariant that every slug in a closed set has words in both languages.
+/// the invariant that every slug in a closed set has words in every language.
 library;
 
 /// Table A.1, the codes money is actually denominated in. The funds codes,

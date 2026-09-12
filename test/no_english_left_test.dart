@@ -32,7 +32,7 @@ import 'package:flutter_test/flutter_test.dart';
 ///   there. `no_words_in_the_domain_test.dart` covers the domain half of that
 ///   and `'Unknown merchant'` was the last of it.
 /// - **Whether the ARB files say anything sensible.** That is
-///   `both_languages_say_everything_test.dart` and a pair of eyes.
+///   `every_language_says_everything_test.dart` and a pair of eyes.
 void main() {
   test('no screen says anything in English of its own', () {
     final offenders = <String>[];

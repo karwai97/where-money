@@ -95,7 +95,7 @@ void main() {
     final down = [
       'Theme',
       'Language',
-      'Lock Where Money',
+      'Lock',
       'Home Currency',
       'Sign out',
     ];
@@ -158,7 +158,7 @@ void main() {
 
     expect(
       announced.label,
-      allOf(contains('Lock Where Money'), contains('fingerprint')),
+      allOf(contains('Lock'), contains('fingerprint')),
     );
     expect(announced, isSemantics(hasToggledState: true, isToggled: true));
     expect(
@@ -201,7 +201,7 @@ void main() {
       'nothing else', (tester) async {
     await openSettings(tester, holdingTheLockRead: true);
 
-    expect(markSaying('Lock Where Money'), findsOneWidget);
+    expect(markSaying('Lock'), findsOneWidget);
     expect(find.byType(Switch), findsNothing);
     expect(find.textContaining('fingerprint'), findsNothing);
     expect(

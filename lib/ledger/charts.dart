@@ -110,7 +110,7 @@ class _Track extends StatelessWidget {
     child: Container(
       height: _barThickness,
       color: track,
-      alignment: Alignment.centerLeft,
+      alignment: AlignmentDirectional.centerStart,
       child: FractionallySizedBox(
         // A category that cost almost nothing still gets a mark, so a row with
         // a number beside it is never a row with nothing beside it.

@@ -22,7 +22,7 @@ Rollup into prose.
 | `?effort=` | `omit`, `none`, `minimal`, `low` (default), `medium`, `high` |
 | `?media=` | `image/jpeg` (default), `image/png`, `image/webp` |
 | `?cap=` | today's cap, clamped to the deployment's `DAILY_MODEL_CEILING` |
-| `?lang=` | `en` (default) or `zh`; anything else is read as `en` |
+| `?lang=` | one of the codes in `src/language.ts` (`en` by default); anything else is read as `en` |
 
 The body is the base64 and nothing else because the free plan allows 10ms of CPU
 per request. Taking a ~270KB string out of a JSON envelope and serialising it

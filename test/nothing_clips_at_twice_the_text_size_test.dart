@@ -255,9 +255,9 @@ void main() {
       await tester.pumpAndSettle();
       expectNothingClipped(tester, 'Settings at $scale');
 
-      // The two rows that wrap to two lines in the 88px column, and the one
-      // the scaled label column has to leave room for a switch beside.
-      expect(markSaying('Lock Where Money'), findsOneWidget);
+      // The row that wraps to two lines in the 88px column, and the one the
+      // scaled label column has to leave room for a switch beside.
+      expect(markSaying('Lock'), findsOneWidget);
       expect(markSaying('Home Currency'), findsOneWidget);
       expect(find.byType(Switch), findsOneWidget);
 

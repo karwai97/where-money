@@ -1,0 +1,343 @@
+{
+  "@@locale": "id",
+
+  "settingsTitle": "Pengaturan",
+
+  "settingsTheme": "Tema",
+  "settingsThemeSystem": "Ikuti sistem",
+  "settingsThemeLight": "Terang",
+  "settingsThemeDark": "Gelap",
+
+  "settingsLanguage": "Bahasa",
+  "settingsLanguageEnglish": "English",
+  "settingsLanguageChinese": "中文",
+  "settingsLanguageSpanish": "Español",
+  "settingsLanguagePortuguese": "Português",
+  "settingsLanguageFrench": "Français",
+  "settingsLanguageGerman": "Deutsch",
+  "settingsLanguageJapanese": "日本語",
+  "settingsLanguageKorean": "한국어",
+  "settingsLanguageRussian": "Русский",
+  "settingsLanguageArabic": "العربية",
+  "settingsLanguageHindi": "हिन्दी",
+  "settingsLanguageIndonesian": "Bahasa Indonesia",
+
+  "settingsHomeCurrency": "Mata uang utama",
+  "settingsHomeCurrencyInferred": "Diambil dari pengeluaran pertama Anda.",
+  "settingsHomeCurrencyNone": "Pengeluaran pertama Anda akan menentukannya.",
+  "settingsHomeCurrencyGoverns": "Total dan ringkasan dihitung dalam mata uang ini. Pengeluaran dalam mata uang lain tetap ditampilkan, tetapi tidak dihitung.",
+
+  "settingsLock": "Kunci",
+  "settingsLockBiometrics": "Minta sidik jari, wajah, atau PIN ponsel ini sebelum menampilkan pengeluaran Anda.",
+  "settingsLockDeviceCredential": "Ponsel ini belum memiliki sidik jari, jadi PIN akan diminta sebelum pengeluaran Anda ditampilkan.",
+  "settingsLockUnavailable": "Ponsel ini tidak memiliki kunci layar. Atur dulu di pengaturan Android untuk memakai fitur ini.",
+
+  "settingsDailyCap": "Batas harian",
+  "settingsDailyCapScansToday": "Pemindaian hari ini",
+  "settingsDailyCapScansADay": "Pemindaian per hari",
+  "settingsDailyCapGoverns": "Berapa struk yang dibaca Model untuk Anda dalam sehari. Setelah habis, foto baru menunggu di kotak masuk sampai besok.",
+  "settingsDailyCapSpoken": "{used} dari {cap}",
+  "@settingsDailyCapSpoken": {
+    "placeholders": {
+      "used": { "type": "int" },
+      "cap": { "type": "int" }
+    }
+  },
+
+  "settingsSignedInWith": "{email} · Google",
+  "@settingsSignedInWith": {
+    "placeholders": {
+      "email": { "type": "String" }
+    }
+  },
+  "settingsSignedInWithGoogle": "Google",
+  "settingsGuest": "Tamu",
+  "settingsGuestNoAccount": "Buku kas ini tidak terhubung ke akun",
+
+  "settingsSignOut": "Keluar",
+
+  "settingsKeepThisLedger": "Masuk untuk menyimpan buku kas ini",
+  "settingsKeepThisLedgerHint": "Buku kas ini hilang bersama ponsel ini. Masuk agar tetap tersimpan.",
+  "settingsSignOutAsGuestTitle": "Keluar dari buku kas ini?",
+  "settingsSignOutAsGuestBody": "Buku kas Anda dan struknya akan dihapus dan tidak bisa dipulihkan.",
+  "settingsSignOutKeep": "Biarkan",
+  "settingsSignOutConfirm": "Keluar",
+  "settingsErasingInFlight": "Menghapus buku kas ini",
+  "settingsAccountInUseConfirm": "Masuk",
+  "settingsAccountInUseBody": "Akun itu sudah punya buku kas. Masuk akan membukanya, dan buku kas ini beserta struknya akan dihapus.",
+
+  "settingsScansHeading": "Yang diminta setiap pemindaian",
+  "settingsScansModel": "Model: {model}",
+  "settingsScansEffort": "Tingkat penalaran: {effort}",
+  "settingsScansLongEdge": "Sisi panjang gambar: {pixels} px",
+  "settingsScansDailyCap": "{count, plural, other{Batas harian: {count} pemindaian}}",
+  "settingsScansFromConsole": "Diatur di Firebase console dan dibaca saat aplikasi dibuka, jadi perubahan di sana butuh aplikasi ditutup lalu dibuka lagi, bukan versi baru. Sebelum nilai baru tiba, inilah nilai bawaan aplikasi.",
+  "settingsScansNotEnforced": "Ini yang diminta, bukan yang diberlakukan: Worker memegang daftar model yang boleh dipanggil dan batas atas untuk batas harian, jadi nama yang tidak dikenalnya atau batas yang melewati batas atasnya diganti diam-diam di sana. Kalau perubahan di sini tidak berpengaruh, di sanalah sebabnya.",
+
+  "settingsCorrectedHeading": "Yang dikoreksi saat peninjauan",
+  "settingsCorrectedNothingYet": "Belum ada struk yang dibaca, jadi belum ada yang bisa dilaporkan.",
+  "settingsCorrectedTally": "{count, plural, other{{count} struk dibaca, {clean} tanpa koreksi.}}",
+  "settingsCorrectedField": "{field}, dikoreksi pada {count} dari {total}",
+  "settingsCorrectedManualExcluded": "Pengeluaran yang diketik manual tidak dihitung: semua kolomnya akan tercatat sebagai perubahan, padahal tidak pernah ada hasil pembacaan yang dibandingkan.",
+
+  "fieldMerchant": "Toko",
+  "fieldPurchasedAt": "Tanggal",
+  "fieldCurrency": "Mata uang",
+  "fieldSubtotal": "Subtotal",
+  "fieldTax": "Pajak",
+  "fieldTip": "Tip",
+  "fieldTotal": "Total",
+  "fieldPaymentMethod": "Dibayar dengan",
+  "fieldCategory": "Kategori",
+  "fieldLineItems": "Rincian",
+
+  "categoryGroceries": "Bahan makanan",
+  "categoryDining": "Makan di luar",
+  "categoryTransport": "Transportasi",
+  "categoryFuel": "Bahan bakar",
+  "categoryUtilities": "Listrik, air & gas",
+  "categoryHealthcare": "Kesehatan",
+  "categoryPharmacy": "Apotek",
+  "categoryEntertainment": "Hiburan",
+  "categoryShopping": "Belanja",
+  "categoryApparel": "Pakaian",
+  "categoryHome": "Rumah tangga",
+  "categoryElectronics": "Elektronik",
+  "categoryTravel": "Perjalanan",
+  "categoryEducation": "Pendidikan",
+  "categoryPersonalCare": "Perawatan diri",
+  "categorySubscriptions": "Langganan",
+  "categoryFeesCharges": "Biaya & admin",
+  "categoryOther": "Lainnya",
+
+  "paymentMethodCash": "Tunai",
+  "paymentMethodCard": "Kartu",
+  "paymentMethodEwallet": "Dompet digital",
+  "paymentMethodBankTransfer": "Transfer bank",
+  "paymentMethodUnknown": "Tidak tercatat",
+
+  "reviewTitleTyped": "Tambah pengeluaran",
+  "reviewTitlePhotographed": "Tinjau struk ini",
+  "reviewTitleCorrecting": "Koreksi pengeluaran ini",
+
+  "reviewClean": "Semua angka di struk ini cocok. Periksa lagi dengan fotonya, lalu tambahkan.",
+  "reviewRefused": "Pengeluaran itu tidak tersimpan. Ketikan Anda masih ada di sini.",
+
+  "reviewToCheck": "{count, plural, other{{count} perlu diperiksa}}",
+
+  "reviewSectionWhatThisWas": "Apa ini",
+  "reviewSectionWhatItCost": "Berapa biayanya",
+
+  "reviewPickDate": "Pilih tanggal",
+
+  "reviewTypeItIn": "Ketik di sini",
+  "reviewCategoryReason": "Model memilihnya karena: {reason}",
+
+  "reviewLineDescription": "Keterangan",
+  "reviewLineQuantity": "Jml",
+  "reviewLineUnitPrice": "Harga satuan",
+  "reviewLineAmount": "Nominal",
+  "reviewAddLineItem": "Tambah rincian",
+  "reviewRemoveLineItem": "Hapus rincian ini",
+
+  "reviewAddToLedger": "Tambah ke buku kas",
+  "reviewSave": "Simpan",
+
+  "reviewFindingNotAReceiptTitle": "Bukan struk",
+  "reviewFindingNotAReceiptDetail": "Model menilai gambar ini bukan struk.",
+
+  "reviewFindingNoTotalTitle": "Tidak ada total",
+  "reviewFindingNoTotalDetail": "Total nol atau negatif, tidak ada angka yang bisa dipakai.",
+
+  "reviewFindingNoMerchantTitle": "Tidak ada toko",
+  "reviewFindingNoMerchantDetail": "Nama toko tidak terbaca. Pengeluaran ini tidak diketahui asalnya.",
+
+  "reviewFindingNoDateTitle": "Tidak ada tanggal",
+  "reviewFindingNoDateDetail": "Tanggal di struk tidak terbaca, jadi akan diisi hari ini.",
+
+  "reviewFindingUnparseableDateTitle": "Format tanggal tidak dikenal",
+  "reviewFindingUnparseableDateDetail": "Terbaca \"{read}\", bukan tanggal berformat ISO.",
+
+  "reviewFindingDateInTheFutureTitle": "Tanggal di masa depan",
+  "reviewFindingDateInTheFutureDetail": "Terbaca {read}, tanggal yang belum tiba. Kemungkinan ini masa berlaku kartu atau tanggal kedaluwarsa, bukan tanggal belanja.",
+
+  "reviewFindingYearLooksMisreadTitle": "Tahunnya tampak salah baca",
+  "reviewFindingYearLooksMisreadDetail": "Terbaca {read}, hampir tepat setahun lalu. Pada struk yang baru difoto, biasanya itu berarti tahunnya salah baca. {likelyYear} lebih mungkin.",
+
+  "reviewFindingDateIsUnusuallyOldTitle": "Tanggalnya sudah sangat lama",
+  "reviewFindingDateIsUnusuallyOldDetail": "Terbaca {read}, {daysAgo} hari yang lalu. Wajar untuk struk lama, tetapi perlu dicek kalau ini baru saja difoto.",
+
+  "reviewFindingCurrencyUnclearTitle": "Mata uang tidak jelas",
+  "reviewFindingNoCurrencyDetail": "Mata uang tidak dikenali, jadi nominalnya tidak punya satuan.",
+  "reviewFindingCurrencyNotAnIsoCodeDetail": "Terbaca \"{read}\", bukan kode ISO 4217.",
+
+  "reviewFindingTotalDoesNotAddUpTitle": "Total tidak cocok",
+  "reviewFindingTotalDoesNotAddUpDetail": "subtotal {subtotal} + pajak {tax} + tip {tip} = {composed}, tetapi total tertulis {total} (selisih {difference}).",
+
+  "reviewFindingLineItemsDoNotMatchSubtotalTitle": "Rincian tidak cocok dengan subtotal",
+  "reviewFindingLineItemsDoNotMatchTotalTitle": "Rincian tidak cocok dengan total",
+  "reviewFindingLineItemsUnderSubtotalDetail": "Jumlah rincian {sum}, sedangkan subtotalnya {target}. Mungkin ada item yang terlewat, atau ada diskon yang tidak dirinci.",
+  "reviewFindingLineItemsOverSubtotalDetail": "Jumlah rincian {sum}, sedangkan subtotalnya {target}. Rincian melebihi struknya, jadi ada yang terbaca dua kali.",
+  "reviewFindingLineItemsUnderTotalDetail": "Jumlah rincian {sum}, sedangkan totalnya {target}. Mungkin ada item yang terlewat, atau ada diskon yang tidak dirinci.",
+  "reviewFindingLineItemsOverTotalDetail": "Jumlah rincian {sum}, sedangkan totalnya {target}. Rincian melebihi struknya, jadi ada yang terbaca dua kali.",
+
+  "reviewFindingLineArithmeticOffTitle": "Hitungan baris tidak cocok",
+  "reviewFindingLineArithmeticOffDetail": "\"{description}\": {quantity} × {unitPrice} = {expected}, tetapi barisnya tertulis {amount}.",
+
+  "reviewFindingUnknownItemCategoryTitle": "Kategori item tidak dikenal",
+  "reviewFindingUnknownItemCategoryDetail": "\"{description}\" dikembalikan sebagai \"{read}\", yang tidak ada dalam daftar kategori.",
+
+  "reviewFindingUnknownCategoryTitle": "Kategori tidak dikenal",
+  "reviewFindingUnknownCategoryDetail": "Terbaca \"{read}\", di luar pilihan yang ditetapkan schema.",
+
+  "reviewFindingUnknownPaymentMethodTitle": "Metode pembayaran tidak dikenal",
+  "reviewFindingUnknownPaymentMethodDetail": "Terbaca \"{read}\".",
+
+  "reviewFindingModelAskedForReviewTitle": "Model meminta peninjauan",
+  "reviewFindingModelAskedNoReasonDetail": "Model menandai gambar ini tanpa memberi alasan.",
+  "reviewFindingReasonSeparator": "; ",
+  "ledgerTitle": "Buku kas",
+
+  "ledgerColumnMerchant": "Toko",
+  "ledgerColumnAmount": "Nominal",
+
+  "ledgerAddByHand": "Tambah pengeluaran secara manual",
+  "ledgerPhotograph": "Foto struk",
+  "ledgerTakeAPhoto": "Ambil foto",
+  "ledgerChooseFromGallery": "Pilih dari galeri",
+  "ledgerCharts": "Grafik",
+  "ledgerInbox": "Kotak masuk",
+  "ledgerInboxWaiting": "{count, plural, other{Kotak masuk, {count} menunggu}}",
+  "ledgerUnreadable": "Buku kas Anda tidak bisa dibaca.",
+  "ledgerEmpty": "Belum ada apa-apa di sini.\nTambahkan lewat tombol di bawah.",
+  "ledgerNothingInMonth": "Tidak ada apa-apa pada {month}.",
+  "ledgerChooseAMonth": "Pilih bulan",
+  "ledgerPreviousYear": "Tahun sebelumnya",
+  "ledgerNextYear": "Tahun berikutnya",
+  "ledgerBackToMonth": "Kembali ke {month}",
+
+  "ledgerPhotosStayedBehindTitle": "Fotonya tertinggal di ponsel lama",
+  "ledgerPhotosStayedBehindBody": "Semua pengeluaran di buku kas Anda sudah dipulihkan dari akun Anda. Foto struk tidak pernah meninggalkan ponsel yang memotretnya, jadi di ponsel ini tidak ada fotonya. Selain itu, tidak ada yang hilang.",
+  "ledgerPhotosStayedBehindGotIt": "Mengerti",
+  "ledgerLoading": "Membuka buku kas Anda",
+
+  "expenseGone": "Pengeluaran itu sudah tidak ada di buku kas Anda.",
+  "expenseCorrect": "Koreksi pengeluaran ini",
+  "expenseDelete": "Hapus pengeluaran ini",
+  "expenseDeleteTitle": "Hapus pengeluaran ini?",
+  "expenseDeleteBody": "{merchant}, {amount}, akan hilang dari buku kas dan total Anda.",
+  "expenseDeleteBodyKeepsReceipt": "{merchant}, {amount}, akan hilang dari buku kas dan total Anda. Foto struknya tetap tersimpan di ponsel ini.",
+  "expenseDeleteKeep": "Biarkan",
+  "expenseDeleteConfirm": "Hapus",
+  "expenseFromReceipt": "Dibaca dari foto struk",
+  "expenseTypedByHand": "Diketik manual",
+  "expenseForeignCurrency": "Dibayar dalam {currency}, jadi tidak masuk total bulanan Anda.",
+  "expenseNoLineItems": "Tidak ada rincian, hanya total.",
+  "expenseLineItemCount": "{category} · {quantity} × {unitPrice}",
+  "expenseReceiptNotOnThisDevice": "Foto struk tidak ada di perangkat ini. Foto tetap di ponsel yang memotretnya, jadi buku kas yang dipulihkan di tempat lain datang tanpa foto.",
+  "expenseReceiptLoading": "Memuat struk",
+
+  "chartsCategoryTotal": "{count, plural, other{{category}, {amount}, {count} pengeluaran}}",
+  "chartsMonthTotal": "{month}, {amount}",
+
+  "rollupByCategory": "Per kategori",
+  "rollupMonthByMonth": "Bulan ke bulan",
+  "rollupNothingSpent": "Tidak ada pengeluaran pada {month}.",
+  "rollupRecapHeading": "Ke mana uang Anda pergi",
+  "rollupRecapPending": "Membaca bulan ini.",
+  "rollupRecapTooFew": "{needed, plural, other{Sebulan butuh setidaknya {needed} pengeluaran sebelum ada yang bisa diringkas. Grafiknya tetap bisa dilihat.}}",
+  "rollupRecapAskAgain": "Tanya lagi",
+
+  "rollupRecapRefused": "Model tidak mau menulis ringkasan bulan ini.",
+  "rollupRecapNothingToSay": "Model tidak punya komentar untuk bulan ini.",
+  "rollupRecapAllowanceSpent": "Kuota hari ini sudah habis. Ringkasan akan ada besok.",
+  "rollupRecapTokenRefused": "Masuk lagi, dan ringkasan akan kembali.",
+  "rollupRecapOutOfReach": "Tanpa koneksi, tidak ada ringkasan. Grafik tidak membutuhkannya.",
+  "rollupRecapModelUnavailable": "Model tidak bisa dihubungi. Grafik tidak membutuhkannya.",
+  "rollupNothingToCompare": "Tidak ada pengeluaran pada {month} untuk dibandingkan.",
+  "rollupAboutTheSame": "Hampir sama dengan {month}.",
+  "rollupMoreThan": "{percent}% lebih banyak dari {month}.",
+  "rollupLessThan": "{percent}% lebih sedikit dari {month}.",
+  "rollupLeftOutThisMonth": "{count, plural, other{{count} pengeluaran dalam {currencies} bulan ini tidak masuk total ini.}}",
+  "rollupLeftOutTheseMonths": "{count, plural, other{{count} pengeluaran dalam {currencies} pada bulan-bulan ini tidak masuk total ini.}}",
+  "rollupNoHomeCurrencyTitle": "Belum ada total",
+  "rollupNoHomeCurrency": "Total dimulai dari pengeluaran pertama Anda. Mata uang yang Anda pakai untuk mencatatnya menjadi mata uang untuk grafik dan ringkasan, dan bisa diubah nanti di pengaturan.",
+
+  "currencyChooseTitle": "Pilih mata uang",
+  "currencyClose": "Tutup",
+  "currencySearch": "Cari kode",
+  "currencyYours": "Milik Anda",
+  "currencyAll": "Semua mata uang",
+  "currencyHome": "Utama",
+  "currencyNoMatch": "Tidak ada kode yang cocok dengan {query}.",
+
+  "rollupLoading": "Membuka bulan ini",
+
+  "inboxTitle": "Kotak masuk",
+  "inboxEmpty": "Tidak ada struk yang menunggu.",
+  "inboxPhotographed": "Difoto {moment}",
+
+  "inboxWaitingToBeRead": "Menunggu dibaca",
+  "inboxBeingRead": "Sedang dibaca",
+  "inboxReadyToReview": "Siap ditinjau",
+  "inboxNotAReceipt": "Ini tidak tampak seperti struk",
+  "inboxCommitted": "Sudah di buku kas Anda",
+
+  "inboxCapped": "Pemindaian hari ini sudah habis",
+  "inboxMoreScansAt": "Pemindaian berikutnya pada {moment}.",
+  "inboxMoreScansTomorrow": "Pemindaian berikutnya besok.",
+
+  "inboxFailureRefused": "Model tidak mau membaca foto ini",
+  "inboxFailureRefusedNext": "Foto yang lebih jelas biasanya menyelesaikannya.",
+  "inboxFailureSaidNothing": "Model tidak menjawab apa pun",
+  "inboxFailureSaidNothingNext": "Membacanya lagi biasanya berhasil.",
+  "inboxFailureNotLegible": "Jawaban Model tidak bisa dibaca",
+  "inboxFailureNotLegibleNext": "Membacanya lagi biasanya berhasil.",
+  "inboxFailureOutOfReach": "Tidak ada koneksi saat foto ini dibaca",
+  "inboxFailureOutOfReachNext": "Aplikasi akan terus mencoba sendiri.",
+  "inboxFailureModelUnavailable": "Model tidak tersedia saat itu",
+  "inboxFailureModelUnavailableNext": "Biasanya cepat pulih. Coba baca lagi sebentar lagi.",
+  "inboxFailureTokenRefused": "Sesi masuk Anda tidak diterima",
+  "inboxFailureTokenRefusedNext": "Masuk lagi, lalu baca lagi.",
+  "inboxFailureImageNotAccepted": "Foto ini tidak bisa dikirim",
+  "inboxFailureImageNotAcceptedNext": "Foto struknya lagi.",
+  "inboxFailureUnsaid": "Foto ini tidak bisa dibaca",
+
+  "inboxLoading": "Membuka kotak masuk",
+
+  "inboxReview": "Tinjau",
+  "inboxReadAgain": "Baca lagi",
+  "inboxDiscard": "Buang",
+  "inboxAbandon": "Tinggalkan",
+  "inboxAbandonThisScan": "Tinggalkan pemindaian ini",
+  "inboxKeep": "Biarkan",
+  "inboxDiscardingDeletesThePhoto": "Membuang foto ini akan menghapusnya dari ponsel.",
+  "inboxAbandoningDeletesThePhoto": "Meninggalkan pemindaian ini akan menghapus fotonya dari ponsel.",
+
+  "receiptZoom": "Perbesar struk",
+  "receiptTitle": "Struk",
+  "receiptBackToTheFields": "Kembali ke kolom isian",
+
+  "openingWait": "Membuka Where Money",
+
+  "signInTagline": "Foto struknya. Lihat ke mana uang Anda pergi.",
+  "signInWithGoogle": "Lanjutkan dengan Google",
+  "signInAsGuest": "Lanjutkan sebagai tamu",
+  "signInInFlight": "Sedang masuk",
+  "signInFailed": "Tidak berhasil masuk. {detail}",
+
+  "lockTitle": "Where Money terkunci",
+  "lockWhy": "Pengeluaran Anda ada di ponsel ini. Buka kuncinya untuk membacanya.",
+  "lockRefused": "Kunci belum terbuka.",
+  "lockUnlock": "Buka kunci",
+  "lockSignOutInstead": "Keluar saja",
+  "lockWaiting": "Menunggu ponsel meminta",
+  "lockReason": "Buka kunci Where Money untuk melihat pengeluaran Anda.",
+
+  "appName": "Where Money",
+
+  "merchantUnknown": "Toko tidak diketahui",
+
+  "expenseSourceScanned": "Dibaca dari struk",
+  "expenseSourceManual": "Diketik manual"
+}

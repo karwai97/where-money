@@ -1,0 +1,343 @@
+{
+  "@@locale": "ar",
+
+  "settingsTitle": "الإعدادات",
+
+  "settingsTheme": "المظهر",
+  "settingsThemeSystem": "حسب النظام",
+  "settingsThemeLight": "فاتح",
+  "settingsThemeDark": "داكن",
+
+  "settingsLanguage": "اللغة",
+  "settingsLanguageEnglish": "English",
+  "settingsLanguageChinese": "中文",
+  "settingsLanguageSpanish": "Español",
+  "settingsLanguagePortuguese": "Português",
+  "settingsLanguageFrench": "Français",
+  "settingsLanguageGerman": "Deutsch",
+  "settingsLanguageJapanese": "日本語",
+  "settingsLanguageKorean": "한국어",
+  "settingsLanguageRussian": "Русский",
+  "settingsLanguageArabic": "العربية",
+  "settingsLanguageHindi": "हिन्दी",
+  "settingsLanguageIndonesian": "Bahasa Indonesia",
+
+  "settingsHomeCurrency": "العملة الأساسية",
+  "settingsHomeCurrencyInferred": "مأخوذة من أول مصروف لك.",
+  "settingsHomeCurrencyNone": "سيحددها أول مصروف لك.",
+  "settingsHomeCurrencyGoverns": "تُحسب بها المجاميع والملخصات. المصروفات بعملات أخرى تُدرج ولا تُحسب.",
+
+  "settingsLock": "قفل",
+  "settingsLockBiometrics": "يطلب بصمتك أو وجهك، أو رمز PIN لهذا الهاتف، قبل إظهار مصروفاتك.",
+  "settingsLockDeviceCredential": "لا بصمة مسجلة على هذا الهاتف، لذا يطلب رمز PIN قبل إظهار مصروفاتك.",
+  "settingsLockUnavailable": "لا قفل شاشة على هذا الهاتف. عيّن واحدًا في إعدادات Android لاستخدام هذا الخيار.",
+
+  "settingsDailyCap": "الحد اليومي",
+  "settingsDailyCapScansToday": "عمليات المسح اليوم",
+  "settingsDailyCapScansADay": "عمليات المسح في اليوم",
+  "settingsDailyCapGoverns": "عدد الفواتير التي يقرأها النموذج لك في يوم واحد. حين تُستهلك، تنتظر الصور الجديدة في الوارد حتى الغد.",
+  "settingsDailyCapSpoken": "{used} من {cap}",
+  "@settingsDailyCapSpoken": {
+    "placeholders": {
+      "used": { "type": "int" },
+      "cap": { "type": "int" }
+    }
+  },
+
+  "settingsSignedInWith": "{email} · Google",
+  "@settingsSignedInWith": {
+    "placeholders": {
+      "email": { "type": "String" }
+    }
+  },
+  "settingsSignedInWithGoogle": "Google",
+  "settingsGuest": "ضيف",
+  "settingsGuestNoAccount": "لا حساب خلف هذا الدفتر",
+
+  "settingsSignOut": "تسجيل الخروج",
+
+  "settingsKeepThisLedger": "سجّل الدخول للاحتفاظ بهذا الدفتر",
+  "settingsKeepThisLedgerHint": "يذهب مع هذا الهاتف إن ذهب. تسجيل الدخول يحفظه.",
+  "settingsSignOutAsGuestTitle": "تسجيل الخروج من هذا الدفتر؟",
+  "settingsSignOutAsGuestBody": "سيُحذف دفترك وفواتيره، ولا يمكن استرجاعها.",
+  "settingsSignOutKeep": "الاحتفاظ به",
+  "settingsSignOutConfirm": "تسجيل الخروج",
+  "settingsErasingInFlight": "يجري حذف هذا الدفتر",
+  "settingsAccountInUseConfirm": "تسجيل الدخول",
+  "settingsAccountInUseBody": "لذلك الحساب دفتر بالفعل. تسجيل الدخول يفتحه، وسيُحذف هذا الدفتر وفواتيره.",
+
+  "settingsScansHeading": "ما يطلبه كل مسح",
+  "settingsScansModel": "النموذج: {model}",
+  "settingsScansEffort": "جهد الاستدلال: {effort}",
+  "settingsScansLongEdge": "الضلع الأطول للصورة: {pixels} بكسل",
+  "settingsScansDailyCap": "{count, plural, zero{الحد اليومي: لا عمليات مسح} one{الحد اليومي: مسح واحد} two{الحد اليومي: مسحان} few{الحد اليومي: {count} عمليات مسح} many{الحد اليومي: {count} عملية مسح} other{الحد اليومي: {count} عملية مسح}}",
+  "settingsScansFromConsole": "يُضبط في وحدة تحكم Firebase ويُقرأ عند تشغيل التطبيق، لذا يحتاج أي تغيير هناك إلى إغلاق التطبيق وفتحه من جديد، لا إلى إصدار جديد. وإلى أن يصل تغيير، هذه هي القيم التي شُحن بها التطبيق.",
+  "settingsScansNotEnforced": "هذا ما يُطلب، لا ما يُطبَّق: يحتفظ Worker بقائمة النماذج التي يستدعيها وبسقف الحد اليومي، فأي اسم لا يعرفه أو حد يتجاوز سقفه يُستبدل بهدوء في ذاك الطرف. إن لم يكن لتغيير هنا أثر، فهناك ذهب.",
+
+  "settingsCorrectedHeading": "ما صححته المراجعة",
+  "settingsCorrectedNothingYet": "لم تُقرأ أي فاتورة بعد، فلا شيء يُقال.",
+  "settingsCorrectedTally": "{count, plural, zero{لم تُقرأ أي فاتورة بعد.} one{قُرئت فاتورة واحدة، {clean} منها دون تعديل.} two{قُرئت فاتورتان، {clean} منهما دون تعديل.} few{قُرئت {count} فواتير، {clean} منها دون تعديل.} many{قُرئت {count} فاتورة، {clean} منها دون تعديل.} other{قُرئت {count} فاتورة، {clean} منها دون تعديل.}}",
+  "settingsCorrectedField": "{field}، صُحح في {count} من {total}",
+  "settingsCorrectedManualExcluded": "المصروفات المدخلة يدويًا لا تُحسب: فهي تسجل تغييرًا في كل حقل، مقابل استخلاص لم يوجد أصلًا.",
+
+  "fieldMerchant": "المتجر",
+  "fieldPurchasedAt": "التاريخ",
+  "fieldCurrency": "العملة",
+  "fieldSubtotal": "المجموع الفرعي",
+  "fieldTax": "الضريبة",
+  "fieldTip": "الإكرامية",
+  "fieldTotal": "الإجمالي",
+  "fieldPaymentMethod": "طريقة الدفع",
+  "fieldCategory": "الفئة",
+  "fieldLineItems": "البنود",
+
+  "categoryGroceries": "البقالة",
+  "categoryDining": "المطاعم",
+  "categoryTransport": "المواصلات",
+  "categoryFuel": "الوقود",
+  "categoryUtilities": "المرافق",
+  "categoryHealthcare": "الرعاية الصحية",
+  "categoryPharmacy": "الصيدلية",
+  "categoryEntertainment": "الترفيه",
+  "categoryShopping": "التسوق",
+  "categoryApparel": "الملابس",
+  "categoryHome": "المنزل",
+  "categoryElectronics": "الإلكترونيات",
+  "categoryTravel": "السفر",
+  "categoryEducation": "التعليم",
+  "categoryPersonalCare": "العناية الشخصية",
+  "categorySubscriptions": "الاشتراكات",
+  "categoryFeesCharges": "الرسوم والعمولات",
+  "categoryOther": "أخرى",
+
+  "paymentMethodCash": "نقدًا",
+  "paymentMethodCard": "بطاقة",
+  "paymentMethodEwallet": "محفظة إلكترونية",
+  "paymentMethodBankTransfer": "تحويل بنكي",
+  "paymentMethodUnknown": "غير مسجّلة",
+
+  "reviewTitleTyped": "إضافة مصروف",
+  "reviewTitlePhotographed": "مراجعة هذه الفاتورة",
+  "reviewTitleCorrecting": "تصحيح هذا المصروف",
+
+  "reviewClean": "كل ما في هذه الفاتورة متطابق. قارنه بالصورة، ثم أضفه.",
+  "reviewRefused": "لم يُحفظ ذلك المصروف. ما كتبته ما زال هنا.",
+
+  "reviewToCheck": "{count, plural, zero{لا شيء للتحقق منه} one{ملاحظة واحدة للتحقق} two{ملاحظتان للتحقق} few{{count} ملاحظات للتحقق} many{{count} ملاحظة للتحقق} other{{count} ملاحظة للتحقق}}",
+
+  "reviewSectionWhatThisWas": "ما هذا",
+  "reviewSectionWhatItCost": "كم كلّف",
+
+  "reviewPickDate": "اختر تاريخًا",
+
+  "reviewTypeItIn": "اكتبه هنا",
+  "reviewCategoryReason": "اختار النموذج ذلك لأن: {reason}",
+
+  "reviewLineDescription": "الوصف",
+  "reviewLineQuantity": "الكمية",
+  "reviewLineUnitPrice": "سعر الوحدة",
+  "reviewLineAmount": "المبلغ",
+  "reviewAddLineItem": "إضافة بند",
+  "reviewRemoveLineItem": "إزالة هذا البند",
+
+  "reviewAddToLedger": "إضافة إلى الدفتر",
+  "reviewSave": "حفظ",
+
+  "reviewFindingNotAReceiptTitle": "ليست فاتورة",
+  "reviewFindingNotAReceiptDetail": "يقول النموذج إن هذه الصورة ليست فاتورة.",
+
+  "reviewFindingNoTotalTitle": "لا إجمالي",
+  "reviewFindingNoTotalDetail": "الإجمالي صفر أو سالب، ولم يُقرأ شيء يُستفاد منه.",
+
+  "reviewFindingNoMerchantTitle": "لا متجر",
+  "reviewFindingNoMerchantDetail": "اسم المتجر غير مقروء. لا يُعرف لمن هذا المصروف.",
+
+  "reviewFindingNoDateTitle": "لا تاريخ",
+  "reviewFindingNoDateDetail": "التاريخ على الفاتورة غير مقروء، وسيُعتمد تاريخ اليوم.",
+
+  "reviewFindingUnparseableDateTitle": "تاريخ غير مفهوم",
+  "reviewFindingUnparseableDateDetail": "قُرئ «{read}»، وهو ليس تاريخًا بصيغة ISO.",
+
+  "reviewFindingDateInTheFutureTitle": "تاريخ في المستقبل",
+  "reviewFindingDateInTheFutureDetail": "قُرئ {read}، ولم يحلّ بعد. الأرجح أنه تاريخ انتهاء بطاقة أو صلاحية منتج، لا تاريخ الشراء.",
+
+  "reviewFindingYearLooksMisreadTitle": "السنة تبدو مقروءة خطأ",
+  "reviewFindingYearLooksMisreadDetail": "قُرئ {read}، أي قبل سنة تقريبًا بالضبط. في فاتورة صُوّرت للتو يعني ذلك عادةً أن السنة قُرئت خطأ، و {likelyYear} هي القيمة الأرجح.",
+
+  "reviewFindingDateIsUnusuallyOldTitle": "التاريخ قديم على غير المعتاد",
+  "reviewFindingDateIsUnusuallyOldDetail": "قُرئ {read}، أي قبل {daysAgo} يومًا. طبيعي لفاتورة قديمة، لكنه يستحق التحقق إن كانت قد صُوّرت للتو.",
+
+  "reviewFindingCurrencyUnclearTitle": "العملة غير واضحة",
+  "reviewFindingNoCurrencyDetail": "لم تُحدد أي عملة، فالمبلغ بلا وحدة.",
+  "reviewFindingCurrencyNotAnIsoCodeDetail": "قُرئ «{read}»، وهو ليس رمزًا بمعيار ISO 4217.",
+
+  "reviewFindingTotalDoesNotAddUpTitle": "الإجمالي لا يتطابق",
+  "reviewFindingTotalDoesNotAddUpDetail": "المجموع الفرعي {subtotal} + الضريبة {tax} + الإكرامية {tip} = {composed}، لكن الإجمالي المكتوب {total} (بفارق {difference}).",
+
+  "reviewFindingLineItemsDoNotMatchSubtotalTitle": "البنود لا تطابق المجموع الفرعي",
+  "reviewFindingLineItemsDoNotMatchTotalTitle": "البنود لا تطابق الإجمالي",
+  "reviewFindingLineItemsUnderSubtotalDetail": "مجموع البنود {sum} مقابل مجموع فرعي {target}. ربما سقط بند، أو لم يُدرج خصم على حدة.",
+  "reviewFindingLineItemsOverSubtotalDetail": "مجموع البنود {sum} مقابل مجموع فرعي {target}. البنود تتجاوز الفاتورة نفسها، فلا بد أن شيئًا قُرئ مرتين.",
+  "reviewFindingLineItemsUnderTotalDetail": "مجموع البنود {sum} مقابل إجمالي {target}. ربما سقط بند، أو لم يُدرج خصم على حدة.",
+  "reviewFindingLineItemsOverTotalDetail": "مجموع البنود {sum} مقابل إجمالي {target}. البنود تتجاوز الفاتورة نفسها، فلا بد أن شيئًا قُرئ مرتين.",
+
+  "reviewFindingLineArithmeticOffTitle": "حساب السطر خاطئ",
+  "reviewFindingLineArithmeticOffDetail": "«{description}»: {quantity} × {unitPrice} = {expected}، لكن السطر يقول {amount}.",
+
+  "reviewFindingUnknownItemCategoryTitle": "فئة بند غير معروفة",
+  "reviewFindingUnknownItemCategoryDetail": "عاد «{description}» بالفئة «{read}»، وهي ليست في قائمة الفئات.",
+
+  "reviewFindingUnknownCategoryTitle": "فئة غير معروفة",
+  "reviewFindingUnknownCategoryDetail": "قُرئ «{read}»، وهو خارج القيم التي يحددها schema.",
+
+  "reviewFindingUnknownPaymentMethodTitle": "طريقة دفع غير معروفة",
+  "reviewFindingUnknownPaymentMethodDetail": "قُرئ «{read}».",
+
+  "reviewFindingModelAskedForReviewTitle": "طلب النموذج مراجعة",
+  "reviewFindingModelAskedNoReasonDetail": "أشار إلى الصورة لكنه لم يذكر سببًا.",
+  "reviewFindingReasonSeparator": "؛ ",
+  "ledgerTitle": "الدفتر",
+
+  "ledgerColumnMerchant": "المتجر",
+  "ledgerColumnAmount": "المبلغ",
+
+  "ledgerAddByHand": "إضافة مصروف يدويًا",
+  "ledgerPhotograph": "تصوير فاتورة",
+  "ledgerTakeAPhoto": "التقاط صورة",
+  "ledgerChooseFromGallery": "الاختيار من المعرض",
+  "ledgerCharts": "الرسوم البيانية",
+  "ledgerInbox": "الوارد",
+  "ledgerInboxWaiting": "{count, plural, zero{الوارد، لا شيء في الانتظار} one{الوارد، فاتورة واحدة في الانتظار} two{الوارد، فاتورتان في الانتظار} few{الوارد، {count} فواتير في الانتظار} many{الوارد، {count} فاتورة في الانتظار} other{الوارد، {count} فاتورة في الانتظار}}",
+  "ledgerUnreadable": "تعذّرت قراءة دفترك.",
+  "ledgerEmpty": "لا شيء هنا بعد.\nأضف مصروفًا بالزر أدناه.",
+  "ledgerNothingInMonth": "لا شيء في {month}.",
+  "ledgerChooseAMonth": "اختر شهرًا",
+  "ledgerPreviousYear": "السنة السابقة",
+  "ledgerNextYear": "السنة التالية",
+  "ledgerBackToMonth": "الرجوع إلى {month}",
+
+  "ledgerPhotosStayedBehindTitle": "الصور بقيت هناك",
+  "ledgerPhotosStayedBehindBody": "كل مصروف في دفترك عاد من حسابك. صور الفواتير لا تغادر الهاتف الذي صُوّرت به، لذا لا شيء منها على هذا الهاتف. ولا ينقص شيء آخر.",
+  "ledgerPhotosStayedBehindGotIt": "فهمت",
+  "ledgerLoading": "يجري فتح دفترك",
+
+  "expenseGone": "ذلك المصروف لم يعد في دفترك.",
+  "expenseCorrect": "تصحيح هذا المصروف",
+  "expenseDelete": "حذف هذا المصروف",
+  "expenseDeleteTitle": "حذف هذا المصروف؟",
+  "expenseDeleteBody": "{merchant}، {amount}، سيُزال من دفترك ومن مجاميعك.",
+  "expenseDeleteBodyKeepsReceipt": "{merchant}، {amount}، سيُزال من دفترك ومن مجاميعك. صورة الفاتورة تبقى على هذا الهاتف.",
+  "expenseDeleteKeep": "الاحتفاظ به",
+  "expenseDeleteConfirm": "حذف",
+  "expenseFromReceipt": "قُرئ من فاتورة مصوّرة",
+  "expenseTypedByHand": "أُدخل يدويًا",
+  "expenseForeignCurrency": "دُفع بـ {currency}، فهو ليس ضمن مجاميعك الشهرية.",
+  "expenseNoLineItems": "لا بنود، الإجمالي فقط.",
+  "expenseLineItemCount": "{category} · {quantity} × {unitPrice}",
+  "expenseReceiptNotOnThisDevice": "صورة الفاتورة ليست على هذا الجهاز. الصور تبقى على الهاتف الذي التقطها، لذا يصل الدفتر المستعاد في مكان آخر من دونها.",
+  "expenseReceiptLoading": "يجري تحميل الفاتورة",
+
+  "chartsCategoryTotal": "{count, plural, zero{{category}، {amount}، لا مصروفات} one{{category}، {amount}، مصروف واحد} two{{category}، {amount}، مصروفان} few{{category}، {amount}، {count} مصروفات} many{{category}، {amount}، {count} مصروفًا} other{{category}، {amount}، {count} مصروف}}",
+  "chartsMonthTotal": "{month}، {amount}",
+
+  "rollupByCategory": "حسب الفئة",
+  "rollupMonthByMonth": "شهرًا بشهر",
+  "rollupNothingSpent": "لم يُنفق شيء في {month}.",
+  "rollupRecapHeading": "أين ذهب مالك",
+  "rollupRecapPending": "تجري قراءة الشهر.",
+  "rollupRecapTooFew": "{needed, plural, zero{لا يحتاج الشهر إلى أي مصروف قبل أن يكون فيه ما يستحق الكتابة. الرسوم البيانية تعمل في كل الأحوال.} one{يحتاج الشهر إلى مصروف واحد على الأقل قبل أن يكون فيه ما يستحق الكتابة. الرسوم البيانية تعمل في كل الأحوال.} two{يحتاج الشهر إلى مصروفين على الأقل قبل أن يكون فيه ما يستحق الكتابة. الرسوم البيانية تعمل في كل الأحوال.} few{يحتاج الشهر إلى {needed} مصروفات على الأقل قبل أن يكون فيه ما يستحق الكتابة. الرسوم البيانية تعمل في كل الأحوال.} many{يحتاج الشهر إلى {needed} مصروفًا على الأقل قبل أن يكون فيه ما يستحق الكتابة. الرسوم البيانية تعمل في كل الأحوال.} other{يحتاج الشهر إلى {needed} مصروف على الأقل قبل أن يكون فيه ما يستحق الكتابة. الرسوم البيانية تعمل في كل الأحوال.}}",
+  "rollupRecapAskAgain": "اطلب مرة أخرى",
+
+  "rollupRecapRefused": "رفض النموذج كتابة ملخص لهذا الشهر.",
+  "rollupRecapNothingToSay": "لم يجد النموذج ما يقوله عن هذا الشهر.",
+  "rollupRecapAllowanceSpent": "هذا حد اليوم. سيكون هناك ملخص غدًا.",
+  "rollupRecapTokenRefused": "سجّل الدخول من جديد ليعود الملخص.",
+  "rollupRecapOutOfReach": "لا ملخص من دون اتصال. الرسوم البيانية لا تحتاج إليه.",
+  "rollupRecapModelUnavailable": "تعذّر الوصول إلى النموذج. الرسوم البيانية لا تحتاج إليه.",
+  "rollupNothingToCompare": "لم يُنفق شيء في {month} للمقارنة به.",
+  "rollupAboutTheSame": "مثل {month} تقريبًا.",
+  "rollupMoreThan": "أكثر من {month} بنسبة {percent}%.",
+  "rollupLessThan": "أقل من {month} بنسبة {percent}%.",
+  "rollupLeftOutThisMonth": "{count, plural, zero{لا مصروفات بـ {currencies} هذا الشهر خارج هذه المجاميع.} one{مصروف واحد بـ {currencies}، أُنفق هذا الشهر، ليس ضمن هذه المجاميع.} two{مصروفان بـ {currencies}، أُنفقا هذا الشهر، ليسا ضمن هذه المجاميع.} few{{count} مصروفات بـ {currencies}، أُنفقت هذا الشهر، ليست ضمن هذه المجاميع.} many{{count} مصروفًا بـ {currencies}، أُنفقت هذا الشهر، ليست ضمن هذه المجاميع.} other{{count} مصروف بـ {currencies}، أُنفق هذا الشهر، ليس ضمن هذه المجاميع.}}",
+  "rollupLeftOutTheseMonths": "{count, plural, zero{لا مصروفات بـ {currencies} في هذه الأشهر خارج هذه المجاميع.} one{مصروف واحد بـ {currencies}، أُنفق في هذه الأشهر، ليس ضمن هذه المجاميع.} two{مصروفان بـ {currencies}، أُنفقا في هذه الأشهر، ليسا ضمن هذه المجاميع.} few{{count} مصروفات بـ {currencies}، أُنفقت في هذه الأشهر، ليست ضمن هذه المجاميع.} many{{count} مصروفًا بـ {currencies}، أُنفقت في هذه الأشهر، ليست ضمن هذه المجاميع.} other{{count} مصروف بـ {currencies}، أُنفق في هذه الأشهر، ليس ضمن هذه المجاميع.}}",
+  "rollupNoHomeCurrencyTitle": "لا مجاميع بعد",
+  "rollupNoHomeCurrency": "تبدأ المجاميع مع أول مصروف لك. العملة التي تسجّله بها تصبح العملة التي تُحسب بها الرسوم البيانية والملخصات، ويمكنك تغييرها لاحقًا في الإعدادات.",
+
+  "currencyChooseTitle": "اختر عملة",
+  "currencyClose": "إغلاق",
+  "currencySearch": "البحث في الرموز",
+  "currencyYours": "عملاتك",
+  "currencyAll": "كل العملات",
+  "currencyHome": "الأساسية",
+  "currencyNoMatch": "لا رمز يطابق {query}.",
+
+  "rollupLoading": "يجري فتح الشهر",
+
+  "inboxTitle": "الوارد",
+  "inboxEmpty": "لا فواتير في الانتظار.",
+  "inboxPhotographed": "صُوّرت {moment}",
+
+  "inboxWaitingToBeRead": "في انتظار القراءة",
+  "inboxBeingRead": "تجري قراءتها",
+  "inboxReadyToReview": "جاهزة للمراجعة",
+  "inboxNotAReceipt": "لا تبدو هذه فاتورة",
+  "inboxCommitted": "في دفترك",
+
+  "inboxCapped": "استُهلكت عمليات مسح اليوم",
+  "inboxMoreScansAt": "مزيد من عمليات المسح عند {moment}.",
+  "inboxMoreScansTomorrow": "مزيد من عمليات المسح غدًا.",
+
+  "inboxFailureRefused": "رفض النموذج قراءة هذه الصورة",
+  "inboxFailureRefusedNext": "صورة أوضح هي الحل الأرجح.",
+  "inboxFailureSaidNothing": "لم يجب النموذج بشيء",
+  "inboxFailureSaidNothingNext": "إعادة القراءة تنجح عادةً.",
+  "inboxFailureNotLegible": "رد النموذج غير مقروء",
+  "inboxFailureNotLegibleNext": "إعادة القراءة تنجح عادةً.",
+  "inboxFailureOutOfReach": "لا اتصال عند قراءتها",
+  "inboxFailureOutOfReachNext": "سيواصل المحاولة من تلقاء نفسه.",
+  "inboxFailureModelUnavailable": "النموذج لم يكن متاحًا",
+  "inboxFailureModelUnavailableNext": "هذا يزول عادةً. أعد القراءة بعد دقيقة.",
+  "inboxFailureTokenRefused": "لم يُقبل تسجيل دخولك",
+  "inboxFailureTokenRefusedNext": "سجّل الدخول من جديد، ثم أعد القراءة.",
+  "inboxFailureImageNotAccepted": "تعذّر إرسال هذه الصورة",
+  "inboxFailureImageNotAcceptedNext": "صوّر الفاتورة من جديد.",
+  "inboxFailureUnsaid": "تعذّرت قراءة هذه",
+
+  "inboxLoading": "يجري فتح الوارد",
+
+  "inboxReview": "مراجعة",
+  "inboxReadAgain": "إعادة القراءة",
+  "inboxDiscard": "تجاهل",
+  "inboxAbandon": "التخلي عنه",
+  "inboxAbandonThisScan": "التخلي عن هذا المسح",
+  "inboxKeep": "الاحتفاظ بها",
+  "inboxDiscardingDeletesThePhoto": "تجاهل هذه الصورة يحذفها من الهاتف.",
+  "inboxAbandoningDeletesThePhoto": "التخلي عن هذا المسح يحذف صورته من الهاتف.",
+
+  "receiptZoom": "تكبير الفاتورة",
+  "receiptTitle": "الفاتورة",
+  "receiptBackToTheFields": "الرجوع إلى الحقول",
+
+  "openingWait": "يجري فتح Where Money",
+
+  "signInTagline": "صوّر الفاتورة. وانظر أين ذهب المال.",
+  "signInWithGoogle": "المتابعة باستخدام Google",
+  "signInAsGuest": "المتابعة كضيف",
+  "signInInFlight": "يجري تسجيل الدخول",
+  "signInFailed": "لم ينجح تسجيل الدخول. {detail}",
+
+  "lockTitle": "Where Money مقفل",
+  "lockWhy": "مصروفاتك على هذا الهاتف. افتح القفل لقراءتها.",
+  "lockRefused": "لم يُفتح القفل بذلك.",
+  "lockUnlock": "فتح القفل",
+  "lockSignOutInstead": "تسجيل الخروج بدلًا من ذلك",
+  "lockWaiting": "في انتظار أن يسأل الهاتف",
+  "lockReason": "افتح قفل Where Money لرؤية مصروفاتك.",
+
+  "appName": "Where Money",
+
+  "merchantUnknown": "متجر غير معروف",
+
+  "expenseSourceScanned": "قُرئ من فاتورة",
+  "expenseSourceManual": "أُدخل يدويًا"
+}

@@ -1,0 +1,344 @@
+{
+  "@@locale": "ru",
+
+  "settingsTitle": "Настройки",
+
+  "settingsTheme": "Тема",
+  "settingsThemeSystem": "Как в системе",
+  "settingsThemeLight": "Светлая",
+  "settingsThemeDark": "Тёмная",
+
+  "settingsLanguage": "Язык",
+  "settingsLanguageEnglish": "English",
+  "settingsLanguageChinese": "中文",
+  "settingsLanguageSpanish": "Español",
+  "settingsLanguagePortuguese": "Português",
+  "settingsLanguageFrench": "Français",
+  "settingsLanguageGerman": "Deutsch",
+  "settingsLanguageJapanese": "日本語",
+  "settingsLanguageKorean": "한국어",
+  "settingsLanguageRussian": "Русский",
+  "settingsLanguageArabic": "العربية",
+  "settingsLanguageHindi": "हिन्दी",
+  "settingsLanguageIndonesian": "Bahasa Indonesia",
+
+  "settingsHomeCurrency": "Основная валюта",
+  "settingsHomeCurrencyInferred": "Взята из вашего первого расхода.",
+  "settingsHomeCurrencyNone": "Её задаст ваш первый расход.",
+  "settingsHomeCurrencyGoverns": "Итоги и обзоры месяца считаются в ней. Траты в других валютах показываются, но не учитываются.",
+
+  "settingsLock": "Блокировка",
+  "settingsLockBiometrics": "Спрашивать отпечаток пальца, лицо или PIN этого телефона, прежде чем показать ваши траты.",
+  "settingsLockDeviceCredential": "На этом телефоне не настроен отпечаток пальца, поэтому перед показом трат будет запрошен PIN.",
+  "settingsLockUnavailable": "На этом телефоне нет блокировки экрана. Настройте её в настройках Android, чтобы включить это.",
+
+  "settingsDailyCap": "Дневной лимит",
+  "settingsDailyCapScansToday": "Сканов сегодня",
+  "settingsDailyCapScansADay": "Сканов в день",
+  "settingsDailyCapGoverns": "Сколько чеков модель прочитает для вас за день. Когда они закончатся, новые фото будут ждать во Входящих до завтра.",
+  "settingsDailyCapSpoken": "{used} из {cap}",
+  "@settingsDailyCapSpoken": {
+    "placeholders": {
+      "used": { "type": "int" },
+      "cap": { "type": "int" }
+    }
+  },
+
+  "settingsSignedInWith": "{email} · Google",
+  "@settingsSignedInWith": {
+    "placeholders": {
+      "email": { "type": "String" }
+    }
+  },
+  "settingsSignedInWithGoogle": "Google",
+  "settingsGuest": "Гость",
+  "settingsGuestNoAccount": "За этой книгой расходов нет аккаунта",
+
+  "settingsSignOut": "Выйти",
+
+  "settingsKeepThisLedger": "Войдите, чтобы сохранить эту книгу расходов",
+  "settingsKeepThisLedgerHint": "Она исчезнет вместе с этим телефоном. Вход её сохранит.",
+  "settingsSignOutAsGuestTitle": "Выйти из этой книги расходов?",
+  "settingsSignOutAsGuestBody": "Ваша книга расходов и её чеки будут удалены без возможности восстановления.",
+  "settingsSignOutKeep": "Оставить",
+  "settingsSignOutConfirm": "Выйти",
+  "settingsErasingInFlight": "Удаляем эту книгу расходов",
+  "settingsAccountInUseConfirm": "Войти",
+  "settingsAccountInUseBody": "У этого аккаунта уже есть книга расходов. После входа откроется она, а эта книга расходов и её чеки будут удалены.",
+
+  "settingsScansHeading": "Что запрашивает каждый скан",
+  "settingsScansModel": "Модель: {model}",
+  "settingsScansEffort": "Уровень рассуждений: {effort}",
+  "settingsScansLongEdge": "Длинная сторона изображения: {pixels} px",
+  "settingsScansDailyCap": "{count, plural, one{Дневной лимит: {count} скан} few{Дневной лимит: {count} скана} many{Дневной лимит: {count} сканов} other{Дневной лимит: {count} скана}}",
+  "settingsScansFromConsole": "Задаётся в консоли Firebase и читается при запуске приложения, поэтому после изменения там приложение нужно закрыть и открыть снова, а новая версия не нужна. Пока значения не пришли, действуют те, с которыми приложение было выпущено.",
+  "settingsScansNotEnforced": "Это то, что запрашивается, а не то, что применяется: список моделей, которые можно вызывать, и потолок дневного лимита хранит Worker, так что незнакомое ему имя или лимит выше потолка он молча заменит на своей стороне. Если изменение здесь ни на что не повлияло, причина там.",
+
+  "settingsCorrectedHeading": "Что пришлось исправить при проверке",
+  "settingsCorrectedNothingYet": "Ни один чек ещё не прочитан, так что сказать пока нечего.",
+  "settingsCorrectedTally": "{count, plural, one{Прочитан {count} чек, {clean} без правок.} few{Прочитано {count} чека, {clean} без правок.} many{Прочитано {count} чеков, {clean} без правок.} other{Прочитано {count} чека, {clean} без правок.}}",
+  "settingsCorrectedField": "{field}: исправлено в {count} из {total}",
+  "settingsCorrectedManualExcluded": "Расходы, введённые вручную, не учитываются: у них правкой считалось бы каждое поле, хотя чтения, с которым сравнивать, не было.",
+
+  "fieldMerchant": "Продавец",
+  "fieldPurchasedAt": "Дата",
+  "fieldCurrency": "Валюта",
+  "fieldSubtotal": "Подытог",
+  "fieldTax": "Налог",
+  "fieldTip": "Чаевые",
+  "fieldTotal": "Итого",
+  "fieldPaymentMethod": "Способ оплаты",
+  "fieldCategory": "Категория",
+  "fieldLineItems": "Позиции",
+
+  "categoryGroceries": "Продукты",
+  "categoryDining": "Кафе и рестораны",
+  "categoryTransport": "Транспорт",
+  "categoryFuel": "Топливо",
+  "categoryUtilities": "Коммунальные услуги",
+  "categoryHealthcare": "Здоровье",
+  "categoryPharmacy": "Аптека",
+  "categoryEntertainment": "Развлечения",
+  "categoryShopping": "Покупки",
+  "categoryApparel": "Одежда",
+  "categoryHome": "Дом",
+  "categoryElectronics": "Электроника",
+  "categoryTravel": "Путешествия",
+  "categoryEducation": "Образование",
+  "categoryPersonalCare": "Уход за собой",
+  "categorySubscriptions": "Подписки",
+  "categoryFeesCharges": "Комиссии и сборы",
+  "categoryOther": "Другое",
+
+  "paymentMethodCash": "Наличные",
+  "paymentMethodCard": "Карта",
+  "paymentMethodEwallet": "Электронный кошелёк",
+  "paymentMethodBankTransfer": "Банковский перевод",
+  "paymentMethodUnknown": "Не указано",
+
+  "reviewTitleTyped": "Добавить расход",
+  "reviewTitlePhotographed": "Проверить этот чек",
+  "reviewTitleCorrecting": "Исправить расход",
+
+  "reviewClean": "На этом чеке всё сходится. Сверьте с фото и добавьте.",
+  "reviewRefused": "Этот расход не сохранён. Введённое осталось на месте.",
+
+  "reviewToCheck": "{count, plural, other{{count} к проверке}}",
+
+  "reviewSectionWhatThisWas": "Что это было",
+  "reviewSectionWhatItCost": "Сколько стоило",
+
+  "reviewPickDate": "Выбрать дату",
+
+  "reviewTypeItIn": "Введите вручную",
+  "reviewCategoryReason": "Модель выбрала это, потому что: {reason}",
+
+  "reviewLineDescription": "Описание",
+  "reviewLineQuantity": "Кол-во",
+  "reviewLineUnitPrice": "Цена за единицу",
+  "reviewLineAmount": "Сумма",
+  "reviewAddLineItem": "Добавить позицию",
+  "reviewRemoveLineItem": "Убрать эту позицию",
+
+  "reviewAddToLedger": "Добавить в книгу расходов",
+  "reviewSave": "Сохранить",
+
+  "reviewFindingNotAReceiptTitle": "Не чек",
+  "reviewFindingNotAReceiptDetail": "Модель считает, что на этом изображении не чек.",
+
+  "reviewFindingNoTotalTitle": "Нет итога",
+  "reviewFindingNoTotalDetail": "Итог нулевой или отрицательный: ничего пригодного не прочитано.",
+
+  "reviewFindingNoMerchantTitle": "Нет продавца",
+  "reviewFindingNoMerchantDetail": "Название продавца не разобрать. Расход некуда отнести.",
+
+  "reviewFindingNoDateTitle": "Нет даты",
+  "reviewFindingNoDateDetail": "Дату на чеке не разобрать. По умолчанию будет сегодня.",
+
+  "reviewFindingUnparseableDateTitle": "Дата не читается",
+  "reviewFindingUnparseableDateDetail": "Получено «{read}», это не дата в формате ISO.",
+
+  "reviewFindingDateInTheFutureTitle": "Дата в будущем",
+  "reviewFindingDateInTheFutureDetail": "Прочитано {read}, этот день ещё не наступил. Скорее всего, это срок действия карты или срок годности, а не дата покупки.",
+
+  "reviewFindingYearLooksMisreadTitle": "Год, похоже, прочитан неверно",
+  "reviewFindingYearLooksMisreadDetail": "Прочитано {read}, почти ровно год назад. На только что снятом чеке это обычно значит, что год прочитан неверно: вероятнее {likelyYear}.",
+
+  "reviewFindingDateIsUnusuallyOldTitle": "Дата необычно старая",
+  "reviewFindingDateIsUnusuallyOldDetail": "{daysAgo, plural, one{Прочитано {read}, это {daysAgo} день назад. Для старого чека нормально, но если он только что снят, стоит проверить.} few{Прочитано {read}, это {daysAgo} дня назад. Для старого чека нормально, но если он только что снят, стоит проверить.} many{Прочитано {read}, это {daysAgo} дней назад. Для старого чека нормально, но если он только что снят, стоит проверить.} other{Прочитано {read}, это {daysAgo} дня назад. Для старого чека нормально, но если он только что снят, стоит проверить.}}",
+
+  "reviewFindingCurrencyUnclearTitle": "Валюта неясна",
+  "reviewFindingNoCurrencyDetail": "Валюта не определена, так что у суммы нет единицы.",
+  "reviewFindingCurrencyNotAnIsoCodeDetail": "Получено «{read}», это не код ISO 4217.",
+
+  "reviewFindingTotalDoesNotAddUpTitle": "Итог не сходится",
+  "reviewFindingTotalDoesNotAddUpDetail": "подытог {subtotal} + налог {tax} + чаевые {tip} = {composed}, а в итоге стоит {total} (расхождение {difference}).",
+
+  "reviewFindingLineItemsDoNotMatchSubtotalTitle": "Позиции не сходятся с подытогом",
+  "reviewFindingLineItemsDoNotMatchTotalTitle": "Позиции не сходятся с итогом",
+  "reviewFindingLineItemsUnderSubtotalDetail": "Сумма позиций {sum}, а подытог {target}. Возможно, позиция пропущена или скидка не выделена отдельной строкой.",
+  "reviewFindingLineItemsOverSubtotalDetail": "Сумма позиций {sum}, а подытог {target}. Позиций больше, чем на чеке, значит что-то прочитано дважды.",
+  "reviewFindingLineItemsUnderTotalDetail": "Сумма позиций {sum}, а итог {target}. Возможно, позиция пропущена или скидка не выделена отдельной строкой.",
+  "reviewFindingLineItemsOverTotalDetail": "Сумма позиций {sum}, а итог {target}. Позиций больше, чем на чеке, значит что-то прочитано дважды.",
+
+  "reviewFindingLineArithmeticOffTitle": "Строка не сходится",
+  "reviewFindingLineArithmeticOffDetail": "«{description}»: {quantity} × {unitPrice} = {expected}, а в строке стоит {amount}.",
+
+  "reviewFindingUnknownItemCategoryTitle": "Неизвестная категория позиции",
+  "reviewFindingUnknownItemCategoryDetail": "Для «{description}» получено «{read}», такой категории нет в списке.",
+
+  "reviewFindingUnknownCategoryTitle": "Неизвестная категория",
+  "reviewFindingUnknownCategoryDetail": "Получено «{read}», это вне перечня, объявленного в schema.",
+
+  "reviewFindingUnknownPaymentMethodTitle": "Неизвестный способ оплаты",
+  "reviewFindingUnknownPaymentMethodDetail": "Получено «{read}».",
+
+  "reviewFindingModelAskedForReviewTitle": "Модель просит проверить",
+  "reviewFindingModelAskedNoReasonDetail": "Она отметила изображение, но причину не назвала.",
+  "reviewFindingReasonSeparator": "; ",
+  "ledgerTitle": "Книга расходов",
+
+  "ledgerColumnMerchant": "Продавец",
+  "ledgerColumnAmount": "Сумма",
+
+  "ledgerAddByHand": "Добавить расход вручную",
+  "ledgerPhotograph": "Снять чек",
+  "ledgerTakeAPhoto": "Сделать фото",
+  "ledgerChooseFromGallery": "Выбрать из галереи",
+  "ledgerCharts": "Графики",
+  "ledgerInbox": "Входящие",
+  "ledgerInboxWaiting": "{count, plural, one{Входящие, ждёт {count} скан} few{Входящие, ждут {count} скана} many{Входящие, ждут {count} сканов} other{Входящие, ждут {count} скана}}",
+  "ledgerUnreadable": "Не удалось прочитать вашу книгу расходов.",
+  "ledgerEmpty": "Пока здесь ничего нет.\nДобавьте кнопкой внизу.",
+  "ledgerNothingInMonth": "За {month} ничего нет.",
+
+  "ledgerChooseAMonth": "Выбрать месяц",
+  "ledgerPreviousYear": "Предыдущий год",
+  "ledgerNextYear": "Следующий год",
+  "ledgerBackToMonth": "Вернуться в {month}",
+
+  "ledgerPhotosStayedBehindTitle": "Фото остались на другом телефоне",
+  "ledgerPhotosStayedBehindBody": "Все расходы в вашей книге расходов восстановлены из аккаунта. Фото чеков не покидают телефон, на котором были сняты, поэтому на этом их нет. Больше ничего не потеряно.",
+  "ledgerPhotosStayedBehindGotIt": "Понятно",
+  "ledgerLoading": "Открываем вашу книгу расходов",
+
+  "expenseGone": "Этого расхода больше нет в вашей книге расходов.",
+  "expenseCorrect": "Исправить расход",
+  "expenseDelete": "Удалить расход",
+  "expenseDeleteTitle": "Удалить этот расход?",
+  "expenseDeleteBody": "{merchant}, {amount}, исчезнет из вашей книги расходов и из итогов.",
+  "expenseDeleteBodyKeepsReceipt": "{merchant}, {amount}, исчезнет из вашей книги расходов и из итогов. Фото чека останется на этом телефоне.",
+  "expenseDeleteKeep": "Оставить",
+  "expenseDeleteConfirm": "Удалить",
+  "expenseFromReceipt": "Прочитано с фото чека",
+  "expenseTypedByHand": "Введено вручную",
+  "expenseForeignCurrency": "Оплачено в {currency}, поэтому не входит в итоги месяца.",
+  "expenseNoLineItems": "Позиций нет, только итог.",
+  "expenseLineItemCount": "{category} · {quantity} × {unitPrice}",
+  "expenseReceiptNotOnThisDevice": "Фото чека нет на этом устройстве. Фото остаются на телефоне, который их снял, поэтому книга расходов, восстановленная на другом, приходит без них.",
+  "expenseReceiptLoading": "Загружаем чек",
+
+  "chartsCategoryTotal": "{count, plural, one{{category}, {amount}, {count} расход} few{{category}, {amount}, {count} расхода} many{{category}, {amount}, {count} расходов} other{{category}, {amount}, {count} расхода}}",
+  "chartsMonthTotal": "{month}, {amount}",
+
+  "rollupByCategory": "По категориям",
+  "rollupMonthByMonth": "По месяцам",
+  "rollupNothingSpent": "За {month} трат нет.",
+  "rollupRecapHeading": "Куда ушли деньги",
+  "rollupRecapPending": "Читаем месяц.",
+  "rollupRecapTooFew": "{needed, plural, one{Чтобы было о чём писать, в месяце нужен хотя бы {needed} расход. Графики работают и так.} few{Чтобы было о чём писать, в месяце нужно хотя бы {needed} расхода. Графики работают и так.} many{Чтобы было о чём писать, в месяце нужно хотя бы {needed} расходов. Графики работают и так.} other{Чтобы было о чём писать, в месяце нужно хотя бы {needed} расхода. Графики работают и так.}}",
+  "rollupRecapAskAgain": "Спросить ещё раз",
+
+  "rollupRecapRefused": "Модель отказалась писать обзор этого месяца.",
+  "rollupRecapNothingToSay": "Модели нечего сказать об этом месяце.",
+  "rollupRecapAllowanceSpent": "На сегодня лимит исчерпан. Обзор будет завтра.",
+  "rollupRecapTokenRefused": "Войдите снова, и обзор вернётся.",
+  "rollupRecapOutOfReach": "Без сети обзора не будет. Графикам сеть не нужна.",
+  "rollupRecapModelUnavailable": "Модель недоступна. Графикам она не нужна.",
+  "rollupNothingToCompare": "За {month} трат не было, сравнивать не с чем.",
+  "rollupAboutTheSame": "Примерно столько же, сколько за {month}.",
+  "rollupMoreThan": "На {percent}% больше, чем за {month}.",
+  "rollupLessThan": "На {percent}% меньше, чем за {month}.",
+  "rollupLeftOutThisMonth": "{count, plural, one{{count} расход в {currencies} за этот месяц не входит в эти итоги.} few{{count} расхода в {currencies} за этот месяц не входят в эти итоги.} many{{count} расходов в {currencies} за этот месяц не входят в эти итоги.} other{{count} расхода в {currencies} за этот месяц не входят в эти итоги.}}",
+  "rollupLeftOutTheseMonths": "{count, plural, one{{count} расход в {currencies} за эти месяцы не входит в эти итоги.} few{{count} расхода в {currencies} за эти месяцы не входят в эти итоги.} many{{count} расходов в {currencies} за эти месяцы не входят в эти итоги.} other{{count} расхода в {currencies} за эти месяцы не входят в эти итоги.}}",
+  "rollupNoHomeCurrencyTitle": "Итогов пока нет",
+  "rollupNoHomeCurrency": "Итоги начинаются с вашего первого расхода. Валюта, в которой вы его запишете, станет валютой графиков и обзоров месяца; потом её можно сменить в настройках.",
+
+  "currencyChooseTitle": "Выберите валюту",
+  "currencyClose": "Закрыть",
+  "currencySearch": "Поиск по коду",
+  "currencyYours": "Ваши",
+  "currencyAll": "Все валюты",
+  "currencyHome": "Основная",
+  "currencyNoMatch": "Ни один код не совпадает с {query}.",
+
+  "rollupLoading": "Открываем месяц",
+
+  "inboxTitle": "Входящие",
+  "inboxEmpty": "Чеков в ожидании нет.",
+  "inboxPhotographed": "Снято {moment}",
+
+  "inboxWaitingToBeRead": "Ждёт чтения",
+  "inboxBeingRead": "Читается",
+  "inboxReadyToReview": "Готов к проверке",
+  "inboxNotAReceipt": "Это не похоже на чек",
+  "inboxCommitted": "В вашей книге расходов",
+
+  "inboxCapped": "Сканы на сегодня закончились",
+  "inboxMoreScansAt": "Новые сканы в {moment}.",
+  "inboxMoreScansTomorrow": "Новые сканы завтра.",
+
+  "inboxFailureRefused": "Модель отказалась читать это фото",
+  "inboxFailureRefusedNext": "Скорее всего, поможет более чёткое фото.",
+  "inboxFailureSaidNothing": "Модель ничего не ответила",
+  "inboxFailureSaidNothingNext": "Обычно помогает прочитать ещё раз.",
+  "inboxFailureNotLegible": "Ответ модели не удалось разобрать",
+  "inboxFailureNotLegibleNext": "Обычно помогает прочитать ещё раз.",
+  "inboxFailureOutOfReach": "При чтении не было сети",
+  "inboxFailureOutOfReachNext": "Попытки продолжатся сами.",
+  "inboxFailureModelUnavailable": "Модель была недоступна",
+  "inboxFailureModelUnavailableNext": "Обычно это быстро проходит. Прочитайте ещё раз через минуту.",
+  "inboxFailureTokenRefused": "Ваш вход не принят",
+  "inboxFailureTokenRefusedNext": "Войдите снова и прочитайте ещё раз.",
+  "inboxFailureImageNotAccepted": "Это фото не удалось отправить",
+  "inboxFailureImageNotAcceptedNext": "Снимите чек ещё раз.",
+  "inboxFailureUnsaid": "Это не удалось прочитать",
+
+  "inboxLoading": "Открываем Входящие",
+
+  "inboxReview": "Проверить",
+  "inboxReadAgain": "Прочитать ещё раз",
+  "inboxDiscard": "Убрать",
+  "inboxAbandon": "Отказаться",
+  "inboxAbandonThisScan": "Отказаться от этого скана",
+  "inboxKeep": "Оставить",
+  "inboxDiscardingDeletesThePhoto": "Если убрать это фото, оно будет удалено с телефона.",
+  "inboxAbandoningDeletesThePhoto": "Если отказаться от этого скана, его фото будет удалено с телефона.",
+
+  "receiptZoom": "Увеличить чек",
+  "receiptTitle": "Чек",
+  "receiptBackToTheFields": "Назад к полям",
+
+  "openingWait": "Открываем Where Money",
+
+  "signInTagline": "Снимите чек. Узнайте, куда ушли деньги.",
+  "signInWithGoogle": "Продолжить с Google",
+  "signInAsGuest": "Продолжить как гость",
+  "signInInFlight": "Входим",
+  "signInFailed": "Войти не удалось. {detail}",
+
+  "lockTitle": "Where Money заблокировано",
+  "lockWhy": "Ваши траты на этом телефоне. Разблокируйте, чтобы их увидеть.",
+  "lockRefused": "Разблокировать не удалось.",
+  "lockUnlock": "Разблокировать",
+  "lockSignOutInstead": "Вместо этого выйти",
+  "lockWaiting": "Ждём запроса от телефона",
+  "lockReason": "Разблокируйте Where Money, чтобы увидеть свои траты.",
+
+  "appName": "Where Money",
+
+  "merchantUnknown": "Продавец неизвестен",
+
+  "expenseSourceScanned": "Прочитано с чека",
+  "expenseSourceManual": "Введено вручную"
+}

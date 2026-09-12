@@ -310,9 +310,9 @@ class _FormState extends State<_Form> {
                       onRemoved: () => _removeRow(index),
                     ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(8, 8, 16, 0),
                     child: Align(
-                      alignment: Alignment.centerLeft,
+                      alignment: AlignmentDirectional.centerStart,
                       child: TextButton.icon(
                         onPressed: () => _bloc.add(const LineItemAdded()),
                         icon: const Icon(Icons.add, size: 20),
@@ -372,7 +372,7 @@ class _FormState extends State<_Form> {
           children: [
             field,
             Padding(
-              padding: EdgeInsets.only(left: sayingIndent(context)),
+              padding: EdgeInsetsDirectional.only(start: sayingIndent(context)),
               child: Text(note, style: Theme.of(context).textTheme.bodySmall),
             ),
           ],
@@ -433,7 +433,7 @@ class _FormState extends State<_Form> {
       child: TextField(
         controller: _fields[field],
         style: style,
-        textAlign: number ? TextAlign.right : TextAlign.start,
+        textAlign: number ? TextAlign.end : TextAlign.start,
         decoration: asARow(
           context,
           field.labelIn(words),

@@ -10,7 +10,23 @@ library;
 /// ISO 639-1, no script subtag. `zh` therefore cannot distinguish Simplified
 /// from Traditional; that was raised and decided, and adding Traditional later
 /// means migrating the stored value.
-const List<String> languages = ['en', 'zh'];
+///
+/// The order is the order the Settings dropdown offers them in: the two the
+/// app started with, then the rest roughly by how many phones read each.
+const List<String> languages = [
+  'en',
+  'zh',
+  'es',
+  'pt',
+  'fr',
+  'de',
+  'ja',
+  'ko',
+  'ru',
+  'ar',
+  'hi',
+  'id',
+];
 
 /// What a language nobody recognises becomes. A Recap in the wrong language
 /// beats no Recap, so neither end of the wire ever refuses one.
