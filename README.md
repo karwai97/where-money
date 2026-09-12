@@ -4,9 +4,11 @@ Photograph a receipt, put the phone away. The photo becomes a categorised ledger
 entry, and a month of entries becomes a short written account of where the money
 went.
 
-The spec and its tickets are in [.scratch/scan-to-recap/](.scratch/scan-to-recap/),
-the domain language in [CONTEXT.md](CONTEXT.md), and the decisions worth arguing
-with in [docs/adr/](docs/adr/).
+A feature's spec and its tickets live in a folder of its own under
+[.scratch/](.scratch/), one per feature — the convention is in
+[docs/agents/issue-tracker.md](docs/agents/issue-tracker.md). The domain
+language is in [CONTEXT.md](CONTEXT.md), and the decisions worth arguing with
+in [docs/adr/](docs/adr/).
 
 ## Layout
 
@@ -19,10 +21,15 @@ A pub workspace of two Dart packages:
   promoted to an error there so the shared workspace resolution cannot smuggle
   `package:flutter` in. Its tests run under `dart test`, with no Flutter harness.
 
-- **[lib/l10n](lib/l10n)** — the app's words, one ARB file per language, and the
-  key convention the rest of them follow. `AppLocalizations` is generated from
-  them by `flutter pub get` and by every build, so it is gitignored: an analyze
-  or a test run on a fresh clone wants that `pub get` first.
+- **[lib/l10n](lib/l10n)** — the app's words, one hand-written ARB file per
+  language, and the key convention the rest of them follow. Twelve of them:
+  English, Chinese, Spanish, Portuguese, French, German, Japanese, Korean,
+  Russian, Arabic, Hindi, Indonesian. The codes are a closed list in
+  `packages/core`, because the Worker has to agree with the app about what it
+  is being asked to write in. `AppLocalizations` is generated from the ARB
+  files by `flutter pub get` and by every build, so it is gitignored: an
+  analyze or a test run on a fresh clone wants that `pub get` first.
+  [lib/l10n/README.md](lib/l10n/README.md) says what adding a thirteenth takes.
 
 - **[tools/launcher-icon](tools/launcher-icon)** — the launcher icon, drawn
   once as a few paths and written out as Android vector drawables, the legacy
@@ -103,6 +110,21 @@ before signing in on a device, or every read comes back refused:
 firebase deploy --only firestore:rules
 ```
 
+## Knobs
+
+Which model reads a receipt, how much reasoning it buys, how large an image it
+is given and how many Scans a day are paid for come from Remote Config, with
+the same values compiled in behind them so a phone that cannot reach it still
+scans. [remoteconfig.template.json](remoteconfig.template.json) is what seeds a
+project that has never had a template:
+
+```sh
+firebase deploy --only remoteconfig
+```
+
+The daily cap it delivers only lowers what the Worker's own ceiling allows.
+Raising the ceiling is a Worker deploy, deliberately.
+
 ## iOS is unbuilt and unverified
 
 The iOS project exists, its bundle id is `com.kai.whereMoney`, and a
@@ -122,5 +144,6 @@ There is no web build, and there won't be — the camera pipeline is the point.
 
 There are none in this repo, and the app is built without a single `--dart-define`
 of one. The OpenAI key exists only as a Cloudflare Worker secret. Model tier,
-image size, reasoning effort, and the daily cap are behaviour knobs and will come
-from Remote Config; none of them is a secret either.
+image size, reasoning effort and the daily cap come from Remote Config, which is
+readable by anyone holding the app; none of them is a secret either, which is
+why they are allowed to live there.
